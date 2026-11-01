@@ -5,11 +5,10 @@ import * as schema from "./schema";
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL is not set");
-const client = postgres(url, { max: 1 });
+const client = postgres(url, { max: 1, onnotice: () => {} });
 const db = drizzle(client, { schema });
 
-// NOTE: only hv-edu.haviv.pro is confirmed live. The other URLs follow the same
-// pattern and should be verified/updated in the DB once deployed.
+// Live deployments on Coolify (each simulator is a standalone app in its own repo).
 const simulatorRows: (typeof schema.simulators.$inferInsert)[] = [
   {
     slug: "hv-edu",

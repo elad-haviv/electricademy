@@ -1,4 +1,5 @@
 # Multi-stage build for apps/web (Next.js standalone). Used by Coolify.
+# On start, the container applies DB migrations and the (idempotent) seed, then starts Next.js.
 FROM node:22-alpine AS base
 RUN corepack enable
 WORKDIR /repo
@@ -17,16 +18,19 @@ RUN pnpm install --frozen-lockfile
 FROM deps AS build
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm --filter @electricademy/web build
+RUN pnpm --filter @electricademy/web build && pnpm --filter @electricademy/db bundle
 
 FROM node:22-alpine AS runner
 WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 CONTENT_DIR=/app/content
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 \
+    CONTENT_DIR=/app/content MIGRATIONS_DIR=/app/db/migrations
 RUN addgroup -S app && adduser -S app -G app
 COPY --from=build --chown=app:app /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=app:app /repo/apps/web/.next/static ./apps/web/.next/static
 COPY --from=build --chown=app:app /repo/apps/web/public ./apps/web/public
 COPY --from=build --chown=app:app /repo/content ./content
+COPY --from=build --chown=app:app /repo/packages/db/dist ./db
+COPY --from=build --chown=app:app /repo/packages/db/migrations ./db/migrations
 USER app
 EXPOSE 3000
-CMD ["node", "apps/web/server.js"]
+CMD ["sh", "-c", "node db/migrate.mjs && node db/seed.mjs && exec node apps/web/server.js"]

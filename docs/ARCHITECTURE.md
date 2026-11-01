@@ -61,7 +61,8 @@ Schema: `packages/db/src/schema.ts`. Migrations: `packages/db/migrations` (`pnpm
 ## Deployment (Coolify)
 - **web:** `docker/web.Dockerfile` (Next.js standalone on port 3000). Set `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` and the provider variables.
 - **db:** a Postgres 16 resource in Coolify.
-- **migrations:** run `pnpm db:migrate && pnpm db:seed` (the image is `docker/migrate.Dockerfile`) as a pre-deploy or one-off task.
+- **migrations:** the web container runs the bundled `db/migrate.mjs` and the idempotent `db/seed.mjs` on every start, before `server.js`.
+- **Production:** https://electricademy.haviv.pro (Coolify project "electricademy").
 - **Local:** run `docker compose up -d db`. `docker compose --profile full up` also runs the web image.
 
 ## Testing
