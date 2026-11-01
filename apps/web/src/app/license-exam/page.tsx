@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Badge, Card } from "@electricademy/ui";
+import { PageBanner } from "@/components/PageBanner";
 import { WaitlistForm } from "@/components/forms";
 
 export const metadata: Metadata = {
@@ -16,14 +17,17 @@ const FEATURES = [
 
 export default function LicenseExamPage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <header className="text-center">
-        <Badge tone="pro">בקרוב</Badge>
-        <h1 className="mt-3 text-4xl font-extrabold tracking-tight">סימולטור בחינות רישוי חשמלאים</h1>
-        <p className="mt-3 text-lg text-slate-600 dark:text-slate-400">
-          מתכוננים לבחינת הרישוי בביטחון: חשמלאי מעשי, מוסמך, הנדסאי ומהנדס.
-        </p>
-      </header>
+    <div className="mx-auto max-w-4xl space-y-8">
+      <PageBanner
+        title="סימולטור בחינות רישוי חשמלאים"
+        subtitle="מתכוננים לבחינת הרישוי בביטחון: חשמלאי מעשי, מוסמך, הנדסאי ומהנדס."
+        image="/images/license-exam.webp"
+        eyebrow={
+          <span>
+            <Badge tone="pro">בקרוב</Badge>
+          </span>
+        }
+      />
       <div className="grid gap-4 sm:grid-cols-2">
         {FEATURES.map((f) => (
           <Card key={f.title}>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { asc } from "drizzle-orm";
-import { Badge, buttonClass, Card, SectionHeading } from "@electricademy/ui";
+import { Badge, buttonClass, Card } from "@electricademy/ui";
+import { PageBanner } from "@/components/PageBanner";
 import { can } from "@electricademy/auth";
 import { getDb, simulators } from "@electricademy/db";
 import { LEVEL_LABELS } from "@/lib/labels";
@@ -18,7 +19,7 @@ export default async function SimulatorsPage() {
   ]);
   return (
     <>
-      <SectionHeading title="סימולטורים ולומדות" subtitle="לומדים בידיים: מודלים בתלת־ממד, תרגילי נוהל ותרחישי תקלות." />
+      <PageBanner title="סימולטורים ולומדות" subtitle="לומדים בידיים: מודלים בתלת־ממד, תרגילי נוהל ותרחישי תקלות." image="/images/simulators.webp" />
       <div className="grid gap-4 md:grid-cols-2">
         {rows.map((s) => {
           const unlocked = s.tier === "free" || can(access, "simulators.pro");

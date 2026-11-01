@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Badge, Card } from "@electricademy/ui";
+import { PageBanner } from "@/components/PageBanner";
 import { getTrack, hasLesson, TRACKS } from "@electricademy/content";
 
 export function generateStaticParams() {
@@ -17,17 +18,21 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
   const track = getTrack((await params).track);
   if (!track) notFound();
   return (
-    <div className="space-y-8">
-      <header>
-        <Link href="/tracks" className="text-sm text-brand-700 dark:text-brand-300">
-          → כל המסלולים
-        </Link>
-        <h1 className="mt-2 flex items-center gap-3 text-3xl font-extrabold">
-          <span aria-hidden>{track.icon}</span> {track.title}
-          {track.tier === "pro" && <Badge tone="pro">Pro</Badge>}
-        </h1>
-        <p className="mt-2 text-slate-600 dark:text-slate-400">{track.description}</p>
-      </header>
+    <div className="space-y-6">
+      <Link href="/tracks" className="text-sm text-brand-700 dark:text-brand-300">
+        → כל המסלולים
+      </Link>
+      <PageBanner
+        title={track.title}
+        subtitle={track.description}
+        image={track.image}
+        eyebrow={
+          <span className="flex items-center gap-2 text-sm text-brand-200">
+            {track.audience}
+            {track.tier === "pro" ? <Badge tone="pro">Pro</Badge> : <Badge tone="success">חינם</Badge>}
+          </span>
+        }
+      />
       {track.modules.map((m, mi) => (
         <Card key={m.slug}>
           <h2 className="text-xl font-bold">

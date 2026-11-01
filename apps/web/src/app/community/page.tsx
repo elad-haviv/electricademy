@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { desc, eq, sql } from "drizzle-orm";
-import { Badge, buttonClass, Card, cn, SectionHeading } from "@electricademy/ui";
+import { Badge, buttonClass, Card, cn } from "@electricademy/ui";
+import { PageBanner } from "@/components/PageBanner";
 import { getDb, posts, threads, users } from "@electricademy/db";
 import { COMMUNITY_TAGS, formatDate } from "@/lib/labels";
 
@@ -31,15 +32,15 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <SectionHeading
+      <PageBanner
         title="קהילה"
         subtitle="שואלים, עונים ולומדים יחד, מתלמידי בגרות ועד מהנדסי מערכות הספק."
-        action={
-          <Link href="/community/new" className={buttonClass("primary")}>
-            + דיון חדש
-          </Link>
-        }
-      />
+        image="/images/community.webp"
+      >
+        <Link href="/community/new" className={buttonClass("primary", "mt-3 self-start bg-spark-400 text-slate-900 hover:bg-spark-300")}>
+          + דיון חדש
+        </Link>
+      </PageBanner>
       <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
         <Link href="/community" className={cn(buttonClass(activeTag ? "ghost" : "secondary"), "shrink-0")}>
           הכל

@@ -17,6 +17,8 @@ const config: NextConfig = {
     "@electricademy/ui",
   ],
   turbopack: { root: monorepoRoot },
+  // Images are pre-optimized WebP in /public/images (see docs/ARCHITECTURE.md).
+  images: { unoptimized: true },
 };
 
 export default config;

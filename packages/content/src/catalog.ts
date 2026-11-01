@@ -23,6 +23,8 @@ export interface Track {
   audience: string;
   description: string;
   icon: string;
+  /** 3D cover render under apps/web/public. */
+  image: string;
   tier: Tier;
   modules: Module[];
 }
@@ -34,6 +36,7 @@ export const TRACKS: Track[] = [
     audience: "מתחילים מאפס",
     description: "מתח, זרם, התנגדות והספק. כל מה שצריך כדי להתחיל, בלי ידע קודם.",
     icon: "⚡",
+    image: "/images/tracks/basics.webp",
     tier: "free",
     modules: [
       {
@@ -65,6 +68,7 @@ export const TRACKS: Track[] = [
     audience: "תלמידי מגמת חשמל",
     description: "הכנה לבחינות הבגרות של משרד החינוך במגמת הנדסת חשמל.",
     icon: "🎓",
+    image: "/images/tracks/bagrut.webp",
     tier: "free",
     modules: [
       {
@@ -84,6 +88,7 @@ export const TRACKS: Track[] = [
     audience: "סטודנטים במכללות (מה\"ט)",
     description: "מכונות חשמל, מערכות הספק, אלקטרוניקת הספק ומתקנים, לפי תכניות מה\"ט.",
     icon: "🛠️",
+    image: "/images/tracks/technician.webp",
     tier: "pro",
     modules: [
       {
@@ -103,6 +108,7 @@ export const TRACKS: Track[] = [
     audience: "סטודנטים לתואר ראשון",
     description: "ניתוח מערכות הספק, יציבות, זרמי קצר ובקרה, ברמה האקדמית.",
     icon: "📐",
+    image: "/images/tracks/academic.webp",
     tier: "pro",
     modules: [
       {
@@ -122,6 +128,7 @@ export const TRACKS: Track[] = [
     audience: "חשמלאי מעשי, מוסמך, הנדסאי ומהנדס",
     description: "תקנות החשמל, הגנות, הארקות ומתקנים, לקראת בחינות הרישוי.",
     icon: "📜",
+    image: "/images/tracks/licensing.webp",
     tier: "free",
     modules: [
       {
@@ -141,6 +148,7 @@ export const TRACKS: Track[] = [
     audience: "חשמלאים בשטח, מתכננים ומהנדסים",
     description: "חישובים, תקנות, חידושים ונישות: מתח גבוה, גנרטורים, אנרגיה מתחדשת ועוד.",
     icon: "🏗️",
+    image: "/images/tracks/professionals.webp",
     tier: "pro",
     modules: [
       {

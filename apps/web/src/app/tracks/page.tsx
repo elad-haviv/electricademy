@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Badge, Card, SectionHeading } from "@electricademy/ui";
+import { Badge, Card } from "@electricademy/ui";
+import { PageBanner } from "@/components/PageBanner";
 import { TRACKS } from "@electricademy/content";
 
 export const metadata: Metadata = { title: "מסלולי לימוד" };
@@ -8,14 +10,14 @@ export const metadata: Metadata = { title: "מסלולי לימוד" };
 export default function TracksPage() {
   return (
     <>
-      <SectionHeading title="מסלולי לימוד" subtitle="From Zero to Hero: מהיסודות ועד מערכות הספק ובחינות רישוי." />
+      <PageBanner title="מסלולי לימוד" subtitle="From Zero to Hero: מהיסודות ועד מערכות הספק ובחינות רישוי." image="/images/tracks/academic.webp" />
       <ol className="space-y-4">
         {TRACKS.map((t, i) => (
           <li key={t.slug}>
             <Link href={`/tracks/${t.slug}`}>
               <Card className="flex items-start gap-4 transition hover:ring-brand-400">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-2xl dark:bg-brand-950" aria-hidden>
-                  {t.icon}
+                <span className="relative aspect-[4/3] w-24 shrink-0 overflow-hidden rounded-xl bg-[#0d1a4a] sm:w-32">
+                  <Image src={t.image} alt="" fill sizes="128px" className="object-cover" />
                 </span>
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
