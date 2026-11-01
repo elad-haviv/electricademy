@@ -17,10 +17,17 @@
   --color-brand-900: #1e438a;
   --color-brand-950: #172a54;
 
+  /* Deep navy used behind the 3D renders */
+  --color-navy-900: #0d1a4a;
+  --color-navy-950: #081033;
+
   /* "Spark" accent: used sparingly for highlights and CTAs */
   --color-spark-300: #fde047;
   --color-spark-400: #facc15;
   --color-spark-500: #eab308;
 
   --radius-card: 1rem;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.04);
+  --shadow-raised: 0 4px 6px -2px rgb(15 23 42 / 0.05), 0 12px 24px -6px rgb(15 23 42 / 0.12);
 }

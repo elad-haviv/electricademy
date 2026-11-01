@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Badge, Card } from "@electricademy/ui";
+import { Badge, Card, IconClock, IconFile, IconRuler, IconLayers } from "@electricademy/ui";
 import { PageBanner } from "@/components/PageBanner";
 import { WaitlistForm } from "@/components/forms";
 
@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 };
 
 const FEATURES = [
-  { icon: "⏱️", title: "מבחנים בתנאי אמת", text: "מבחנים מתוזמנים במבנה שמדמה את הבחינה." },
-  { icon: "🗂️", title: "בנק שאלות מתויג", text: "שאלות לפי נושא, תקנה ורמת רישיון, עם הסבר מלא לכל תשובה." },
-  { icon: "📈", title: "מדד מוכנות", text: "מעקב אחרי נקודות חולשה, עם המלצות לשיעורים לחיזוק." },
-  { icon: "📐", title: "שרטוטים ותכניות", text: "תרגול קריאת תכניות חשמל ותרשימים חד־קויים." },
+  { Icon: IconClock, title: "מבחנים בתנאי אמת", text: "מבחנים מתוזמנים במבנה שמדמה את הבחינה." },
+  { Icon: IconLayers, title: "בנק שאלות מתויג", text: "שאלות לפי נושא, תקנה ורמת רישיון, עם הסבר מלא לכל תשובה." },
+  { Icon: IconFile, title: "מדד מוכנות", text: "מעקב אחרי נקודות חולשה, עם המלצות לשיעורים לחיזוק." },
+  { Icon: IconRuler, title: "שרטוטים ותכניות", text: "תרגול קריאת תכניות חשמל ותרשימים חד־קויים." },
 ];
 
 export default function LicenseExamPage() {
@@ -29,18 +29,21 @@ export default function LicenseExamPage() {
         }
       />
       <div className="grid gap-4 sm:grid-cols-2">
-        {FEATURES.map((f) => (
-          <Card key={f.title}>
-            <p className="text-2xl" aria-hidden>
-              {f.icon}
-            </p>
-            <h2 className="mt-2 font-bold">{f.title}</h2>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{f.text}</p>
+        {FEATURES.map(({ Icon, title, text }) => (
+          <Card key={title} className="flex gap-4">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+              <Icon className="size-5.5" />
+            </span>
+            <div>
+              <h2 className="font-bold">{title}</h2>
+              <p className="mt-1 text-slate-600 dark:text-slate-400">{text}</p>
+            </div>
           </Card>
         ))}
       </div>
-      <Card>
-        <h2 className="mb-3 text-lg font-bold">רוצים להיות הראשונים לדעת?</h2>
+      <Card className="p-6 sm:p-8">
+        <h2 className="text-xl font-extrabold">רוצים להיות הראשונים לדעת?</h2>
+        <p className="mt-1 mb-4 text-slate-600 dark:text-slate-400">השאירו אימייל ונעדכן ברגע שהסימולטור נפתח. בלי ספאם.</p>
         <WaitlistForm product="license-exam" />
       </Card>
     </div>

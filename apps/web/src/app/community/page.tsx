@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { desc, eq, sql } from "drizzle-orm";
-import { Badge, buttonClass, Card, cn } from "@electricademy/ui";
+import { Avatar, Badge, buttonClass, Card, cn, IconChat, IconChevronLeft, IconPlus } from "@electricademy/ui";
 import { PageBanner } from "@/components/PageBanner";
 import { getDb, posts, threads, users } from "@electricademy/db";
 import { COMMUNITY_TAGS, formatDate } from "@/lib/labels";
@@ -37,37 +37,68 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
         subtitle="שואלים, עונים ולומדים יחד, מתלמידי בגרות ועד מהנדסי מערכות הספק."
         image="/images/community.webp"
       >
-        <Link href="/community/new" className={buttonClass("primary", "mt-3 self-start bg-spark-400 text-slate-900 hover:bg-spark-300")}>
-          + דיון חדש
+        <Link href="/community/new" className={buttonClass("spark", "mt-3 self-start", "lg")}>
+          <IconPlus className="size-5" />
+          שאלה או דיון חדש
         </Link>
       </PageBanner>
-      <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
-        <Link href="/community" className={cn(buttonClass(activeTag ? "ghost" : "secondary"), "shrink-0")}>
-          הכל
-        </Link>
-        {Object.entries(COMMUNITY_TAGS).map(([value, label]) => (
-          <Link key={value} href={`/community?tag=${value}`} className={cn(buttonClass(activeTag === value ? "secondary" : "ghost"), "shrink-0")}>
-            {label}
-          </Link>
-        ))}
-      </div>
-      <Card className="p-0">
+      <nav aria-label="סינון לפי נושא" className="-mx-4 mb-6 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+        <ul className="flex gap-2">
+          {[["", "הכל"] as const, ...Object.entries(COMMUNITY_TAGS)].map(([value, label]) => {
+            const active = (activeTag ?? "") === value;
+            return (
+              <li key={value} className="shrink-0">
+                <Link
+                  href={value ? `/community?tag=${value}` : "/community"}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "inline-flex min-h-10 items-center rounded-full px-4 text-sm font-semibold ring-1 transition",
+                    active
+                      ? "bg-slate-900 text-white ring-slate-900 dark:bg-white dark:text-slate-900 dark:ring-white"
+                      : "bg-white text-slate-700 ring-slate-300 hover:ring-slate-400 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700",
+                  )}
+                >
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      <Card className="overflow-hidden p-0 sm:p-0">
         <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {rows.map((t) => (
             <li key={t.id}>
-              <Link href={`/community/${t.id}`} className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <div className="flex-1">
-                  <p className="font-semibold">{t.title}</p>
-                  <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+              <Link href={`/community/${t.id}`} className="group flex items-center gap-3 p-4 transition hover:bg-slate-50 sm:gap-4 sm:px-6 dark:hover:bg-slate-800/50">
+                <span className="hidden sm:block">
+                  <Avatar name={t.author} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="leading-snug font-bold group-hover:text-brand-700 dark:group-hover:text-brand-300">{t.title}</p>
+                  <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
                     <Badge>{COMMUNITY_TAGS[t.tag] ?? t.tag}</Badge>
-                    {t.author ?? "משתמש"} · {formatDate(t.createdAt)}
+                    <span>
+                      {t.author ?? "משתמש"} · {formatDate(t.createdAt)}
+                    </span>
                   </p>
                 </div>
-                <span className="text-sm text-slate-500">💬 {t.replies}</span>
+                <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-slate-600 tabular-nums dark:text-slate-400" aria-label={`${t.replies} תגובות`}>
+                  <IconChat className="size-4" />
+                  {t.replies}
+                </span>
+                <IconChevronLeft className="size-5 shrink-0 text-slate-400" />
               </Link>
             </li>
           ))}
-          {rows.length === 0 && <li className="p-8 text-center text-slate-500">אין עדיין דיונים בנושא הזה. פתחו את הראשון!</li>}
+          {rows.length === 0 && (
+            <li className="flex flex-col items-center gap-3 p-10 text-center text-slate-600 dark:text-slate-400">
+              <IconChat className="size-8 text-slate-400" />
+              אין עדיין דיונים בנושא הזה.
+              <Link href="/community/new" className={buttonClass("primary")}>
+                פתחו את הדיון הראשון
+              </Link>
+            </li>
+          )}
         </ul>
       </Card>
     </>

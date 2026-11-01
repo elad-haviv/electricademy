@@ -16,16 +16,19 @@ export function PageBanner({
   children?: ReactNode;
 }) {
   return (
-    <header className="relative mb-8 grid overflow-hidden rounded-3xl bg-[#0d1a4a] text-white md:grid-cols-[1.2fr_1fr]">
-      <div className="relative z-10 flex flex-col justify-center gap-2 p-6 sm:p-10">
+    <header className="relative mb-8 grid overflow-hidden rounded-3xl bg-navy-900 text-white shadow-(--shadow-raised) md:grid-cols-[1.25fr_1fr]">
+      <div className="relative z-10 flex flex-col justify-center gap-3 p-6 sm:p-10">
         {eyebrow}
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>
-        {subtitle && <p className="max-w-xl text-brand-100">{subtitle}</p>}
+        <h1 className="text-3xl leading-tight font-extrabold tracking-tight sm:text-[2.5rem]">{title}</h1>
+        {subtitle && <p className="max-w-xl text-base leading-relaxed text-brand-100 sm:text-lg">{subtitle}</p>}
         {children}
       </div>
-      <div className="relative order-first aspect-[16/9] md:order-none md:aspect-auto md:min-h-64">
+      <div className="relative order-first aspect-[16/7] md:order-none md:aspect-auto md:min-h-64">
         <Image src={image} alt="" fill sizes="(min-width: 768px) 45vw, 100vw" className="object-cover" priority />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0d1a4a] via-transparent to-transparent md:bg-gradient-to-l md:from-[#0d1a4a] md:via-[#0d1a4a]/10" />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-navy-900 via-navy-900/10 to-transparent md:bg-gradient-to-l md:from-navy-900 md:via-navy-900/10"
+        />
       </div>
     </header>
   );

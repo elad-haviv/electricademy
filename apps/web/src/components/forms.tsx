@@ -1,16 +1,13 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useTransition } from "react";
-import { Button } from "@electricademy/ui";
+import { Button, IconCheckCircle, inputClass, labelClass } from "@electricademy/ui";
 import { createPost, createThread, joinWaitlist, toggleLessonComplete, type FormState } from "@/lib/actions";
 import { COMMUNITY_TAGS } from "@/lib/labels";
 
-const inputClass =
-  "w-full rounded-xl bg-white px-3 py-2 ring-1 ring-slate-300 outline-none focus:ring-2 focus:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700";
-
 function FormError({ state }: { state: FormState }) {
   return state?.error ? (
-    <p role="alert" className="text-sm font-medium text-rose-600">
+    <p role="alert" className="text-sm font-semibold text-rose-700 dark:text-rose-400">
       {state.error}
     </p>
   ) : null;
@@ -21,12 +18,12 @@ export function NewThreadForm({ lessonPath }: { lessonPath?: string }) {
   return (
     <form action={action} className="space-y-4">
       {lessonPath && <input type="hidden" name="lessonPath" value={lessonPath} />}
-      <label className="block text-sm">
-        <span className="mb-1 block font-medium">כותרת</span>
+      <label className="block">
+        <span className={labelClass}>כותרת</span>
         <input name="title" required minLength={5} maxLength={200} className={inputClass} />
       </label>
-      <label className="block text-sm">
-        <span className="mb-1 block font-medium">נושא</span>
+      <label className="block">
+        <span className={labelClass}>נושא</span>
         <select name="tag" className={inputClass} defaultValue="general">
           {Object.entries(COMMUNITY_TAGS).map(([value, label]) => (
             <option key={value} value={value}>
@@ -35,12 +32,14 @@ export function NewThreadForm({ lessonPath }: { lessonPath?: string }) {
           ))}
         </select>
       </label>
-      <label className="block text-sm">
-        <span className="mb-1 block font-medium">תוכן</span>
+      <label className="block">
+        <span className={labelClass}>תוכן</span>
         <textarea name="body" required minLength={10} rows={7} className={inputClass} />
       </label>
       <FormError state={state} />
-      <Button disabled={pending}>{pending ? "מפרסם…" : "פרסום"}</Button>
+      <Button disabled={pending} size="lg">
+        {pending ? "מפרסם…" : "פרסום הדיון"}
+      </Button>
     </form>
   );
 }
@@ -56,7 +55,7 @@ export function ReplyForm({ threadId }: { threadId: number }) {
       <input type="hidden" name="threadId" value={threadId} />
       <textarea name="body" required minLength={2} rows={4} className={inputClass} placeholder="כתבו תגובה…" aria-label="תגובה" />
       <FormError state={state} />
-      <Button disabled={pending}>{pending ? "שולח…" : "הגבה"}</Button>
+      <Button disabled={pending}>{pending ? "שולח…" : "שליחת תגובה"}</Button>
     </form>
   );
 }
@@ -65,8 +64,9 @@ export function WaitlistForm({ product }: { product: "license-exam" | "blue-grid
   const [state, action, pending] = useActionState(joinWaitlist, undefined);
   if (state?.ok) {
     return (
-      <p role="status" className="rounded-xl bg-emerald-50 p-4 font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200">
-        תודה! נעדכן אתכם ברגע שנפתח. ⚡
+      <p role="status" className="flex items-center gap-2 rounded-xl bg-emerald-50 p-4 font-medium text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-100">
+        <IconCheckCircle className="size-5 shrink-0 text-emerald-600" />
+        תודה! נעדכן אתכם ברגע שנפתח.
       </p>
     );
   }
@@ -88,9 +88,13 @@ export function LessonCompleteButton({ lessonPath, completed }: { lessonPath: st
     <Button
       variant={completed ? "secondary" : "primary"}
       disabled={pending}
+      aria-pressed={completed}
+      title={completed ? "לחיצה נוספת תבטל את הסימון" : undefined}
       onClick={() => startTransition(() => toggleLessonComplete(lessonPath, !completed))}
+      className={completed ? "text-emerald-800 ring-emerald-300 dark:text-emerald-200 dark:ring-emerald-800" : undefined}
     >
-      {completed ? "✓ השיעור הושלם (לביטול)" : "סימון השיעור כהושלם"}
+      <IconCheckCircle className="size-5" />
+      {completed ? "השיעור הושלם" : "סימון השיעור כהושלם"}
     </Button>
   );
 }

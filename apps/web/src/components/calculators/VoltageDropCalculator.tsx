@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { STANDARD_SECTIONS_MM2, voltageDrop, type ConductorMaterial } from "@electricademy/calc";
-import { Card } from "@electricademy/ui";
+import { Card, IconCalculator } from "@electricademy/ui";
 import { fmt, NumberField, ResultBox, SelectField } from "./Field";
 
 export function VoltageDropCalculator({ compact = false }: { compact?: boolean }) {
@@ -24,8 +24,13 @@ export function VoltageDropCalculator({ compact = false }: { compact?: boolean }
   }, [phases, voltage, current, length, section, material, pf]);
 
   return (
-    <Card className={compact ? "my-8" : undefined}>
-      {compact && <p className="mb-4 font-semibold">🧮 מחשבון מפל מתח</p>}
+    <Card className={compact ? "not-prose my-10" : undefined}>
+      {compact && (
+        <p className="mb-4 flex items-center gap-2 text-lg font-bold">
+          <IconCalculator className="size-5 text-brand-600" />
+          נסו בעצמכם: מחשבון מפל מתח
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <SelectField
           label="סוג מעגל"

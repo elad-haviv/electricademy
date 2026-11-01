@@ -23,9 +23,17 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="he" dir="rtl">
-      <body className="min-h-dvh font-sans">
+      <body className="flex min-h-dvh flex-col font-sans">
+        <a
+          href="#main"
+          className="sr-only z-50 rounded-xl bg-brand-600 px-4 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:start-4 focus:top-3"
+        >
+          דילוג לתוכן הראשי
+        </a>
         <SiteHeader />
-        <main className="mx-auto w-full max-w-6xl px-4 pt-6 pb-28 md:pb-16">{children}</main>
+        <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 pb-16 outline-none sm:pt-8">
+          {children}
+        </main>
         <SiteFooter />
         <BottomNav />
       </body>

@@ -1,80 +1,103 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Badge, buttonClass, Card, SectionHeading } from "@electricademy/ui";
+import {
+  Badge,
+  buttonClass,
+  Card,
+  IconArrowLeft,
+  IconChevronLeft,
+  IconFile,
+  IconGraduation,
+  IconHardHat,
+  IconLandmark,
+  IconRuler,
+  IconSprout,
+  SectionHeading,
+} from "@electricademy/ui";
 import { listArticles, TRACKS } from "@electricademy/content";
 import { formatDate } from "@/lib/labels";
 
+/** "Where do I start?" Each audience goes straight to the place that serves it. */
 const AUDIENCES = [
-  { icon: "🌱", title: "מתחילים מאפס", text: "בלי ידע מוקדם: מתח, זרם והתנגדות, צעד אחר צעד." },
-  { icon: "🎓", title: "בגרות ומה\"ט", text: "הכנה לבחינות משרד החינוך ומה\"ט, עם תרגול ממוקד." },
-  { icon: "🏛️", title: "סטודנטים לתואר", text: "מערכות הספק, מכונות והגנות ברמה האקדמית." },
-  { icon: "📜", title: "בחינות רישוי", text: "תקנות, הגנות והארקות, ובקרוב גם סימולטור בחינות." },
-  { icon: "🦺", title: "חשמלאים בשטח", text: "מחשבונים וכלים לעבודה היומיומית." },
-  { icon: "📐", title: "מתכננים ומהנדסים", text: "חישובים מתקדמים, חידושים ונישות מקצועיות." },
+  { Icon: IconSprout, title: "מתחילים מאפס", text: "בלי ידע מוקדם: מתח, זרם והתנגדות, צעד אחר צעד.", href: "/tracks/basics" },
+  { Icon: IconGraduation, title: "בגרות ומה\"ט", text: "הכנה לבחינות משרד החינוך ומה\"ט, עם תרגול ממוקד.", href: "/tracks/bagrut" },
+  { Icon: IconLandmark, title: "סטודנטים לתואר", text: "מערכות הספק, מכונות והגנות ברמה האקדמית.", href: "/tracks/academic" },
+  { Icon: IconFile, title: "בחינות רישוי", text: "תקנות, הגנות והארקות, ובקרוב גם סימולטור בחינות.", href: "/tracks/licensing" },
+  { Icon: IconHardHat, title: "חשמלאים בשטח", text: "מחשבונים וכלים לעבודה היומיומית.", href: "/tools" },
+  { Icon: IconRuler, title: "מתכננים ומהנדסים", text: "חישובים מתקדמים, חידושים ונישות מקצועיות.", href: "/tracks/professionals" },
 ];
 
 export default function HomePage() {
   const articles = listArticles().slice(0, 3);
   return (
     <div className="space-y-16">
-      <section className="relative isolate overflow-hidden rounded-3xl bg-brand-950 px-6 py-16 text-white sm:px-12 sm:py-24">
+      <section className="relative isolate overflow-hidden rounded-3xl bg-brand-950 px-6 py-14 text-white shadow-(--shadow-raised) sm:px-12 sm:py-24">
         <Image
           src="/images/hero-substation.webp"
           alt=""
           fill
           priority
           sizes="(min-width: 1152px) 1152px, 100vw"
-          className="-z-20 object-cover object-left"
+          className="-z-20 object-cover object-left opacity-50 sm:opacity-100"
         />
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-l from-brand-950 via-brand-950/80 to-brand-950/10" />
-        <p dir="ltr" className="mb-3 text-end font-mono text-sm tracking-widest text-spark-300 uppercase">
+        <p dir="ltr" className="mb-4 text-end font-mono text-xs font-semibold tracking-[0.2em] text-spark-300 uppercase sm:text-sm">
           From Zero to Hero
         </p>
-        <h1 className="max-w-2xl text-4xl font-extrabold tracking-tight drop-shadow-lg sm:text-5xl">
+        <h1 className="max-w-2xl text-[2.25rem] leading-[1.15] font-extrabold tracking-tight drop-shadow-lg sm:text-6xl">
           לומדים חשמל, מהנורה הראשונה ועד תחנת הכוח
         </h1>
-        <p className="mt-4 max-w-xl text-lg text-brand-100">
+        <p className="mt-5 max-w-xl text-lg leading-relaxed text-brand-100 sm:text-xl">
           מסלולי לימוד, סימולטורים אינטראקטיביים, מחשבונים מקצועיים וקהילה של לומדים ואנשי מקצוע, במקום אחד.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/tracks/basics" className={buttonClass("primary", "bg-spark-400 text-slate-900 hover:bg-spark-300")}>
-            מתחילים מאפס
+          <Link href="/tracks/basics" className={buttonClass("spark", undefined, "lg")}>
+            מתחילים מאפס, בחינם
+            <IconArrowLeft className="size-5" />
           </Link>
-          <Link href="/tracks" className={buttonClass("secondary", "bg-white/10 text-white ring-white/30 backdrop-blur hover:bg-white/20")}>
+          <Link href="/tracks" className={buttonClass("onDark", undefined, "lg")}>
             לכל המסלולים
           </Link>
         </div>
       </section>
 
       <section>
-        <SectionHeading title="למי זה מתאים?" subtitle="בחרו נקודת פתיחה. אפשר להתקדם הלאה בכל שלב." />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {AUDIENCES.map((a) => (
-            <Card key={a.title}>
-              <p className="text-2xl" aria-hidden>
-                {a.icon}
-              </p>
-              <h3 className="mt-2 font-bold">{a.title}</h3>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{a.text}</p>
-            </Card>
+        <SectionHeading title="מאיפה מתחילים?" subtitle="בחרו את מה שמתאר אתכם הכי טוב. אפשר להתקדם הלאה בכל שלב." />
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {AUDIENCES.map(({ Icon, title, text, href }) => (
+            <li key={title}>
+              <Link href={href} className="group block h-full rounded-(--radius-card) outline-none">
+                <Card interactive className="flex h-full items-center gap-4 p-4 sm:p-5">
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-brand-600 group-hover:text-white dark:bg-brand-950 dark:text-brand-300">
+                    <Icon className="size-6" />
+                  </span>
+                  <span className="flex-1">
+                    <span className="block font-bold group-hover:text-brand-700 dark:group-hover:text-brand-300">{title}</span>
+                    <span className="mt-0.5 block text-sm text-slate-600 dark:text-slate-400">{text}</span>
+                  </span>
+                  <IconChevronLeft className="size-5 shrink-0 text-slate-400 transition group-hover:-translate-x-0.5 group-hover:text-brand-600" />
+                </Card>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </section>
 
       <section>
         <SectionHeading
           title="מסלולי לימוד"
           action={
-            <Link href="/tracks" className={buttonClass("ghost")}>
-              הכל ←
+            <Link href="/tracks" className={buttonClass("ghost", "text-brand-700 dark:text-brand-300")}>
+              לכל המסלולים
+              <IconArrowLeft className="size-4" />
             </Link>
           }
         />
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TRACKS.slice(0, 6).map((t) => (
-            <Link key={t.slug} href={`/tracks/${t.slug}`} className="group">
-              <Card className="h-full overflow-hidden p-0 transition group-hover:-translate-y-0.5 group-hover:shadow-lg group-hover:ring-brand-400">
-                <div className="relative aspect-[4/3] overflow-hidden bg-[#0d1a4a]">
+            <Link key={t.slug} href={`/tracks/${t.slug}`} className="group rounded-(--radius-card) outline-none">
+              <Card interactive className="h-full overflow-hidden p-0 sm:p-0">
+                <div className="relative aspect-[16/10] overflow-hidden bg-navy-900">
                   <Image
                     src={t.image}
                     alt=""
@@ -87,9 +110,9 @@ export default function HomePage() {
                   </span>
                 </div>
                 <div className="p-5">
-                  <h3 className="text-lg font-bold">{t.title}</h3>
-                  <p className="text-xs font-medium text-brand-700 dark:text-brand-300">{t.audience}</p>
-                  <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{t.description}</p>
+                  <p className="text-xs font-semibold text-brand-700 dark:text-brand-300">{t.audience}</p>
+                  <h3 className="mt-0.5 text-lg font-extrabold group-hover:text-brand-700 dark:group-hover:text-brand-300">{t.title}</h3>
+                  <p className="mt-1.5 text-sm text-slate-600 dark:text-slate-400">{t.description}</p>
                 </div>
               </Card>
             </Link>
@@ -131,17 +154,18 @@ export default function HomePage() {
           <SectionHeading
             title="מאמרים וחדשות"
             action={
-              <Link href="/articles" className={buttonClass("ghost")}>
-                הכל ←
+              <Link href="/articles" className={buttonClass("ghost", "text-brand-700 dark:text-brand-300")}>
+                לכל המאמרים
+                <IconArrowLeft className="size-4" />
               </Link>
             }
           />
           <div className="grid gap-4 md:grid-cols-3">
             {articles.map((a) => (
-              <Link key={a.slug} href={`/articles/${a.slug}`}>
-                <Card className="h-full transition hover:ring-brand-400">
-                  <p className="text-xs text-slate-500">{formatDate(a.date)}</p>
-                  <h3 className="mt-1 font-bold">{a.title}</h3>
+              <Link key={a.slug} href={`/articles/${a.slug}`} className="group rounded-(--radius-card) outline-none">
+                <Card interactive className="h-full">
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{formatDate(a.date)}</p>
+                  <h3 className="mt-1 leading-snug font-bold group-hover:text-brand-700 dark:group-hover:text-brand-300">{a.title}</h3>
                   <p className="mt-2 line-clamp-3 text-sm text-slate-600 dark:text-slate-400">{a.summary}</p>
                 </Card>
               </Link>
@@ -173,7 +197,7 @@ function FeatureCard({
   className?: string;
 }) {
   return (
-    <Link href={href} className={`group relative isolate flex min-h-72 overflow-hidden rounded-3xl bg-[#0d1a4a] text-white ${className ?? ""}`}>
+    <Link href={href} className={`group relative isolate flex min-h-72 overflow-hidden rounded-3xl bg-navy-900 text-white shadow-(--shadow-card) transition hover:shadow-(--shadow-raised) ${className ?? ""}`}>
       {contain && (
         // Wide card (desktop): show the whole render in a 4:3 box at the end side, fading into the card.
         <div className="absolute inset-y-0 end-0 -z-20 hidden aspect-[4/3] [mask-image:linear-gradient(to_left,transparent,black_30%)] md:block">
@@ -191,14 +215,17 @@ function FeatureCard({
         alt=""
         fill
         sizes="(min-width: 768px) 50vw, 100vw"
-        className={`-z-20 object-cover object-left opacity-60 transition duration-500 group-hover:scale-105 sm:opacity-100 ${contain ? "md:hidden" : ""}`}
+        className={`-z-20 object-cover object-left opacity-40 transition duration-500 group-hover:scale-105 sm:opacity-100 ${contain ? "md:hidden" : ""}`}
       />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-l from-[#0d1a4a] via-[#0d1a4a]/85 to-transparent" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-l from-navy-900 via-navy-900/85 to-transparent" />
       <div className="flex max-w-sm flex-col justify-center gap-2 p-6 sm:p-8">
         <span>{badge}</span>
-        <h3 className="text-2xl font-bold">{title}</h3>
+        <h3 className="text-2xl font-extrabold">{title}</h3>
         <p className="text-brand-100">{text}</p>
-        <span className={buttonClass("primary", "mt-3 self-start bg-spark-400 text-slate-900 group-hover:bg-spark-300")}>{cta}</span>
+        <span className={buttonClass("spark", "mt-3 self-start group-hover:bg-spark-300")}>
+          {cta}
+          <IconArrowLeft className="size-4 transition group-hover:-translate-x-0.5" />
+        </span>
       </div>
     </Link>
   );

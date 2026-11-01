@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { cn, inputClass, labelClass } from "@electricademy/ui";
 
 export function NumberField({
   label,
@@ -18,20 +19,24 @@ export function NumberField({
   min?: number;
 }) {
   return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">{label}</span>
-      <span className="flex items-center rounded-xl bg-white ring-1 ring-slate-300 focus-within:ring-2 focus-within:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700">
+    <label className="block">
+      <span className={labelClass}>{label}</span>
+      <span className="flex min-h-11 items-center rounded-xl bg-white ring-1 ring-slate-300 transition hover:ring-slate-400 focus-within:ring-2 focus-within:ring-brand-500 dark:bg-slate-900 dark:ring-slate-700">
         <input
           type="number"
           inputMode="decimal"
           dir="ltr"
-          className="w-full bg-transparent px-3 py-2 text-start outline-none"
+          className="w-full bg-transparent px-3.5 py-2.5 text-start text-base tabular-nums outline-none focus-visible:outline-none"
           value={Number.isFinite(value) ? value : ""}
           step={step}
           min={min}
           onChange={(e) => onChange(e.target.valueAsNumber)}
         />
-        {unit && <span className="px-3 text-slate-500" dir="ltr">{unit}</span>}
+        {unit && (
+          <span className="me-1 rounded-lg bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300" dir="ltr">
+            {unit}
+          </span>
+        )}
       </span>
     </label>
   );
@@ -49,10 +54,10 @@ export function SelectField<T extends string | number>({
   onChange: (v: T) => void;
 }) {
   return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">{label}</span>
+    <label className="block">
+      <span className={labelClass}>{label}</span>
       <select
-        className="w-full rounded-xl bg-white px-3 py-2 ring-1 ring-slate-300 outline-none focus:ring-2 focus:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700"
+        className={inputClass}
         value={String(value)}
         onChange={(e) => {
           const opt = options.find((o) => String(o.value) === e.target.value);
@@ -76,7 +81,7 @@ export function ResultBox({ children, tone = "ok" }: { children: ReactNode; tone
     error: "bg-rose-50 ring-rose-200 dark:bg-rose-950/40 dark:ring-rose-900",
   }[tone];
   return (
-    <div role="status" aria-live="polite" className={`mt-4 rounded-xl p-4 ring-1 ${toneClass}`}>
+    <div role="status" aria-live="polite" className={cn("mt-6 rounded-xl p-4 ring-1 sm:p-5 [&_strong]:text-xl [&_strong]:font-extrabold [&_strong]:tabular-nums", toneClass)}>
       {children}
     </div>
   );

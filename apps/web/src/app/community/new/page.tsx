@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { allLessonPaths } from "@electricademy/content";
-import { Card } from "@electricademy/ui";
+import { Card, SectionHeading } from "@electricademy/ui";
+import { Crumbs } from "@/components/Crumbs";
 import { NewThreadForm } from "@/components/forms";
 import { getSessionUser } from "@/lib/session";
 
@@ -17,9 +18,14 @@ export default async function NewThreadPage({ searchParams }: { searchParams: Pr
   const lessonPath = lesson && allLessonPaths().includes(lesson) ? lesson : undefined;
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-3xl font-extrabold">דיון חדש</h1>
+      <Crumbs items={[{ label: "קהילה", href: "/community" }, { label: "דיון חדש" }]} />
+      <SectionHeading as="h1" title="דיון חדש" subtitle="כותרת ברורה ופירוט של מה שכבר ניסיתם יעזרו לקהילה לענות מהר יותר." />
       <Card>
-        {lessonPath && <p className="mb-4 text-sm text-slate-500">הדיון יקושר לשיעור: {lessonPath}</p>}
+        {lessonPath && (
+          <p className="mb-5 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-900 dark:bg-brand-950/50 dark:text-brand-100">
+            הדיון יקושר לשיעור: <span dir="ltr">{lessonPath}</span>
+          </p>
+        )}
         <NewThreadForm lessonPath={lessonPath} />
       </Card>
     </div>

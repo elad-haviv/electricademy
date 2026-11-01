@@ -1,42 +1,36 @@
 import Link from "next/link";
-import { buttonClass } from "@electricademy/ui";
+import { buttonClass, IconLogOut, IconUser } from "@electricademy/ui";
 import { auth } from "@/auth";
 import { signOutAction } from "@/lib/actions";
-import { NAV_ITEMS } from "./nav";
 import { Logo } from "./Logo";
+import { NavLinks } from "./NavLinks";
 
 export async function SiteHeader() {
   const session = await auth().catch(() => null);
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
+    <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/75 dark:border-slate-800 dark:bg-slate-950/90 dark:supports-[backdrop-filter]:bg-slate-950/75">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 lg:gap-8">
         <Logo />
-        <nav className="hidden flex-1 items-center gap-1 md:flex" aria-label="ניווט ראשי">
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className={buttonClass("ghost")}>
-              {item.label}
-            </Link>
-          ))}
-          <Link href="/products" className={buttonClass("ghost")}>
-            מוצרים
-          </Link>
-        </nav>
-        <div className="ms-auto flex items-center gap-2">
+        <NavLinks />
+        <div className="ms-auto flex items-center gap-1.5">
           {session?.user ? (
             <>
-              <Link href="/dashboard" className={buttonClass("secondary")}>
+              <Link href="/dashboard" className={buttonClass("secondary", undefined, "sm")}>
+                <IconUser className="size-4" />
                 האזור שלי
               </Link>
-              <form action={signOutAction} className="hidden sm:block">
-                <button className={buttonClass("ghost")}>יציאה</button>
+              <form action={signOutAction}>
+                <button className={buttonClass("ghost", "px-2.5", "sm")} aria-label="יציאה מהחשבון" title="יציאה">
+                  <IconLogOut className="size-4.5" />
+                </button>
               </form>
             </>
           ) : (
             <>
-              <Link href="/pricing" className={buttonClass("ghost", "hidden sm:inline-flex")}>
+              <Link href="/pricing" className={buttonClass("ghost", "hidden sm:inline-flex", "sm")}>
                 מחירים
               </Link>
-              <Link href="/login" className={buttonClass("primary")}>
+              <Link href="/login" className={buttonClass("primary", undefined, "sm")}>
                 התחברות
               </Link>
             </>
