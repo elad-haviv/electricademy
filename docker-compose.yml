@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: electricademy
+      POSTGRES_PASSWORD: electricademy
+      POSTGRES_DB: electricademy
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  web:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    environment:
+      DATABASE_URL: postgres://electricademy:electricademy@db:5432/electricademy
+      AUTH_SECRET: ${AUTH_SECRET:-dev-secret-change-me}
+      AUTH_TRUST_HOST: "true"
+    ports:
+      - "3000:3000"
+    depends_on: [db]
+volumes:
+  pgdata:
