@@ -51,11 +51,10 @@ Schema: `packages/db/src/schema.ts`. Migrations: `packages/db/migrations` (`pnpm
 
 ## Simulators
 - The existing simulators stay **standalone in their own repos** and are deployed separately (hv-edu: Vite + three.js; genset-edu: Next 14 + R3F; agl-edu and protect-edu: static HTML).
-- The hub lists them through the `simulator` table (URL, level, topics, tier) and links to them. When `embeddable` is true, they can be opened in an iframe.
-- **Optional integration** (phase 5) through `@electricademy/sim-sdk`:
-  - The simulator calls `createSimClient(slug, { hubOrigin }).progress(module, pct)`. When it runs standalone, this does nothing.
-  - The hub calls `listenToSimulators(allowedOrigins, handler)` and records events in `sim_session`.
-  - The hub sends a short-lived signed token (`session` message) so the simulator can read the user and plan.
+- The `simulator` table is the registry (URL, level, topics, tier, `embeddable`). `/simulators/[slug]` opens an embeddable simulator in an iframe inside the site layout; Pro simulators show the paywall. None of the four labs sends `X-Frame-Options` or `frame-ancestors`, so all are embeddable.
+- **Hub side (implemented):** `components/SimFrame.tsx` listens with `listenToSimulators([simulator origin])`. On `ready` it calls the `issueSimSession` server action and replies with `sendSession` (user, plan, signed token). `progress` and `completed` go to the `recordSimEvent` server action, which writes `sim_session` for signed-in users: only progress that beats the best recorded value is stored, and the first `completed` per module awards 20 XP. Every visit is logged as `opened`, so the dashboard ("המעבדות שלי") shows labs even before they report progress.
+- **Tokens:** `@electricademy/auth/sim-token` (server-only) signs `{ sub, name, plan, sim, exp }` with HMAC-SHA256 under `AUTH_SECRET`, valid 15 minutes and bound to one simulator. Simulators verify with `POST /api/sim/verify`; CORS is open only to the registered simulator origins.
+- **Simulator side (to do per lab repo):** see [SIMULATOR_INTEGRATION.md](SIMULATOR_INTEGRATION.md).
 - New simulators (license-exam) live in the monorepo under `apps/` and reuse `ui`, `db` and `auth`.
 
 ## Deployment (Coolify)

@@ -19,6 +19,7 @@ const simulatorRows: (typeof schema.simulators.$inferInsert)[] = [
     level: "professional",
     topics: ["medium-voltage", "switchgear", "safety"],
     tier: "free",
+    embeddable: true,
     sortOrder: 1,
   },
   {
@@ -30,6 +31,7 @@ const simulatorRows: (typeof schema.simulators.$inferInsert)[] = [
     level: "technician",
     topics: ["generators", "power-systems", "safety"],
     tier: "free",
+    embeddable: true,
     sortOrder: 2,
   },
   {
@@ -41,6 +43,7 @@ const simulatorRows: (typeof schema.simulators.$inferInsert)[] = [
     level: "licensing",
     topics: ["protection", "earthing", "regulations"],
     tier: "free",
+    embeddable: true,
     sortOrder: 3,
   },
   {
@@ -52,6 +55,7 @@ const simulatorRows: (typeof schema.simulators.$inferInsert)[] = [
     level: "professional",
     topics: ["lighting", "series-circuits", "installations"],
     tier: "pro",
+    embeddable: true,
     sortOrder: 4,
   },
 ];
@@ -114,6 +118,8 @@ await db.insert(schema.simulators).values(simulatorRows).onConflictDoUpdate({
     description: sql`excluded.description`,
     level: sql`excluded.level`,
     topics: sql`excluded.topics`,
+    // All four labs send no X-Frame-Options / frame-ancestors, so the hub can embed them.
+    embeddable: sql`excluded.embeddable`,
     sortOrder: sql`excluded.sort_order`,
   },
 });

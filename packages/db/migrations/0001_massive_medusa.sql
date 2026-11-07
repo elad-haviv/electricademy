@@ -1,0 +1,1 @@
+CREATE INDEX "sim_session_user_sim_idx" ON "sim_session" USING btree ("user_id","simulator_slug");

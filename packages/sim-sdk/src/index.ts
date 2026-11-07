@@ -47,6 +47,29 @@ export function createSimClient(simulator: string, opts: { hubOrigin: string; ta
 }
 
 /**
+ * Used inside a simulator: receive the hub's session (who is signed in, their plan, and a
+ * short-lived token the simulator can verify at `<hub>/api/sim/verify`). Messages from any
+ * origin other than `hubOrigin` are ignored. Returns an unsubscribe function.
+ */
+export function onHubSession(
+  hubOrigin: string,
+  onSession: (session: Omit<HubToSimMessage, "protocol" | "type">) => void,
+  target: Pick<Window, "addEventListener" | "removeEventListener"> = window,
+): () => void {
+  const handler = (event: MessageEvent) => {
+    if (event.origin !== hubOrigin || !isSimMessage(event.data) || event.data.type !== "session") return;
+    onSession({ user: event.data.user, token: event.data.token });
+  };
+  target.addEventListener("message", handler as EventListener);
+  return () => target.removeEventListener("message", handler as EventListener);
+}
+
+/** Used by the hub: send the session to an embedded simulator (only to its exact origin). */
+export function sendSession(target: Poster, simulatorOrigin: string, session: Omit<HubToSimMessage, "protocol" | "type">): void {
+  target.postMessage({ protocol: PROTOCOL, type: "session", ...session } satisfies HubToSimMessage, simulatorOrigin);
+}
+
+/**
  * Used by the hub. Accepts messages only from allow-listed simulator origins.
  * Returns an unsubscribe function.
  */

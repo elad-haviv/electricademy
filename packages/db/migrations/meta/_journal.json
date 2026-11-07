@@ -8,6 +8,13 @@
       "when": 1793555533078,
       "tag": "0000_swift_gateway",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794075280502,
+      "tag": "0001_massive_medusa",
+      "breakpoints": true
     }
   ]
 }

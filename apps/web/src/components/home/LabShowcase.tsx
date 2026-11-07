@@ -182,7 +182,7 @@ function SimulatorsPanel() {
             </span>
             <h3 className="mt-0.5 text-2xl font-black text-white">{sim.title}</h3>
           </div>
-          <Link href="/simulators" className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400">
+          <Link href={`/simulators/${sim.slug}`} className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400">
             <Play className="size-3.5 fill-slate-950" aria-hidden />
             לפתיחת הסימולטור
           </Link>

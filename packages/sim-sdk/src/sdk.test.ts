@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createSimClient, isSimMessage, listenToSimulators, PROTOCOL } from "./index";
+import { createSimClient, isSimMessage, listenToSimulators, onHubSession, PROTOCOL, sendSession } from "./index";
 
 describe("sim-sdk", () => {
   it("posts protocol messages to the hub origin", () => {
@@ -32,5 +32,30 @@ describe("sim-sdk", () => {
     listeners[0]!({ origin: "https://sim.test", data: msg } as MessageEvent);
     expect(onMessage).toHaveBeenCalledTimes(1);
     expect(isSimMessage(msg)).toBe(true);
+  });
+
+  it("sends the session only to the simulator origin", () => {
+    const postMessage = vi.fn();
+    sendSession({ postMessage }, "https://sim.test", { user: { id: "u1", name: "Dana", plan: "pro" }, token: "t" });
+    expect(postMessage).toHaveBeenCalledWith(
+      { protocol: PROTOCOL, type: "session", user: { id: "u1", name: "Dana", plan: "pro" }, token: "t" },
+      "https://sim.test",
+    );
+  });
+
+  it("simulators accept the session only from the hub origin", () => {
+    const listeners: ((e: MessageEvent) => void)[] = [];
+    const target = {
+      addEventListener: (_: string, h: EventListener) => listeners.push(h as (e: MessageEvent) => void),
+      removeEventListener: vi.fn(),
+    };
+    const onSession = vi.fn();
+    onHubSession("https://hub.test", onSession, target);
+    const msg = { protocol: PROTOCOL, type: "session", user: null, token: null };
+    listeners[0]!({ origin: "https://evil.test", data: msg } as MessageEvent);
+    listeners[0]!({ origin: "https://hub.test", data: { ...msg, type: "ready" } } as MessageEvent);
+    listeners[0]!({ origin: "https://hub.test", data: msg } as MessageEvent);
+    expect(onSession).toHaveBeenCalledTimes(1);
+    expect(onSession).toHaveBeenCalledWith({ user: null, token: null });
   });
 });

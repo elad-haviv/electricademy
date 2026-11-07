@@ -233,11 +233,16 @@ export const simulators = pgTable("simulator", {
 });
 
 /** Progress reported by simulators through @electricademy/sim-sdk. */
-export const simSessions = pgTable("sim_session", {
-  id: serial("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  simulatorSlug: text("simulator_slug").notNull().references(() => simulators.slug, { onDelete: "cascade" }),
-  event: text("event").notNull(),
-  payload: jsonb("payload").$type<Record<string, unknown>>(),
-  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
-});
+export const simSessions = pgTable(
+  "sim_session",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    simulatorSlug: text("simulator_slug").notNull().references(() => simulators.slug, { onDelete: "cascade" }),
+    /** "opened" | "ready" | "progress" | "completed" */
+    event: text("event").notNull(),
+    payload: jsonb("payload").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [index("sim_session_user_sim_idx").on(t.userId, t.simulatorSlug)],
+);
