@@ -6,6 +6,8 @@ import {
   power,
   resistivityAt,
   sizeCable,
+  temperatureFactor,
+  groupingFactor,
   transformerShortCircuit,
   voltageDrop,
 } from "./index";
@@ -86,6 +88,26 @@ describe("sizeCable", () => {
     const r = sizeCable({ phases: 3, voltage: 400, current: 30, length: 5, maxDropPercent: 5, deratingFactor: 0.7 });
     // 32·0.7 = 22.4 < 30; 41·0.7 = 28.7 < 30; 57·0.7 = 39.9 ≥ 30 → 10 mm²
     expect(r?.section).toBe(10);
+  });
+
+  it("uses the installation method table", () => {
+    // 3 loaded, 38 A: method C → 6 mm² (41 A); A1 → 10 mm² (42 A, since 6 mm² is only 31 A)
+    expect(sizeCable({ phases: 3, voltage: 400, current: 38, length: 5, maxDropPercent: 5, method: "C" })?.section).toBe(6);
+    expect(sizeCable({ phases: 3, voltage: 400, current: 38, length: 5, maxDropPercent: 5, method: "A1" })?.section).toBe(10);
+  });
+
+  it("applies temperature and grouping factors", () => {
+    const r = sizeCable({ phases: 3, voltage: 400, current: 30, length: 5, maxDropPercent: 5, ambientTemperature: 40, groupedCircuits: 3 });
+    // 0.87 · 0.70 = 0.609; 6 mm²: 41·0.609 = 25 < 30; 10 mm²: 57·0.609 = 34.7 ≥ 30
+    expect(r?.factors.total).toBeCloseTo(0.609, 3);
+    expect(r?.section).toBe(10);
+  });
+
+  it("uses ground reference temperature for buried cables", () => {
+    expect(temperatureFactor("D1", 20)).toBe(1);
+    expect(temperatureFactor("C", 20)).toBe(1.12);
+    expect(temperatureFactor("C", 33)).toBe(0.94);
+    expect(groupingFactor(10)).toBe(0.45);
   });
 
   it("returns null when nothing fits", () => {

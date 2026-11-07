@@ -1,5 +1,4 @@
 import {
-  AMPACITY_CU_PVC_METHOD_C,
   RESISTIVITY_20C,
   STANDARD_SECTIONS_MM2,
   TEMP_COEFFICIENT,
@@ -8,6 +7,13 @@ import {
 } from "./constants";
 import type { Phases } from "./basic";
 import { assertPositive } from "./validate";
+import {
+  AMPACITY_CU_PVC,
+  groupingFactor,
+  referenceTemperature,
+  temperatureFactor,
+  type InstallationMethod,
+} from "./installation";
 
 /** Conductor resistivity (Ω·mm²/m) corrected to the given temperature. */
 export function resistivityAt(material: ConductorMaterial, temperatureC = 20): number {
@@ -58,43 +64,60 @@ export function voltageDrop(input: VoltageDropInput) {
 export interface CableSizingInput extends Omit<VoltageDropInput, "section"> {
   /** Maximum allowed voltage drop (%). */
   maxDropPercent: number;
-  /** Factor applied to the table ampacity (ambient, grouping, etc.). Defaults to 1. */
+  /** Reference installation method (IEC 60364-5-52). Defaults to "C". */
+  method?: InstallationMethod;
+  /** Ambient air (or ground, for D1/D2) temperature (°C). Defaults to the method's reference temperature. */
+  ambientTemperature?: number;
+  /** Number of circuits bunched together (grouping). Defaults to 1. */
+  groupedCircuits?: number;
+  /** Additional factor applied to the table ampacity (e.g. soil resistivity). Defaults to 1. */
   deratingFactor?: number;
 }
 
 export interface CableSizingResult {
   section: StandardSection;
+  /** Table ampacity of the chosen section before correction (A). */
+  tableAmpacity: number;
+  /** Ampacity after all correction factors (A). */
   ampacity: number;
   dropPercent: number;
   governedBy: "ampacity" | "voltageDrop";
+  factors: { temperature: number; grouping: number; extra: number; total: number };
 }
 
 /**
- * Smallest standard copper section that satisfies both the (derated) ampacity of
- * reference method C and the voltage-drop limit. Returns null if none fits.
+ * Smallest standard copper section that satisfies both the corrected ampacity of
+ * the chosen reference installation method and the voltage-drop limit.
+ * Iz = Iz,table · k_temp · k_group · k_extra. Returns null if none fits.
  */
 export function sizeCable(input: CableSizingInput): CableSizingResult | null {
   if ((input.material ?? "copper") !== "copper") {
     throw new Error("Cable sizing table is currently available for copper only");
   }
   assertPositive(input.maxDropPercent, "maxDropPercent");
-  const derating = input.deratingFactor ?? 1;
-  assertPositive(derating, "deratingFactor");
+  const method = input.method ?? "C";
+  const extra = input.deratingFactor ?? 1;
+  assertPositive(extra, "deratingFactor");
+  const temperature = temperatureFactor(method, input.ambientTemperature ?? referenceTemperature(method));
+  const grouping = groupingFactor(input.groupedCircuits ?? 1);
+  const total = temperature * grouping * extra;
   const loaded: 2 | 3 = input.phases === 3 ? 3 : 2;
-  const table = AMPACITY_CU_PVC_METHOD_C[loaded];
+  const table = AMPACITY_CU_PVC[method][loaded];
 
   let ampacityOnly: StandardSection | null = null;
   for (const section of STANDARD_SECTIONS_MM2) {
-    const ampacity = table[section] * derating;
+    const ampacity = table[section] * total;
     if (ampacity < input.current) continue;
     ampacityOnly ??= section;
     const { percent } = voltageDrop({ ...input, section });
     if (percent <= input.maxDropPercent) {
       return {
         section,
+        tableAmpacity: table[section],
         ampacity,
         dropPercent: percent,
         governedBy: section === ampacityOnly ? "ampacity" : "voltageDrop",
+        factors: { temperature, grouping, extra, total },
       };
     }
   }
