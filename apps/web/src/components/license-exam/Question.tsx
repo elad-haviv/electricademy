@@ -1,5 +1,12 @@
+import Link from "next/link";
 import { Badge, cn } from "@electricademy/ui";
-import { EXAM_TOPICS, SCOPE_LABELS } from "@electricademy/content/license-exam";
+import {
+  ANSWER_BASIS_LABELS,
+  EXAM_TOPICS,
+  lawSectionHref,
+  SCOPE_LABELS,
+  type AnswerConfidence,
+} from "@electricademy/content/license-exam";
 import type { ClientFigure, ClientQuestion } from "@/lib/licenseExam";
 
 // The bank numbers its options 1-4; keep that so learners can match the PDF.
@@ -122,24 +129,100 @@ export function OptionList({
   );
 }
 
+const CONFIDENCE: Record<AnswerConfidence, { label: string; tone: "success" | "brand" | "pro" }> = {
+  high: { label: "ודאות גבוהה", tone: "success" },
+  medium: { label: "ודאות בינונית", tone: "brand" },
+  low: { label: "ודאות נמוכה", tone: "pro" },
+};
+
 /** Shown under a question once its answer may be revealed. */
 export function KeyNote({ q, picked }: { q: ClientQuestion; picked?: number | null }) {
-  if (!q.key) {
+  const k = q.key;
+  if (!k) {
     return (
       <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800">
-        למאגר הרשמי אין מפתח תשובות, ולשאלה הזו עוד לא הוספנו תשובה מאומתת. כדאי לבדוק מול התקנות.
+        למאגר הרשמי אין מפתח תשובות, ולשאלה הזו עוד אין תשובה אצלנו. כדאי לבדוק מול התקנות ולשאול בדיון.
       </p>
     );
   }
-  const right = picked === q.key.answer;
+  const right = picked === k.answer;
   return (
-    <div role="status" className="space-y-1 rounded-xl bg-slate-50 p-3 text-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-      {picked != null && <p className="font-bold">{right ? "✅ נכון!" : "❌ לא נכון."}</p>}
-      <p>
-        התשובה הנכונה: <strong>{OPTION_LABELS[q.key.answer - 1]}</strong>
-      </p>
-      {q.key.explanation && <p>{q.key.explanation}</p>}
-      {q.key.source && <p className="text-slate-500 dark:text-slate-400">מקור: {q.key.source}</p>}
+    <div role="status" className="space-y-3 rounded-xl bg-slate-50 p-4 text-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+      <div className="flex flex-wrap items-center gap-2">
+        {picked != null && <strong>{right ? "✅ נכון!" : "❌ לא נכון."}</strong>}
+        <span>
+          התשובה: <strong>{OPTION_LABELS[k.answer - 1]}</strong>
+        </span>
+        {k.basis?.map((b) => (
+          <Badge key={b}>{ANSWER_BASIS_LABELS[b]}</Badge>
+        ))}
+        {k.confidence && <Badge tone={CONFIDENCE[k.confidence].tone}>{CONFIDENCE[k.confidence].label}</Badge>}
+      </div>
+
+      {k.explanation && <p className="leading-relaxed">{k.explanation}</p>}
+
+      {k.calculation && (
+        <div>
+          <p className="mb-1 font-semibold">חישוב</p>
+          <pre className="font-sans whitespace-pre-wrap rounded-lg bg-white p-3 leading-relaxed ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800" dir="auto">
+            {k.calculation}
+          </pre>
+        </div>
+      )}
+
+      {k.references && k.references.length > 0 && (
+        <div>
+          <p className="mb-1 font-semibold">מקורות</p>
+          <ul className="space-y-2">
+            {k.references.map((r, i) => {
+              const href = lawSectionHref(r);
+              const label = `${r.title}${r.section ? `, סעיף ${r.section}` : ""}`;
+              return (
+                <li key={i}>
+                  {href ? (
+                    <Link href={href} className="font-semibold text-brand-700 underline dark:text-brand-300">
+                      {label}
+                    </Link>
+                  ) : (
+                    <span className="font-semibold">{label}</span>
+                  )}
+                  {r.quote && (
+                    <blockquote className="mt-1 border-s-4 border-slate-300 ps-3 text-slate-700 dark:border-slate-700 dark:text-slate-300">
+                      &quot;{r.quote}&quot;
+                      {r.quoteUnverified && <span className="ms-1 text-xs text-amber-700 dark:text-amber-400">(לא נמצא מילה במילה בנוסח שבאתר)</span>}
+                    </blockquote>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {k.interpretation && (
+        <div>
+          <p className="mb-1 font-semibold">ועדת הפרשנות</p>
+          <p>{k.interpretation}</p>
+        </div>
+      )}
+
+      {k.source && <p className="text-slate-500 dark:text-slate-400">מקור: {k.source}</p>}
+      {k.note && <p className="text-amber-800 dark:text-amber-300">הערה: {k.note}</p>}
+
+      {k.status !== "verified" && (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          התשובה וההסבר נוסחו בעזרת בינה מלאכותית ועוד לא נבדקו על ידי חשמלאי מוסמך. מצאתם טעות? כתבו בדיון על השאלה.
+        </p>
+      )}
     </div>
+  );
+}
+
+/** Opens the question's discussion in a new tab, so an exam or practice session in progress is kept. */
+export function DiscussionLink({ n }: { n: number }) {
+  return (
+    <a href={`/license-exam/q/${n}#discussion`} target="_blank" rel="noopener" className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
+      💬 דיון על השאלה ↗
+    </a>
   );
 }

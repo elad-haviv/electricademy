@@ -6,7 +6,7 @@ import { EXAM_LEVELS, EXAM_TOPICS, type ExamLevel, type ExamTopic } from "@elect
 import type { ClientQuestion } from "@/lib/licenseExam";
 import { drawPractice } from "@/lib/licenseExamActions";
 import { BookmarkButton } from "./BookmarkButton";
-import { KeyNote, OptionList, QuestionMeta, QuestionStem, type OptionState } from "./Question";
+import { DiscussionLink, KeyNote, OptionList, QuestionMeta, QuestionStem, type OptionState } from "./Question";
 import { useExamStorage } from "./storage";
 
 const COUNTS = [10, 20, 50];
@@ -203,7 +203,12 @@ export function PracticeSession({
         </div>
         <QuestionStem q={q} />
         <OptionList q={q} stateOf={stateOf} onPick={(c) => setPicks((p) => ({ ...p, [q.n]: c }))} disabled={picked !== null} />
-        {picked !== null && <KeyNote q={q} picked={picked} />}
+        {picked !== null && (
+          <>
+            <KeyNote q={q} picked={picked} />
+            <DiscussionLink n={q.n} />
+          </>
+        )}
         <div className="flex justify-between gap-2">
           <span className="self-center text-sm text-slate-600 tabular-nums dark:text-slate-400">
             {index + 1} / {questions.length}

@@ -12,12 +12,16 @@ import {
   type ExamTopic,
 } from "@electricademy/content";
 import { BankQuestionCard } from "@/components/license-exam/BankQuestionCard";
+import { getCommentCounts } from "@/lib/examDiscussion";
 import { toClient } from "@/lib/licenseExam";
 
 export const metadata: Metadata = {
   title: "מאגר שאלות לבחינות רישוי בחשמל",
   description: "עיון וחיפוש בכל שאלות המאגר הרשמי לבחינות הרישוי בחשמל (טכנאים, הנדסאים ומהנדסים), לפי נושא ורישיון.",
 };
+
+// Comment counts come from the database.
+export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 20;
 
@@ -45,6 +49,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const page = Math.min(Math.max(Number(params.page) || 1, 1), pages);
   const shown = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((q) => toClient(q, true));
+  const comments = await getCommentCounts(shown.map((q) => q.n));
 
   const href = (p: Partial<Params>) => {
     const sp = new URLSearchParams();
@@ -110,7 +115,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
       <div className="space-y-4">
         {shown.map((q) => (
-          <BankQuestionCard key={q.n} q={q} />
+          <BankQuestionCard key={q.n} q={q} comments={comments[q.n]} />
         ))}
         {shown.length === 0 && <p className="text-slate-600 dark:text-slate-400">לא נמצאו שאלות. נסו חיפוש אחר.</p>}
       </div>

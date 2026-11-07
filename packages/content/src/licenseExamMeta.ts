@@ -62,14 +62,58 @@ export interface BankMeta {
   count: number;
 }
 
+export type AnswerBasis = "law" | "regulation" | "interpretation" | "standard" | "calculation" | "professional";
+
+export const ANSWER_BASIS_LABELS: Record<AnswerBasis, string> = {
+  law: "חוק החשמל",
+  regulation: "תקנות החשמל",
+  interpretation: "ועדת הפרשנות",
+  standard: "תקן",
+  calculation: "חישוב",
+  professional: "ידע מקצועי",
+};
+
+export interface AnswerReference {
+  /** Slug of a document under /law, when we carry it; null for other regulations / standards / decisions. */
+  law: string | null;
+  /** Full Hebrew name of the regulation, standard or decision. */
+  title: string;
+  /** Section in that document's own numbering, e.g. "12(ב)(1)". */
+  section?: string;
+  /** Verbatim excerpt. */
+  quote?: string;
+  /** Set when the quote could not be found word for word in our copy of the regulation. */
+  quoteUnverified?: boolean;
+}
+
+export type AnswerConfidence = "high" | "medium" | "low";
+
 export interface AnswerKeyEntry {
   /** 1-based index of the correct option. */
   answer: 1 | 2 | 3 | 4;
   /** The serial printed with the question when the answer was keyed, to catch renumbering. */
   serial: string | null;
   explanation?: string;
-  /** Where the answer comes from, e.g. a regulation section ("תקנות הארקות, תקנה 12"). */
+  basis?: AnswerBasis[];
+  references?: AnswerReference[];
+  /** Interpretation-committee decision the answer relies on, and what it says. */
+  interpretation?: string;
+  /** Worked calculation, step by step. */
+  calculation?: string;
+  /** Caveats: ambiguity, a typo in the bank, two defensible options. */
+  note?: string;
+  confidence?: AnswerConfidence;
+  /** "ai" = drafted by an AI model and not yet checked by a person; "verified" = checked by an editor. */
+  status?: "ai" | "verified";
+  /** Older free-text source field. */
   source?: string;
+}
+
+/** Section anchor on /law/<slug>: the leading number of "12(ב)(1)" → "#s-12". */
+export function lawSectionHref(ref: AnswerReference): string | null {
+  if (!ref.law) return null;
+  const num = ref.section?.match(/^\s*(\d+[א-ת]?)/)?.[1];
+  return `/law/${ref.law}${num ? `#s-${num}` : ""}`;
 }
 
 /* ───────────── Topics (keyword rules over stem + options) ───────────── */

@@ -7,7 +7,7 @@ import { EXAM_LEVELS, EXAM_TOPICS, type ExamLevel, type ExamTopic } from "@elect
 import type { ClientQuestion } from "@/lib/licenseExam";
 import { drawExam, gradeExam, type ExamGrade } from "@/lib/licenseExamActions";
 import { BookmarkButton } from "./BookmarkButton";
-import { KeyNote, OptionList, QuestionMeta, QuestionStem, type OptionState } from "./Question";
+import { DiscussionLink, KeyNote, OptionList, QuestionMeta, QuestionStem, type OptionState } from "./Question";
 import { useExamStorage } from "./storage";
 
 const TIME_LIMITS = [
@@ -450,6 +450,7 @@ function Results({
               <QuestionStem q={q} />
               <OptionList q={q} stateOf={stateOf} />
               <KeyNote q={q} picked={picked} />
+              <DiscussionLink n={q.n} />
             </Card>
           );
         })}

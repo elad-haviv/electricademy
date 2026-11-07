@@ -137,6 +137,27 @@ export const posts = pgTable(
   (t) => [index("post_thread_idx").on(t.threadId)],
 );
 
+/** Discussion under a licensing-exam bank question (/license-exam/q/<n>). */
+export const examComments = pgTable(
+  "exam_comment",
+  {
+    id: serial("id").primaryKey(),
+    /** Question number in the bank ("שאלה N"). */
+    questionN: integer("question_n").notNull(),
+    /** The question's serial when the comment was written; a renumbered bank hides stale threads. */
+    questionSerial: text("question_serial"),
+    authorId: text("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /** One level of replies. */
+    parentId: integer("parent_id"),
+    body: text("body").notNull(),
+    /** Optional "I think the answer is N" (1-4), tallied as the community's answer. */
+    suggestedAnswer: integer("suggested_answer"),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at", { mode: "date" }),
+  },
+  (t) => [index("exam_comment_question_idx").on(t.questionN)],
+);
+
 export const voteTargetEnum = pgEnum("vote_target", ["thread", "post"]);
 
 export const votes = pgTable(

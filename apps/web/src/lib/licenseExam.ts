@@ -4,6 +4,7 @@ import {
   EXAM_TOPICS,
   loadExamBank,
   questionsForLevel,
+  type AnswerKeyEntry,
   type BankFigure,
   type ExamLevel,
   type ExamQuestion,
@@ -33,10 +34,13 @@ export interface ClientQuestion {
   key?: ClientKey;
 }
 
-export interface ClientKey {
-  answer: number;
-  explanation?: string;
-  source?: string;
+/** The answer key entry as shown to learners (the serial is only used for matching). */
+export type ClientKey = Omit<AnswerKeyEntry, "serial">;
+
+export function clientKey(entry: AnswerKeyEntry): ClientKey {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { serial, ...rest } = entry;
+  return rest;
 }
 
 /** Joins the PDF's visual lines into paragraphs: a line that ends a sentence closes its paragraph. */
@@ -76,7 +80,7 @@ export function toClient(q: ExamQuestion, withKey = false): ClientQuestion {
       rendered: Boolean(o.rendered),
       figures: o.figures.map((f) => figure(f, o.rendered ? o.text : `איור לתשובה ${i + 1}`)),
     })),
-    ...(key ? { key: { answer: key.answer, explanation: key.explanation, source: key.source } } : {}),
+    ...(key ? { key: clientKey(key) } : {}),
   };
 }
 

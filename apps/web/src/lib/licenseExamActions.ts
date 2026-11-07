@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { EXAM_LEVELS, EXAM_TOPICS, loadExamBank, questionsForLevel, sample, type ExamLevel, type ExamTopic } from "@electricademy/content";
 import { getDb, quizAttempts } from "@electricademy/db";
-import { EXAM_SIZE, toClient, type ClientKey, type ClientQuestion } from "./licenseExam";
+import { clientKey, EXAM_SIZE, toClient, type ClientKey, type ClientQuestion } from "./licenseExam";
 import { getSessionUser } from "./session";
 
 const levelSchema = z.enum(Object.keys(EXAM_LEVELS) as [ExamLevel, ...ExamLevel[]]);
@@ -54,7 +54,7 @@ export async function gradeExam(input: z.input<typeof gradeSchema>): Promise<Exa
   for (const n of numbers) {
     const k = bank.answers.get(n);
     if (!k) continue;
-    keys[n] = { answer: k.answer, explanation: k.explanation, source: k.source };
+    keys[n] = clientKey(k);
     if (answers[String(n)] === k.answer) correct++;
   }
   const keyed = Object.keys(keys).length;

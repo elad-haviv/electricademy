@@ -5,15 +5,15 @@ import { BookmarkButton } from "./BookmarkButton";
 import { KeyNote, OptionList, QuestionMeta, QuestionStem } from "./Question";
 
 /** A question as it appears in the bank (browse / single page): options static, answer on demand. */
-export function BankQuestionCard({ q, link = true }: { q: ClientQuestion; link?: boolean }) {
+export function BankQuestionCard({ q, link = true, comments }: { q: ClientQuestion; link?: boolean; comments?: number }) {
   return (
     <Card id={`q${q.n}`} className="scroll-mt-24 space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <QuestionMeta q={q} />
         <div className="flex items-center gap-2">
           {link && (
-            <Link href={`/license-exam/q/${q.n}`} className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
-              קישור לשאלה
+            <Link href={`/license-exam/q/${q.n}#discussion`} className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
+              💬 דיון{comments ? ` (${comments})` : ""}
             </Link>
           )}
           <BookmarkButton n={q.n} />

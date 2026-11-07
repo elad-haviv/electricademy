@@ -4,7 +4,12 @@ import type { Metadata } from "next";
 import { buttonClass } from "@electricademy/ui";
 import { EXAM_TOPICS, loadExamBank } from "@electricademy/content";
 import { BankQuestionCard } from "@/components/license-exam/BankQuestionCard";
+import { ExamDiscussion } from "@/components/license-exam/ExamDiscussion";
 import { toClient } from "@/lib/licenseExam";
+import { getSessionUser } from "@/lib/session";
+
+// The discussion reads the database and the session on every request.
+export const dynamic = "force-dynamic";
 
 const find = (n: string) => (/^\d+$/.test(n) ? loadExamBank().byNumber.get(Number(n)) : undefined);
 
@@ -20,7 +25,9 @@ export async function generateMetadata({ params }: { params: Promise<{ n: string
 export default async function QuestionPage({ params }: { params: Promise<{ n: string }> }) {
   const q = find((await params).n);
   if (!q) notFound();
-  const { count } = loadExamBank().meta;
+  const bank = loadExamBank();
+  const { count } = bank.meta;
+  const user = await getSessionUser().catch(() => null);
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <nav aria-label="פירורי לחם" className="text-sm text-brand-700 dark:text-brand-300">
@@ -29,6 +36,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ n: st
       </nav>
       <h1 className="text-2xl font-extrabold tracking-tight">שאלה {q.n}</h1>
       <BankQuestionCard q={toClient(q, true)} link={false} />
+      <ExamDiscussion n={q.n} userId={user?.id ?? null} keyAnswer={bank.answers.get(q.n)?.answer} />
       <div className="flex justify-between gap-2">
         {q.n > 1 ? (
           <Link href={`/license-exam/q/${q.n - 1}`} className={buttonClass("secondary")}>
