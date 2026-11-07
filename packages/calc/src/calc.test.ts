@@ -6,6 +6,11 @@ import {
   power,
   resistivityAt,
   sizeCable,
+  sizeCableIL,
+  ilGroupingFactor,
+  ilTemperatureFactor,
+  IL_AMPACITY_CU,
+  IL_INSTALLATION_METHODS,
   temperatureFactor,
   groupingFactor,
   transformerShortCircuit,
@@ -122,5 +127,43 @@ describe("fault currents", () => {
   });
   it("TN earth-fault loop", () => {
     expect(faultLoopCurrent(230, 0.5)).toBe(460);
+  });
+});
+
+describe("sizeCableIL (Israeli regulations 2014)", () => {
+  it("covers every installation method of the third schedule", () => {
+    expect(IL_INSTALLATION_METHODS).toHaveLength(34); // א׳–ל״א incl. (א)/(ב) variants of י״ח, י״ט, כ״ד
+    for (const ins of [70, 90] as const)
+      for (const rows of Object.values(IL_AMPACITY_CU[ins])) {
+        for (let i = 1; i < rows.length; i++) expect(rows[i]![0]).toBeGreaterThan(rows[i - 1]![0]);
+        for (const [, one, three] of rows) expect(one).toBeGreaterThanOrEqual(three);
+      }
+  });
+
+  it("uses table 70.1 for method א׳ (2.5 mm² single-phase = 18 A)", () => {
+    const r = sizeCableIL({ method: "א", phases: 1, voltage: 230, current: 18, length: 5, maxDropPercent: 5 });
+    expect(r?.section).toBe(2.5);
+    expect(r?.tableAmpacity).toBe(18);
+    expect(sizeCableIL({ method: "א", phases: 1, voltage: 230, current: 19, length: 5, maxDropPercent: 5 })?.section).toBe(4);
+  });
+
+  it("uses the 90°C table and 35°C reference", () => {
+    // 90.3, 6 mm² three-phase = 46 A
+    const r = sizeCableIL({ method: "ג", insulation: 90, phases: 3, voltage: 400, current: 45, length: 5, maxDropPercent: 5 });
+    expect(r?.section).toBe(6);
+    expect(r?.factors.temperature).toBe(1);
+  });
+
+  it("applies table 1, 4 and 3 factors", () => {
+    expect(ilTemperatureFactor("air", 70, 40)).toBe(0.93);
+    expect(ilTemperatureFactor("ground", 90, 20)).toBe(1.08);
+    expect(() => ilTemperatureFactor("air", 70, 65)).toThrow();
+    expect(ilGroupingFactor({ arrangement: "t4-1", circuits: 3 })).toBe(0.7);
+    expect(ilGroupingFactor({ arrangement: "t5", circuits: 3, spacing: 4 })).toBe(0.85);
+    expect(() => ilGroupingFactor({ arrangement: "t4-2", circuits: 10 })).toThrow();
+    const r = sizeCableIL({ method: "לא", phases: 3, voltage: 400, current: 50, length: 5, maxDropPercent: 5, soilResistivity: 1 });
+    expect(r?.factors.extra).toBe(1.18);
+    // soil factor does not apply to ל׳
+    expect(sizeCableIL({ method: "ל", phases: 3, voltage: 400, current: 50, length: 5, maxDropPercent: 5, soilResistivity: 1 })?.factors.extra).toBe(1);
   });
 });
