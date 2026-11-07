@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/heebo";
+import "@fontsource-variable/jetbrains-mono";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";

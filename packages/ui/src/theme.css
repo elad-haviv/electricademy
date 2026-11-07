@@ -4,6 +4,7 @@
  */
 @theme {
   --font-sans: "Heebo Variable", "Heebo", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
 
   --color-brand-50: #eff8ff;
   --color-brand-100: #dbeefe;

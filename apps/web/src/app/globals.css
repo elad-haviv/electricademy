@@ -8,7 +8,37 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-slate-50 text-slate-900 antialiased selection:bg-spark-400 selection:text-slate-950 dark:bg-slate-950 dark:text-slate-100;
+    /* Engineering grid paper */
+    --grid-line: rgb(15 23 42 / 0.035);
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 36px 36px;
+  }
+  @media (prefers-color-scheme: dark) {
+    body {
+      --grid-line: rgb(148 163 184 / 0.04);
+    }
+  }
+}
+
+/* Current flowing along an energized busbar (single-line diagrams). */
+@keyframes current-flow {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.animate-current-flow {
+  stroke-dasharray: 6 6;
+  animation: current-flow 0.9s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-current-flow {
+    animation: none;
   }
 }
 

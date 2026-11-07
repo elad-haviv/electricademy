@@ -1,19 +1,82 @@
 import Link from "next/link";
+import { ShieldAlert } from "lucide-react";
+import { BrandEmblem } from "./home/EngineeringIcons";
+
+const COLUMNS = [
+  {
+    title: "מסלולי לימוד",
+    links: [
+      { href: "/tracks/basics", label: "יסודות החשמל (חינם)" },
+      { href: "/tracks/bagrut", label: "בגרות בחשמל" },
+      { href: "/tracks/technician", label: "טכנאי והנדסאי חשמל" },
+      { href: "/tracks/academic", label: "הנדסת חשמל (תואר)" },
+    ],
+  },
+  {
+    title: "מעבדה וכלים",
+    links: [
+      { href: "/simulators", label: "סימולטורים" },
+      { href: "/tools", label: "מחשבונים" },
+      { href: "/license-exam", label: "סימולטור בחינות רישוי" },
+      { href: "/products", label: "מוצרים" },
+    ],
+  },
+  {
+    title: "קהילה ותוכן",
+    links: [
+      { href: "/community", label: "קהילה" },
+      { href: "/articles", label: "מאמרים" },
+      { href: "/pricing", label: "מחירים" },
+      { href: "/tracks/licensing", label: "בחינות רישוי" },
+    ],
+  },
+];
 
 export function SiteFooter() {
   return (
-    <footer className="hidden border-t border-slate-200 py-10 text-sm text-slate-500 md:block dark:border-slate-800 dark:text-slate-400">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4">
-        <p>© {new Date().getFullYear()} Electricademy · לומדים חשמל, From Zero to Hero</p>
-        <nav className="flex gap-4">
-          <Link href="/products">מוצרים</Link>
-          <Link href="/pricing">מחירים</Link>
-          <Link href="/articles">מאמרים</Link>
-        </nav>
+    <footer className="hidden border-t border-slate-800 bg-slate-900 pt-14 pb-10 text-slate-300 md:block">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="grid gap-8 border-b border-slate-800 pb-10 md:grid-cols-2 lg:grid-cols-5">
+          <div className="space-y-3 lg:col-span-2">
+            <div className="flex items-center gap-3">
+              <BrandEmblem className="size-10" />
+              <div>
+                <span className="text-xl font-black text-white">Electricademy</span>
+                <span className="block text-xs font-bold text-spark-400">לומדים חשמל, מאפס ועד מומחיות</span>
+              </div>
+            </div>
+            <p className="max-w-sm text-xs leading-relaxed text-slate-400">
+              פלטפורמת לימוד וקהילה לעולם החשמל: יסודות, בגרות, הנדסאים, תואר, בחינות רישוי וכלים לאנשי מקצוע.
+            </p>
+          </div>
+          {COLUMNS.map((col) => (
+            <nav key={col.title} aria-label={col.title}>
+              <h2 className="mb-3 text-xs font-extrabold tracking-wider text-white">{col.title}</h2>
+              <ul className="space-y-2 text-xs font-semibold text-slate-400">
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="hover:text-spark-400">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+        <div className="mt-8 flex flex-col items-start justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/90 p-4 text-xs leading-relaxed text-slate-400 sm:flex-row sm:items-center">
+          <p className="flex items-start gap-2.5">
+            <ShieldAlert className="mt-0.5 size-5 shrink-0 text-spark-400" aria-hidden />
+            <span>
+              <strong className="text-slate-200">הבהרה:</strong> התכנים, הסימולטורים והמחשבונים באתר נועדו ללימוד בלבד. עבודה במתקני חשמל מותרת רק
+              לבעלי רישיון מתאים ובתוקף, בהתאם ל<strong className="text-spark-400">חוק החשמל, התשי״ד-1954</strong> ולתקנותיו.
+            </span>
+          </p>
+          <p className="font-semibold whitespace-nowrap text-slate-500">
+            © {new Date().getFullYear()} Electricademy · From Zero to Hero
+          </p>
+        </div>
       </div>
-      <p className="mx-auto mt-4 max-w-6xl px-4 text-xs">
-        התוכן באתר נועד ללימוד בלבד. עבודה במתקני חשמל מותרת רק לבעלי רישיון מתאים, בהתאם לחוק החשמל ולתקנותיו.
-      </p>
     </footer>
   );
 }

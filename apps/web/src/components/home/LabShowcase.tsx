@@ -1,0 +1,485 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Award, Calculator, Check, ChevronLeft, Info, Play, Sliders, Sparkles, X } from "lucide-react";
+import { STANDARD_SECTIONS_MM2, voltageDrop, type ConductorMaterial } from "@electricademy/calc";
+
+type Tab = "simulators" | "calculators" | "licensing";
+
+const SIMULATORS = [
+  {
+    slug: "hv-edu",
+    code: "SIM-01 · 24kV",
+    title: "לוחות מיתוג מתח בינוני בתלת־ממד",
+    subtitle: "יחידות תפקוד של לוח SM6, סדר פעולות מיתוג, נעילות מכניות וחשמליות ותרגילי נוהל.",
+    tier: "free",
+    specs: [
+      { label: "מתח נקוב", value: "24 kV" },
+      { label: "לוח", value: "SM6 מודולרי" },
+      { label: "תרגול", value: "נעילות ונהלים" },
+    ],
+    note: "כולל סימולציית הפעלה עם נעילות, תרגילי נוהל וחידון בסוף כל יחידה.",
+  },
+  {
+    slug: "genset-edu",
+    code: "SIM-02 · GENSET",
+    title: "גנרטורים: תורת פעולה ובטיחות",
+    subtitle: "גנרטור דיזל בתלת־ממד וחדר גנרטור שבו מאתרים מפגעים בטיחותיים.",
+    tier: "free",
+    specs: [
+      { label: "מודל", value: "גנרטור דיזל 3D" },
+      { label: "חדר גנרטור", value: "איתור מפגעים" },
+      { label: "נושאים", value: "פעולה ובטיחות" },
+    ],
+    note: "מתאים לטכנאים ולהנדסאים שעובדים עם מערכות גיבוי וחיבור גנרטורים.",
+  },
+  {
+    slug: "protect-edu",
+    code: "SIM-03 · TT / TN",
+    title: "הגנה בפני חשמול והארקות",
+    subtitle: "הארקת הגנה, איפוס, מפסק פחת, שנאי הפרדה, בידוד כפול, SELV/PELV ושוות פוטנציאל.",
+    tier: "free",
+    specs: [
+      { label: "מודולים", value: "7" },
+      { label: "שיטות", value: "TT · TN · RCD" },
+      { label: "מתח מגע", value: "50V AC" },
+    ],
+    note: "בונים לולאת תקלה ובודקים איך כל שיטת הגנה מנתקת אותה, לקראת בחינות הרישוי.",
+  },
+  {
+    slug: "agl-edu",
+    code: "SIM-04 · AGL / CCR",
+    title: "תאורת שדות תעופה ומעגלי זרם קבוע",
+    subtitle: "ווסתי זרם קבוע (CCR), שנאי בידוד בטור, איתור נתקים ובדיקות בידוד במעגל מסלול.",
+    tier: "pro",
+    specs: [
+      { label: "זרם לולאה", value: "6.6 A" },
+      { label: "מעגל", value: "טורי + CCR" },
+      { label: "תקינה", value: "ICAO Annex 14" },
+    ],
+    note: "קורס שטח ייחודי בעברית לחשמלאים, מהנדסים ומתכננים של מערכות AGL.",
+  },
+] as const;
+
+const QUESTIONS = [
+  {
+    category: "הגנה בפני חשמול: לולאת תקלה",
+    level: "חשמלאי מוסמך / ראשי",
+    question:
+      "במעגל סופי 230V במתקן בשיטת איפוס (TN-C-S) נמדדה עכבת לולאת התקלה Zs = 1.85 Ω. מה הזרם הנקוב הגבוה ביותר של מא״ז באופיין C (ניתוק מגנטי מובטח ב־10×In) שיבטיח ניתוק מהיר?",
+    options: ["10 A", "16 A", "20 A", "25 A"],
+    correct: 0,
+    formula: "Ia ≤ U0 / Zs = 230 / 1.85 ≈ 124 A  ⇒  In ≤ 124 / 10 ≈ 12.4 A",
+    explanation:
+      "זרם התקלה הצפוי הוא 230 / 1.85 ≈ 124 A. מא״ז באופיין C מנתק מגנטית בוודאות ב־10×In, ולכן In ≤ 12.4 A. הדרגה התקנית הגבוהה ביותר שעומדת בתנאי היא 10 A.",
+  },
+  {
+    category: "מערכות הספק: זרמי קצר",
+    level: "הנדסאי / מהנדס",
+    question:
+      "שנאי חלוקה 1000 kVA, ‏22/0.4 kV, עם מתח קצר uk = 6%. בהזנחת עכבת הרשת, מהו זרם הקצר התלת־פאזי הסימטרי בפסי הצבירה של המתח הנמוך?",
+    options: ["כ־14.4 kA", "כ־24.1 kA", "כ־36.1 kA", "כ־8.7 kA"],
+    correct: 1,
+    formula: "In = S / (√3·U) = 1443 A  ⇒  Ik3 = In / uk = 1443 / 0.06 ≈ 24.1 kA",
+    explanation:
+      "הזרם הנקוב בצד המתח הנמוך הוא 1,000,000 / (√3 × 400) ≈ 1443 A. בהזנחת עכבת הרשת, זרם הקצר הוא הזרם הנקוב חלקי מתח הקצר היחסי: 1443 / 0.06 ≈ 24.1 kA.",
+  },
+  {
+    category: "איכות חשמל: שיפור מקדם הספק",
+    level: "חשמלאי ראשי / הנדסאי",
+    question: "מפעל צורך P = 200 kW במקדם הספק cos φ1 = 0.75. מהו הספק סוללת הקבלים הדרוש כדי להגיע ל־cos φ2 = 0.92?",
+    options: ["כ־45 kVAr", "כ־91 kVAr", "כ־136 kVAr", "כ־176 kVAr"],
+    correct: 1,
+    formula: "Qc = P·(tan φ1 − tan φ2) = 200 × (0.882 − 0.426) ≈ 91 kVAr",
+    explanation: "עבור cos φ1 = 0.75 מתקבל tan φ1 ≈ 0.882, ועבור cos φ2 = 0.92 מתקבל tan φ2 ≈ 0.426. ההפרש כפול ההספק הפעיל נותן כ־91 kVAr.",
+  },
+] as const;
+
+const TABS: { id: Tab; kicker: string; title: string; Icon: typeof Sliders }[] = [
+  { id: "simulators", kicker: "01 · ללמוד בידיים", title: "מעבדת סימולטורים", Icon: Sliders },
+  { id: "calculators", kicker: "02 · כלים הנדסיים", title: "מחשבונים לשטח ולתכנון", Icon: Calculator },
+  { id: "licensing", kicker: "03 · הכנה לוועדה", title: "שאלות רישוי לדוגמה", Icon: Award },
+];
+
+export function LabShowcase() {
+  const [tab, setTab] = useState<Tab>("simulators");
+
+  return (
+    <section id="lab" className="relative isolate scroll-mt-20 overflow-hidden rounded-3xl bg-slate-900 px-4 py-12 text-slate-100 sm:px-8 lg:px-10 lg:py-16">
+      <Image src="/images/simulators.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-left opacity-25" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-l from-slate-900 via-slate-900/95 to-slate-900/70" />
+
+      <div className="mb-8 max-w-3xl">
+        <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/15 px-3 py-1 text-xs font-extrabold text-amber-300">
+          <Sparkles className="size-3.5" aria-hidden />
+          נסו עכשיו, ישר מהדף
+        </span>
+        <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">לא רק הרצאות: מעבדה הנדסית בדפדפן</h2>
+        <p className="mt-2 text-slate-400">סימולטורים לתחנות משנה והארקות, מחשבונים לעבודה בשטח ושאלות תרגול לבחינות הרישוי.</p>
+      </div>
+
+      <div role="tablist" aria-label="מעבדה" className="mb-6 grid gap-3 md:grid-cols-3">
+        {TABS.map(({ id, kicker, title, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            className={`flex items-center justify-between rounded-2xl border p-4 text-start transition-all ${
+              tab === id
+                ? "border-amber-400 bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20"
+                : "border-slate-700 bg-slate-800/80 text-slate-200 hover:bg-slate-800"
+            }`}
+          >
+            <span>
+              <span className="block text-xs font-extrabold opacity-80">{kicker}</span>
+              <span className="mt-0.5 block text-lg font-black">{title}</span>
+            </span>
+            <Icon className="size-6 shrink-0" aria-hidden />
+          </button>
+        ))}
+      </div>
+
+      <div role="tabpanel">
+        {tab === "simulators" && <SimulatorsPanel />}
+        {tab === "calculators" && <CalculatorPanel />}
+        {tab === "licensing" && <LicensingPanel />}
+      </div>
+    </section>
+  );
+}
+
+function SimulatorsPanel() {
+  const [active, setActive] = useState<(typeof SIMULATORS)[number]["slug"]>(SIMULATORS[0].slug);
+  const sim = SIMULATORS.find((s) => s.slug === active)!;
+  return (
+    <div className="grid items-start gap-6 lg:grid-cols-12">
+      <div className="space-y-3 lg:col-span-5">
+        {SIMULATORS.map((s) => (
+          <button
+            key={s.slug}
+            type="button"
+            onClick={() => setActive(s.slug)}
+            aria-pressed={s.slug === active}
+            className={`block w-full rounded-2xl border p-4 text-start transition-all ${
+              s.slug === active ? "border-amber-400 bg-slate-800 shadow-md" : "border-slate-800 bg-slate-950/60 hover:border-slate-700"
+            }`}
+          >
+            <span className="mb-1 flex items-center justify-between gap-2">
+              <span dir="ltr" className="font-mono text-xs font-bold text-sky-400">
+                {s.code}
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-0.5 text-[11px] font-bold text-amber-400">
+                {s.tier === "pro" ? "Pro" : "חינם"}
+              </span>
+            </span>
+            <span className="block text-base font-black text-white">{s.title}</span>
+            <span className="mt-1 block text-xs leading-relaxed text-slate-400">{s.subtitle}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded-2xl border border-slate-800 bg-[#090E1A] p-6 lg:col-span-7">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div>
+            <span dir="ltr" className="font-mono text-xs font-bold text-amber-400">
+              {sim.code}
+            </span>
+            <h3 className="mt-0.5 text-2xl font-black text-white">{sim.title}</h3>
+          </div>
+          <Link href="/simulators" className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-extrabold text-slate-950 hover:bg-amber-400">
+            <Play className="size-3.5 fill-slate-950" aria-hidden />
+            לפתיחת הסימולטור
+          </Link>
+        </div>
+        <div className="my-5 grid grid-cols-3 gap-3">
+          {sim.specs.map((spec) => (
+            <div key={spec.label} className="rounded-xl border border-slate-800 bg-slate-900/90 p-3.5">
+              <div className="text-xs text-slate-400">{spec.label}</div>
+              <div className="mt-1 text-sm font-extrabold text-sky-400 sm:text-base">{spec.value}</div>
+            </div>
+          ))}
+        </div>
+        <p className="flex items-center gap-2.5 rounded-xl border border-slate-800 bg-slate-900/70 p-3.5 text-xs text-slate-300">
+          <Info className="size-4 shrink-0 text-amber-400" aria-hidden />
+          {sim.note}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+const SECTIONS = STANDARD_SECTIONS_MM2.filter((s) => s >= 6);
+const DROP_LIMIT = 3;
+
+function CalculatorPanel() {
+  const [loadKw, setLoadKw] = useState(85);
+  const [length, setLength] = useState(110);
+  const [section, setSection] = useState<number>(35);
+  const [material, setMaterial] = useState<ConductorMaterial>("copper");
+  const [pf1, setPf1] = useState(0.76);
+  const [pf2, setPf2] = useState(0.93);
+
+  const r = useMemo(() => {
+    const iBefore = (loadKw * 1000) / (Math.sqrt(3) * 400 * pf1);
+    const iAfter = (loadKw * 1000) / (Math.sqrt(3) * 400 * pf2);
+    const drop = voltageDrop({ phases: 3, voltage: 400, current: iBefore, length, section, material, powerFactor: pf1 });
+    const qc = loadKw * (Math.tan(Math.acos(pf1)) - Math.tan(Math.acos(pf2)));
+    return { iBefore, iAfter, saved: ((iBefore - iAfter) / iBefore) * 100, qc: Math.max(0, qc), ...drop, ok: drop.percent <= DROP_LIMIT };
+  }, [loadKw, length, section, material, pf1, pf2]);
+
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-[#090E1A] p-6 lg:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <span dir="ltr" className="font-mono text-xs font-bold text-sky-400">
+            3~ 400V · 50Hz
+          </span>
+          <h3 className="mt-0.5 text-2xl font-black text-white">מפל מתח ושיפור מקדם הספק</h3>
+        </div>
+        <Link href="/tools" className="flex items-center gap-1 text-sm font-extrabold text-amber-400 hover:text-amber-300">
+          לכל המחשבונים
+          <ChevronLeft className="size-4" aria-hidden />
+        </Link>
+      </div>
+
+      <div className="mt-6 grid items-center gap-8 lg:grid-cols-12">
+        <div className="space-y-5 lg:col-span-7">
+          <Slider label="הספק פעיל (P)" value={loadKw} display={`${loadKw} kW`} min={10} max={350} step={5} onChange={setLoadKw} accent="accent-amber-400" tone="text-amber-400" />
+          <Slider label="אורך הקו (L)" value={length} display={`${length} m`} min={15} max={400} step={5} onChange={setLength} accent="accent-sky-400" tone="text-sky-400" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold text-slate-400">חתך מוליך</span>
+              <select
+                value={section}
+                onChange={(e) => setSection(Number(e.target.value))}
+                className="w-full rounded-xl border border-slate-700 bg-slate-900 px-3.5 py-2.5 text-sm font-bold text-white focus:border-amber-400 focus:outline-none"
+              >
+                {SECTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s} ממ״ר
+                  </option>
+                ))}
+              </select>
+            </label>
+            <fieldset>
+              <legend className="mb-1.5 block text-xs font-bold text-slate-400">חומר המוליך</legend>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    ["copper", "נחושת (Cu)"],
+                    ["aluminium", "אלומיניום (Al)"],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-pressed={material === id}
+                    onClick={() => setMaterial(id)}
+                    className={`rounded-xl border py-2.5 text-xs font-extrabold ${
+                      material === id ? "border-amber-400 bg-amber-500/20 text-amber-300" : "border-slate-700 bg-slate-900 text-slate-400"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+          <div className="grid gap-4 pt-2 sm:grid-cols-2">
+            <Slider label="cos φ קיים" value={pf1} display={pf1.toFixed(2)} min={0.6} max={0.9} step={0.01} onChange={setPf1} accent="accent-amber-400" tone="text-amber-400" small />
+            <Slider label="cos φ יעד" value={pf2} display={pf2.toFixed(2)} min={0.9} max={0.98} step={0.01} onChange={setPf2} accent="accent-emerald-400" tone="text-emerald-400" small />
+          </div>
+        </div>
+
+        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900 p-5 lg:col-span-5" aria-live="polite">
+          <div className={`rounded-xl border p-4 ${r.ok ? "border-emerald-700/70 bg-emerald-950/40" : "border-rose-700/80 bg-rose-950/50"}`}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-300">מפל מתח (ΔU)</span>
+              <span className={`rounded-full px-2.5 py-0.5 text-xs font-extrabold ${r.ok ? "bg-emerald-500/20 text-emerald-300" : "bg-rose-500/20 text-rose-300"}`}>
+                {r.ok ? `בתוך יעד התכנון (≤ ${DROP_LIMIT}%)` : `חורג מיעד התכנון (${DROP_LIMIT}%)`}
+              </span>
+            </div>
+            <div dir="ltr" className="mt-2 text-end font-mono text-3xl font-black text-white">
+              {r.percent.toFixed(2)}% <span className="text-sm font-normal text-slate-400">({r.volts.toFixed(1)} V)</span>
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div className="text-xs font-bold text-slate-400">סוללת קבלים נדרשת (Qc)</div>
+            <div dir="ltr" className="mt-1 text-end font-mono text-2xl font-black text-amber-400">
+              {r.qc.toFixed(1)} kVAr
+            </div>
+            <div dir="ltr" className="mt-1 text-end font-mono text-[11px] text-slate-400">
+              Qc = P·(tan φ1 − tan φ2)
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+              <div className="text-[11px] text-slate-400">זרם לפני השיפור</div>
+              <div dir="ltr" className="mt-0.5 text-end font-mono text-lg font-extrabold text-slate-200">
+                {r.iBefore.toFixed(1)} A
+              </div>
+            </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-950 p-3.5">
+              <div className="text-[11px] text-slate-400">זרם אחרי השיפור</div>
+              <div dir="ltr" className="mt-0.5 text-end font-mono text-lg font-extrabold text-sky-400">
+                {r.iAfter.toFixed(1)} A <span className="text-xs">(−{r.saved.toFixed(0)}%)</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500">חישוב לימודי: מוליך ב־70°C ותגובה 0.08 Ω/km. מפל המתח מחושב לפני השיפור.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Slider({
+  label,
+  value,
+  display,
+  min,
+  max,
+  step,
+  onChange,
+  accent,
+  tone,
+  small = false,
+}: {
+  label: string;
+  value: number;
+  display: string;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  accent: string;
+  tone: string;
+  small?: boolean;
+}) {
+  return (
+    <label className="block">
+      <span className={`mb-1.5 flex justify-between font-bold ${small ? "text-xs" : "text-sm"}`}>
+        <span className={small ? "text-slate-400" : "text-slate-300"}>{label}</span>
+        <span dir="ltr" className={`font-mono ${tone}`}>
+          {display}
+        </span>
+      </span>
+      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className={`h-2 w-full cursor-pointer ${accent}`} />
+    </label>
+  );
+}
+
+function LicensingPanel() {
+  const [idx, setIdx] = useState(0);
+  const [chosen, setChosen] = useState<number | null>(null);
+  const q = QUESTIONS[idx] ?? QUESTIONS[0];
+  const go = (i: number) => {
+    setIdx(i);
+    setChosen(null);
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-[#090E1A] p-6 lg:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div>
+          <span className="text-xs font-extrabold text-amber-400">{q.category}</span>
+          <h3 className="mt-1 text-xl font-black text-white sm:text-2xl">תרגול בסגנון בחינות הרישוי</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          {QUESTIONS.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => go(i)}
+              aria-pressed={idx === i}
+              className={`rounded-xl border px-3.5 py-1.5 text-xs font-extrabold transition-all ${
+                idx === i ? "border-amber-400 bg-amber-500 text-slate-950" : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
+              }`}
+            >
+              שאלה {i + 1}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 grid items-start gap-8 lg:grid-cols-12">
+        <div className="space-y-4 lg:col-span-7">
+          <span className="inline-flex rounded-md border border-sky-800/70 bg-sky-950/60 px-3 py-1 text-xs font-bold text-sky-400">רמה: {q.level}</span>
+          <p className="text-base leading-relaxed font-bold text-slate-100 sm:text-lg">{q.question}</p>
+          <div className="space-y-2.5 pt-2">
+            {q.options.map((opt, i) => {
+              const isCorrect = i === q.correct;
+              let style = "border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500";
+              if (chosen !== null) {
+                if (isCorrect) style = "border-emerald-500 bg-emerald-950/80 text-emerald-200";
+                else if (i === chosen) style = "border-rose-500 bg-rose-950/80 text-rose-200";
+                else style = "border-slate-800 bg-slate-900/50 text-slate-500";
+              }
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  disabled={chosen !== null}
+                  onClick={() => setChosen(i)}
+                  className={`flex w-full items-center justify-between rounded-xl border-2 p-4 text-start text-sm font-bold transition-all ${style}`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="flex size-7 items-center justify-center rounded-lg border border-slate-600 bg-slate-800 text-xs">{"אבגד"[i]}</span>
+                    <bdi>{opt}</bdi>
+                  </span>
+                  {chosen !== null && isCorrect && <Check className="size-5 shrink-0 text-emerald-400" aria-label="תשובה נכונה" />}
+                  {chosen === i && !isCorrect && <X className="size-5 shrink-0 text-rose-400" aria-label="תשובה שגויה" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 lg:col-span-5" aria-live="polite">
+          {chosen === null ? (
+            <div className="relative isolate px-5 py-10 text-center">
+              <Image src="/images/license-exam.webp" alt="" fill sizes="(min-width: 1024px) 30vw, 100vw" className="-z-20 object-cover opacity-35" />
+              <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/40" />
+              <Award className="mx-auto size-10 text-amber-400" aria-hidden />
+              <p className="mt-3 text-base font-extrabold text-white">בחרו תשובה כדי לראות את הפתרון המלא</p>
+              <p className="mx-auto mt-2 max-w-xs text-xs text-slate-300">כל שאלה מגיעה עם נוסחה, הסבר צעד אחר צעד וקישור לשיעור המתאים.</p>
+            </div>
+          ) : (
+            <div className="space-y-4 p-5">
+              <span
+                className={`inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${
+                  chosen === q.correct ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300" : "border-rose-500/40 bg-rose-500/20 text-rose-300"
+                }`}
+              >
+                {chosen === q.correct ? "תשובה נכונה, כל הכבוד!" : "לא הפעם. הנה הפתרון המלא"}
+              </span>
+              <p dir="ltr" className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-start font-mono text-xs font-bold text-amber-400 sm:text-sm">
+                {q.formula}
+              </p>
+              <div>
+                <p className="mb-1 text-xs font-extrabold text-slate-300">הסבר</p>
+                <p className="text-xs leading-relaxed text-slate-300 sm:text-sm">{q.explanation}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => go((idx + 1) % QUESTIONS.length)}
+                  className="flex-1 rounded-xl bg-amber-500 py-2.5 text-xs font-extrabold text-slate-950 transition-colors hover:bg-amber-400"
+                >
+                  לשאלה הבאה
+                </button>
+                <Link href="/license-exam" className="flex-1 rounded-xl border border-slate-700 py-2.5 text-center text-xs font-extrabold text-slate-200 hover:bg-slate-800">
+                  לסימולטור המלא
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
