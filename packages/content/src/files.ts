@@ -46,6 +46,12 @@ export function hasLesson(track: string, module: string, lesson: string): boolea
   return fs.existsSync(path.join(contentRoot(), "lessons", track, module, `${lesson}.mdx`));
 }
 
+/** Reading time from the lesson's frontmatter, or null if the lesson isn't written yet. */
+export function getLessonMinutes(track: string, module: string, lesson: string): number | null {
+  const minutes = getLesson(track, module, lesson)?.frontmatter.minutes;
+  return typeof minutes === "number" ? minutes : null;
+}
+
 export type ArticleCategory = "power-systems" | "regulations" | "installations" | "innovation" | "news";
 
 export const ARTICLE_CATEGORIES: Record<ArticleCategory, string> = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allLessonPaths, getArticle, getLesson, listArticles, TRACKS } from "./index";
+import { allLessonPaths, getArticle, getLesson, getLessonMinutes, hasLesson, listArticles, TRACKS } from "./index";
 
 describe("catalog", () => {
   it("has unique lesson paths", () => {
@@ -17,6 +17,19 @@ describe("files", () => {
     const lesson = getLesson("basics", "circuits", "ohms-law");
     expect(lesson?.frontmatter.title).toBeTruthy();
     expect(lesson?.body.length).toBeGreaterThan(100);
+  });
+  it("reads lesson minutes, null when the lesson isn't written", () => {
+    expect(getLessonMinutes("basics", "circuits", "ohms-law")).toBeGreaterThan(0);
+    expect(getLessonMinutes("basics", "circuits", "series-parallel")).toBeNull();
+  });
+  it("parses the frontmatter of every written lesson", () => {
+    for (const p of allLessonPaths()) {
+      const [t, m, l] = p.split("/") as [string, string, string];
+      if (!hasLesson(t, m, l)) continue;
+      const lesson = getLesson(t, m, l);
+      expect(lesson?.frontmatter.title, p).toBeTruthy();
+      expect(lesson?.frontmatter.minutes, p).toBeGreaterThan(0);
+    }
   });
   it("rejects path traversal", () => {
     expect(getLesson("..", "circuits", "ohms-law")).toBeNull();
