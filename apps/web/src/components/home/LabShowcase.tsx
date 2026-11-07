@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Award, Calculator, Check, ChevronLeft, Info, Play, Sliders, Sparkles, X } from "lucide-react";
+import { Award, Calculator, Check, ChevronLeft, Play, Sliders, Sparkles, X } from "lucide-react";
 import { STANDARD_SECTIONS_MM2, voltageDrop, type ConductorMaterial } from "@electricademy/calc";
 
 type Tab = "simulators" | "calculators" | "licensing";
@@ -15,25 +15,21 @@ const SIMULATORS = [
     title: "לוחות מיתוג מתח בינוני בתלת־ממד",
     subtitle: "יחידות תפקוד של לוח SM6, סדר פעולות מיתוג, נעילות מכניות וחשמליות ותרגילי נוהל.",
     tier: "free",
-    specs: [
-      { label: "מתח נקוב", value: "24 kV" },
-      { label: "לוח", value: "SM6 מודולרי" },
-      { label: "תרגול", value: "נעילות ונהלים" },
+    shots: [
+      { src: "/images/labs/hv-edu-lineup.webp", caption: "לוח SM6 שלם בתלת־ממד: מפעילים מפסקים ומנתקים עם נעילות" },
+      { src: "/images/labs/hv-edu-units.webp", caption: "קטלוג יחידות התפקוד: IM, QM, PM, DM1 ועוד" },
     ],
-    note: "כולל סימולציית הפעלה עם נעילות, תרגילי נוהל וחידון בסוף כל יחידה.",
   },
   {
     slug: "genset-edu",
     code: "SIM-02 · GENSET",
     title: "גנרטורים: תורת פעולה ובטיחות",
-    subtitle: "גנרטור דיזל בתלת־ממד וחדר גנרטור שבו מאתרים מפגעים בטיחותיים.",
+    subtitle: "גנרטור דיזל בתלת־ממד, חדר גנרטור עם מפגעים וסימולטור העברה (ATS).",
     tier: "free",
-    specs: [
-      { label: "מודל", value: "גנרטור דיזל 3D" },
-      { label: "חדר גנרטור", value: "איתור מפגעים" },
-      { label: "נושאים", value: "פעולה ובטיחות" },
+    shots: [
+      { src: "/images/labs/genset-explorer.webp", caption: "סייר גנרטור דיזל בתלת־ממד, רכיב אחר רכיב" },
+      { src: "/images/labs/genset-simulator.webp", caption: "סימולטור מערכת חשמל ו־ATS: רשת, גנרטור ועומסים" },
     ],
-    note: "מתאים לטכנאים ולהנדסאים שעובדים עם מערכות גיבוי וחיבור גנרטורים.",
   },
   {
     slug: "protect-edu",
@@ -41,25 +37,21 @@ const SIMULATORS = [
     title: "הגנה בפני חשמול והארקות",
     subtitle: "הארקת הגנה, איפוס, מפסק פחת, שנאי הפרדה, בידוד כפול, SELV/PELV ושוות פוטנציאל.",
     tier: "free",
-    specs: [
-      { label: "מודולים", value: "7" },
-      { label: "שיטות", value: "TT · TN · RCD" },
-      { label: "מתח מגע", value: "50V AC" },
+    shots: [
+      { src: "/images/labs/protect-rcd.webp", caption: "מפסק מגן (פחת): סופרים את הזרם שחוזר" },
+      { src: "/images/labs/protect-tn.webp", caption: "איפוס (TN): הופכים תקלה לקצר כדי שההגנה תנתק" },
     ],
-    note: "בונים לולאת תקלה ובודקים איך כל שיטת הגנה מנתקת אותה, לקראת בחינות הרישוי.",
   },
   {
     slug: "agl-edu",
     code: "SIM-04 · AGL / CCR",
     title: "תאורת שדות תעופה ומעגלי זרם קבוע",
-    subtitle: "ווסתי זרם קבוע (CCR), שנאי בידוד בטור, איתור נתקים ובדיקות בידוד במעגל מסלול.",
+    subtitle: "ווסתי זרם קבוע (CCR), שנאי בידוד בטור, איתור קצרים ונתקים ובדיקות בידוד במעגל מסלול.",
     tier: "pro",
-    specs: [
-      { label: "זרם לולאה", value: "6.6 A" },
-      { label: "מעגל", value: "טורי + CCR" },
-      { label: "תקינה", value: "ICAO Annex 14" },
+    shots: [
+      { src: "/images/labs/agl-find-short.webp", caption: "מצאו את הקצר: נועלים את הווסת, מפצלים את הלולאה ובודקים בידוד" },
+      { src: "/images/labs/agl-series.webp", caption: "סימולטור מעגל טורי: זרם אחד, שמונה פנסים ווסת אחד" },
     ],
-    note: "קורס שטח ייחודי בעברית לחשמלאים, מהנדסים ומתכננים של מערכות AGL.",
   },
 ] as const;
 
@@ -195,20 +187,40 @@ function SimulatorsPanel() {
             לפתיחת הסימולטור
           </Link>
         </div>
-        <div className="my-5 grid grid-cols-3 gap-3">
-          {sim.specs.map((spec) => (
-            <div key={spec.label} className="rounded-xl border border-slate-800 bg-slate-900/90 p-3.5">
-              <div className="text-xs text-slate-400">{spec.label}</div>
-              <div className="mt-1 text-sm font-extrabold text-sky-400 sm:text-base">{spec.value}</div>
-            </div>
-          ))}
-        </div>
-        <p className="flex items-center gap-2.5 rounded-xl border border-slate-800 bg-slate-900/70 p-3.5 text-xs text-slate-300">
-          <Info className="size-4 shrink-0 text-amber-400" aria-hidden />
-          {sim.note}
-        </p>
+        <LabGallery key={sim.slug} title={sim.title} shots={sim.shots} />
       </div>
     </div>
+  );
+}
+
+function LabGallery({ title, shots }: { title: string; shots: readonly { src: string; caption: string }[] }) {
+  const [i, setI] = useState(0);
+  const shot = shots[i] ?? shots[0]!;
+  return (
+    <figure className="mt-5">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-lg">
+        <Image src={shot.src} alt={`${title}: ${shot.caption}`} fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover object-top" />
+      </div>
+      <figcaption className="mt-2.5 text-xs text-slate-300">{shot.caption}</figcaption>
+      {shots.length > 1 && (
+        <div className="mt-3 flex gap-2.5">
+          {shots.map((s, idx) => (
+            <button
+              key={s.src}
+              type="button"
+              onClick={() => setI(idx)}
+              aria-label={`צילום מסך ${idx + 1}: ${s.caption}`}
+              aria-pressed={idx === i}
+              className={`relative aspect-[16/10] w-28 overflow-hidden rounded-lg border-2 transition-all ${
+                idx === i ? "border-amber-400" : "border-slate-700 opacity-60 hover:opacity-100"
+              }`}
+            >
+              <Image src={s.src} alt="" fill sizes="112px" className="object-cover object-top" />
+            </button>
+          ))}
+        </div>
+      )}
+    </figure>
   );
 }
 

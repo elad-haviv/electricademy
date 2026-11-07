@@ -23,21 +23,20 @@
   }
 }
 
-/* Current flowing along an energized busbar (single-line diagrams). */
-@keyframes current-flow {
+/* Blue Grid wire flow: dashes travel from source to load. */
+@keyframes bg-flow {
   from {
-    stroke-dashoffset: 24;
+    stroke-dashoffset: 15;
   }
   to {
     stroke-dashoffset: 0;
   }
 }
-.animate-current-flow {
-  stroke-dasharray: 6 6;
-  animation: current-flow 0.9s linear infinite;
+.animate-bg-flow {
+  animation: bg-flow 0.6s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .animate-current-flow {
+  .animate-bg-flow {
     animation: none;
   }
 }

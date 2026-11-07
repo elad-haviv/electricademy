@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronLeft, Users } from "lucide-react";
 import { listArticles, TRACKS } from "@electricademy/content";
 import { formatDate } from "@/lib/labels";
-import { HeroSldSimulator } from "@/components/home/HeroSldSimulator";
+import { BlueGridWidget } from "@/components/home/BlueGridWidget";
 import { LabShowcase } from "@/components/home/LabShowcase";
 import { TrackGrid, type TrackCardData } from "@/components/home/TrackGrid";
 
@@ -34,7 +34,7 @@ export default function HomePage() {
         />
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-l from-brand-950 via-brand-950/85 to-brand-950/40" />
         <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-8">
-          <div className="space-y-6 lg:col-span-5">
+          <div className="min-w-0 space-y-6 lg:col-span-5">
             <span className="inline-flex items-center gap-2.5 rounded-full border border-spark-400/40 bg-spark-400/15 px-3.5 py-1.5 text-xs font-extrabold text-spark-300 sm:text-sm">
               <span aria-hidden className="size-2 rounded-full bg-spark-400" />
               מאפס למומחיות ·{" "}
@@ -70,8 +70,8 @@ export default function HomePage() {
               <Metric value="תשי״ד-1954" label="לפי חוק החשמל ותקנותיו" tone="text-spark-300" />
             </div>
           </div>
-          <div className="lg:col-span-7">
-            <HeroSldSimulator />
+          <div className="min-w-0 lg:col-span-7">
+            <BlueGridWidget />
           </div>
         </div>
       </section>
