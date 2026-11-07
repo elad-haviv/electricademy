@@ -18,6 +18,8 @@ export type IlGroupingKind = "air" | "buried-direct" | "buried-duct";
 export interface IlInstallationMethod {
   /** Stable id, e.g. "א", "יח-א". */
   id: string;
+  /** Item number (1–31) in the third schedule; the (א)/(ב) variants share their item's number and drawing. */
+  item: number;
   /** Display code, e.g. "א׳", "י״ח (א)". */
   code: string;
   description: string;
@@ -27,10 +29,20 @@ export interface IlInstallationMethod {
   grouping: IlGroupingKind;
 }
 
+/** Items of the third schedule in order (א׳ = 1 … ל״א = 31). */
+const SCHEDULE_ITEMS = [
+  "א", "ב", "ג", "ד", "ה", "ו", "ז", "ח", "ט", "י", "יא", "יב", "יג", "יד", "טו", "טז",
+  "יז", "יח", "יט", "כ", "כא", "כב", "כג", "כד", "כה", "כו", "כז", "כח", "כט", "ל", "לא",
+];
+
 const m = (
   id: string, code: string, table: IlTableNumber, description: string,
   medium: "air" | "ground" = "air", grouping: IlGroupingKind = "air",
-): IlInstallationMethod => ({ id, code, table, description, medium, grouping });
+): IlInstallationMethod => {
+  const item = SCHEDULE_ITEMS.indexOf(id.split("-")[0]!) + 1;
+  if (item === 0) throw new Error(`Unknown schedule item: ${id}`);
+  return { id, item, code, table, description, medium, grouping };
+};
 
 /** Installation methods of the third schedule (תוספת שלישית), in order. */
 export const IL_INSTALLATION_METHODS: readonly IlInstallationMethod[] = [

@@ -135,6 +135,9 @@ describe("fault currents", () => {
 describe("sizeCableIL (Israeli regulations 2014)", () => {
   it("covers every installation method of the third schedule", () => {
     expect(IL_INSTALLATION_METHODS).toHaveLength(34); // א׳–ל״א incl. (א)/(ב) variants of י״ח, י״ט, כ״ד
+    expect(new Set(IL_INSTALLATION_METHODS.map((m) => m.item)).size).toBe(31);
+    expect(IL_INSTALLATION_METHODS.find((m) => m.id === "יט-ב")?.item).toBe(19);
+    expect(IL_INSTALLATION_METHODS.at(-1)?.item).toBe(31);
     for (const ins of [70, 90] as const)
       for (const rows of Object.values(IL_AMPACITY[ins])) {
         for (let i = 1; i < rows.length; i++) expect(rows[i]![0]).toBeGreaterThan(rows[i - 1]![0]);

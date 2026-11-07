@@ -24,6 +24,7 @@ import {
 } from "@electricademy/calc";
 import { Card, cn } from "@electricademy/ui";
 import { fmt, NumberField, ResultBox, SelectField } from "./Field";
+import { MethodCombobox } from "./MethodCombobox";
 
 type Source = "il" | "iec";
 
@@ -156,14 +157,15 @@ export function CableSizingCalculator() {
         <div className="sm:col-span-2 lg:col-span-3">
           {source === "il" ? (
             <>
-              <SelectField
+              <MethodCombobox
                 label="שיטת התקנה (תוספת שלישית)"
+                methods={IL_INSTALLATION_METHODS}
                 value={ilMethodId}
-                options={IL_INSTALLATION_METHODS.map((m) => ({ value: m.id, label: `${m.code} – ${m.description}` }))}
                 onChange={changeIlMethod}
+                insulation={insulation}
               />
               <p className="mt-1 text-xs text-slate-500">
-                ערכי Iz לפי טבלה {insulation}.{ilInfo.table} בתוספת השנייה
+                ערכי Iz לפי טבלה {insulation}.{ilInfo.table} בתוספת השנייה · האיורים מתוך קובץ התקנות 7349
               </p>
             </>
           ) : (
