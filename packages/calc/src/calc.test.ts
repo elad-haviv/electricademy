@@ -9,7 +9,9 @@ import {
   sizeCableIL,
   ilGroupingFactor,
   ilTemperatureFactor,
-  IL_AMPACITY_CU,
+  IL_AMPACITY,
+  selectProtection,
+  trippingFactor,
   IL_INSTALLATION_METHODS,
   temperatureFactor,
   groupingFactor,
@@ -134,9 +136,13 @@ describe("sizeCableIL (Israeli regulations 2014)", () => {
   it("covers every installation method of the third schedule", () => {
     expect(IL_INSTALLATION_METHODS).toHaveLength(34); // א׳–ל״א incl. (א)/(ב) variants of י״ח, י״ט, כ״ד
     for (const ins of [70, 90] as const)
-      for (const rows of Object.values(IL_AMPACITY_CU[ins])) {
+      for (const rows of Object.values(IL_AMPACITY[ins])) {
         for (let i = 1; i < rows.length; i++) expect(rows[i]![0]).toBeGreaterThan(rows[i - 1]![0]);
-        for (const [, one, three] of rows) expect(one).toBeGreaterThanOrEqual(three);
+        for (const [, one, three, alOne, alThree] of rows) {
+          expect(one).toBeGreaterThanOrEqual(three);
+          if (alOne !== null) expect(alOne).toBeLessThan(one);
+          if (alThree !== null) expect(alThree).toBeLessThan(three);
+        }
       }
   });
 
@@ -165,5 +171,58 @@ describe("sizeCableIL (Israeli regulations 2014)", () => {
     expect(r?.factors.extra).toBe(1.18);
     // soil factor does not apply to ל׳
     expect(sizeCableIL({ method: "ל", phases: 3, voltage: 400, current: 50, length: 5, maxDropPercent: 5, soilResistivity: 1 })?.factors.extra).toBe(1);
+  });
+});
+
+describe("aluminium (Israeli regulations)", () => {
+  it("uses the aluminium columns and skips sections without a value", () => {
+    // 70.1: aluminium starts at 6 mm² (24 A single-phase); 10 mm² = 34 A
+    const r = sizeCableIL({ method: "א", material: "aluminium", phases: 1, voltage: 230, current: 5, length: 5, maxDropPercent: 5 });
+    expect(r?.section).toBe(6);
+    expect(r?.tableAmpacity).toBe(24);
+    expect(sizeCableIL({ method: "א", material: "aluminium", phases: 1, voltage: 230, current: 30, length: 5, maxDropPercent: 5 })?.section).toBe(10);
+  });
+
+  it("refuses table 90.5 aluminium, which is erroneous in the published regulations", () => {
+    expect(() => sizeCableIL({ method: "יב", insulation: 90, material: "aluminium", phases: 3, voltage: 400, current: 30, length: 5, maxDropPercent: 5 })).toThrow();
+    expect(sizeCableIL({ method: "יב", insulation: 70, material: "aluminium", phases: 3, voltage: 400, current: 30, length: 5, maxDropPercent: 5 })?.section).toBe(6);
+  });
+
+  it("is refused for IEC (no verified aluminium tables yet)", () => {
+    expect(() => sizeCable({ phases: 3, voltage: 400, current: 30, length: 5, maxDropPercent: 5, material: "aluminium" })).toThrow();
+  });
+});
+
+describe("protective device selection", () => {
+  it("uses the regulation 6 I2 factors", () => {
+    expect(trippingFactor("fuse", 16, "il")).toBe(1.75);
+    expect(trippingFactor("fuse", 32, "il")).toBe(1.6);
+    expect(trippingFactor("fuse", 10, "il")).toBeNull();
+    expect(trippingFactor("fuse", 10, "iec")).toBe(1.9);
+    expect(trippingFactor("mcb", 16, "il")).toBe(1.45);
+    expect(trippingFactor("adjustable", 250, "il")).toBe(1.3);
+  });
+
+  it("checks In ≤ I'z and I2 ≤ 1.45·I'z", () => {
+    expect(selectProtection("mcb", 18, 24, "il")?.ratedCurrent).toBe(20);
+    expect(selectProtection("mcb", 33, 39, "il")).toBeNull(); // 40 A > 39 A
+    // fuse 25 A: I2 = 43.75 > 1.45·27 = 39.15 although In ≤ I'z
+    expect(selectProtection("fuse", 25, 27, "il")).toBeNull();
+    expect(selectProtection("adjustable", 33.2, 39, "il")?.ratedCurrent).toBe(34);
+  });
+
+  it("upsizes the cable when the breaker does not fit", () => {
+    // 70.5 (method י״ב), three-phase copper: 6 mm² = 39 A, 10 mm² = 54 A. Ib = 33 A → MCB 40 A > 39 A.
+    const base = { method: "יב", phases: 3 as const, voltage: 400, current: 33, length: 5, maxDropPercent: 5 };
+    expect(sizeCableIL(base)?.section).toBe(6);
+    const r = sizeCableIL({ ...base, protection: "mcb" });
+    expect(r?.section).toBe(10);
+    expect(r?.governedBy).toBe("protection");
+    expect(r?.protection?.ratedCurrent).toBe(40);
+    expect(sizeCableIL({ ...base, protection: "adjustable" })?.section).toBe(6);
+  });
+
+  it("rejects loads above the largest MCB", () => {
+    expect(() => sizeCableIL({ method: "יב", phases: 3, voltage: 400, current: 200, length: 5, maxDropPercent: 5, protection: "mcb" })).toThrow();
   });
 });

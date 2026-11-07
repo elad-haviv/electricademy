@@ -5,6 +5,8 @@ import {
   IL_GROUPING_ARRANGEMENTS,
   IL_INSTALLATION_METHODS,
   IL_SOIL_RESISTIVITY_FACTORS,
+  DEVICE_LABELS,
+  ilHasAluminium,
   ilMethod,
   ilReferenceTemperature,
   ilTabulatedTemperatures,
@@ -15,6 +17,8 @@ import {
   sizeCableIL,
   TABULATED_TEMPERATURES,
   type CableSizingResult,
+  type ConductorMaterial,
+  type ProtectiveDeviceType,
   type IlInsulation,
   type InstallationMethod,
 } from "@electricademy/calc";
@@ -37,6 +41,8 @@ export function CableSizingCalculator() {
   const [length, setLength] = useState(40);
   const [pf, setPf] = useState(0.9);
   const [maxDrop, setMaxDrop] = useState(3);
+  const [ilMaterial, setIlMaterial] = useState<ConductorMaterial>("copper");
+  const [device, setDevice] = useState<ProtectiveDeviceType | "none">("mcb");
 
   // IEC 60364-5-52
   const [iecMethod, setIecMethod] = useState<InstallationMethod>("C");
@@ -57,6 +63,8 @@ export function CableSizingCalculator() {
   const ilArrangements = IL_GROUPING_ARRANGEMENTS.filter((a) => a.kind === ilInfo.grouping);
   const arr = ilArrangements.find((a) => a.id === arrangement);
   const voltage = phases === 3 ? 400 : 230;
+  // Aluminium tables are available only under the Israeli regulations.
+  const material: ConductorMaterial = source === "il" ? ilMaterial : "copper";
 
   const changeIecMethod = (m: InstallationMethod) => {
     // Air and ground use different reference temperatures; reset when the medium changes.
@@ -84,7 +92,10 @@ export function CableSizingCalculator() {
   };
 
   const result = useMemo((): CableSizingResult | null | { error: string } => {
-    const common = { phases, voltage, current, length, powerFactor: pf, maxDropPercent: maxDrop };
+    const common = {
+      phases, voltage, current, length, powerFactor: pf, maxDropPercent: maxDrop, material,
+      protection: device === "none" ? undefined : device,
+    };
     try {
       if (source === "iec") {
         return sizeCable({ ...common, method: iecMethod, ambientTemperature: iecTemp, groupedCircuits: iecCircuits });
@@ -100,7 +111,7 @@ export function CableSizingCalculator() {
     } catch (e) {
       return { error: (e as Error).message };
     }
-  }, [source, phases, voltage, current, length, pf, maxDrop, iecMethod, iecTemp, iecCircuits,
+  }, [source, phases, voltage, current, length, pf, maxDrop, material, device, iecMethod, iecTemp, iecCircuits,
     ilMethodId, insulation, ilTemp, arrangement, ilCircuits, spacing, soil]);
 
   const buried = source === "il" ? ilInfo.medium === "ground" : iecInfo.medium === "ground";
@@ -180,6 +191,39 @@ export function CableSizingCalculator() {
         <NumberField label="אורך" unit="m" value={length} onChange={setLength} />
         <NumberField label="מקדם הספק (cos φ)" value={pf} onChange={setPf} step={0.01} />
         <NumberField label="מפל מתח מרבי" unit="%" value={maxDrop} onChange={setMaxDrop} step={0.5} />
+        <SelectField
+          label="מבטח (הגנה בפני העמסת יתר)"
+          value={device}
+          options={[
+            ...(["mcb", "fuse", "adjustable"] as const).map((d) => ({ value: d, label: DEVICE_LABELS[d] })),
+            { value: "none" as const, label: "ללא – בחירת חתך בלבד" },
+          ]}
+          onChange={setDevice}
+        />
+        {source === "il" ? (
+          <div>
+            <SelectField
+              label="חומר המוליך"
+              value={ilMaterial}
+              options={[
+                { value: "copper", label: "נחושת" },
+                { value: "aluminium", label: "אלומיניום" },
+              ]}
+              onChange={setIlMaterial}
+            />
+            {ilMaterial === "aluminium" && !ilHasAluminium(insulation, ilInfo.table) && (
+              <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                בטבלה {insulation}.{ilInfo.table} כפי שפורסמה ברשומות, עמודות האלומיניום שגויות (משוכפלות מעמודות הנחושת).
+                בחרו בידוד 70°C או נחושת.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div>
+            <SelectField label="חומר המוליך" value="copper" options={[{ value: "copper", label: "נחושת" }]} onChange={() => {}} />
+            <p className="mt-1 text-xs text-slate-500">אלומיניום זמין כרגע לפי חוק החשמל בלבד.</p>
+          </div>
+        )}
 
         {source === "il" ? (
           <>
@@ -249,11 +293,26 @@ export function CableSizingCalculator() {
       ) : (
         <ResultBox>
           <p className="text-lg">
-            חתך מומלץ: <strong dir="ltr">{result.section} mm²</strong> (נחושת
+            חתך מומלץ: <strong dir="ltr">{result.section} mm²</strong> ({material === "aluminium" ? "אלומיניום" : "נחושת"}
             {source === "il" ? `, בידוד ${insulation}°C` : ", בידוד PVC"})
+            {result.protection && (
+              <>
+                {" "}
+                · מבטח: <strong>{DEVICE_LABELS[result.protection.type]}</strong>{" "}
+                <strong dir="ltr">
+                  {result.protection.type === "adjustable" ? `In = ${result.protection.ratedCurrent} A` : `${result.protection.ratedCurrent} A`}
+                </strong>
+              </>
+            )}
           </p>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {result.governedBy === "ampacity" ? "החתך נקבע לפי הזרם המותר" : "החתך הוגדל בגלל מפל המתח"} · מפל מתח:{" "}
+            {
+              {
+                ampacity: "החתך נקבע לפי הזרם המותר",
+                protection: "החתך הוגדל כדי שהמבטח יגן על הכבל",
+                voltageDrop: "החתך הוגדל בגלל מפל המתח",
+              }[result.governedBy]
+            } · מפל מתח:{" "}
             {fmt(result.dropPercent)}%
           </p>
           <dl className="mt-3 grid max-w-md gap-y-1 text-sm">
@@ -265,6 +324,26 @@ export function CableSizingCalculator() {
             )}
             <Row label={source === "il" ? "I'z = Iz · c" : "זרם מותר אחרי תיקון"} value={`${fmt(result.ampacity, 1)} A`} strong />
           </dl>
+          {result.protection && (
+            <>
+              <h3 className="mt-4 text-sm font-semibold">
+                תיאום המבטח {source === "il" ? "(תקנה 6)" : "(IEC 60364-4-43)"}
+              </h3>
+              <dl className="mt-1 grid max-w-md gap-y-1 text-sm">
+                <Row
+                  label="Ib ≤ In ≤ I'z"
+                  value={`${fmt(current, 1)} ≤ ${fmt(result.protection.ratedCurrent, 1)} ≤ ${fmt(result.ampacity, 1)} ✓`}
+                />
+                <Row
+                  label={`I2 = ${fmt(result.protection.trippingFactor)}·In ≤ 1.45·I'z`}
+                  value={`${fmt(result.protection.trippingCurrent, 1)} ≤ ${fmt(result.protection.trippingLimit, 1)} ✓`}
+                />
+              </dl>
+              {result.protection.type === "adjustable" && (
+                <p className="mt-1 text-xs text-slate-500">ערך הכיוונון מעוגל כלפי מעלה לאמפר שלם.</p>
+              )}
+            </>
+          )}
         </ResultBox>
       )}
       <p className="mt-3 text-xs text-slate-500">
@@ -272,7 +351,7 @@ export function CableSizingCalculator() {
           <>
             לפי תקנות החשמל (העמסה והגנה על מוליכים מבודדים וכבלים במתח נמוך), התשע״ד–2014: ערכי Iz מהתוספת השנייה
             (טמפרטורה אופפת 35°C באוויר, 30°C ו־2.5 K·m/W בקרקע), ומקדמי התיקון מהתוספת הראשונה. לפי תקנה 6 נדרש גם
-            Ib ≤ In ≤ I&apos;z בבחירת המבטח.
+            Ib ≤ In ≤ I&apos;z ו־I2 ≤ 1.45·I&apos;z בבחירת המבטח. יש לבדוק בנפרד גם את ההגנה בפני זרם קצר (תקנה 10).
           </>
         ) : (
           <>

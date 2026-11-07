@@ -7,9 +7,16 @@ import {
 import type { Phases } from "./basic";
 import { assertPositive } from "./validate";
 import {
-  IL_AMPACITY_CU,
+  ProtectionResult,
+  selectProtection,
+  smallestDevice,
+  type ProtectionRules,
+  type ProtectiveDeviceType,
+} from "./protection";
+import {
   ilGroupingFactor,
   ilMethod,
+  ilRatings,
   ilReferenceTemperature,
   ilSoilFactor,
   ilTemperatureFactor,
@@ -73,6 +80,11 @@ export function voltageDrop(input: VoltageDropInput) {
 interface SectionSelectionInput extends Omit<VoltageDropInput, "section"> {
   /** Maximum allowed voltage drop (%). */
   maxDropPercent: number;
+  /**
+   * Overload protective device. When given, a section is accepted only if a device of this type
+   * satisfies Ib ≤ In ≤ I'z and I2 ≤ 1.45·I'z; otherwise only Ib ≤ I'z is checked.
+   */
+  protection?: ProtectiveDeviceType;
 }
 
 export interface CableSizingInput extends SectionSelectionInput {
@@ -94,29 +106,38 @@ export interface CableSizingResult {
   /** Ampacity after all correction factors (A). */
   ampacity: number;
   dropPercent: number;
-  governedBy: "ampacity" | "voltageDrop";
+  /** What fixed the section: the ampacity, the protective device (In ≤ I'z, I2 ≤ 1.45·I'z) or the voltage drop. */
+  governedBy: "ampacity" | "protection" | "voltageDrop";
+  /** The protective device, when one was requested. */
+  protection?: ProtectionResult;
   /** Correction factors; `extra` is the soil-resistivity (or other user) factor. */
   factors: { temperature: number; grouping: number; extra: number; total: number };
 }
 
 /**
  * Smallest section from `ratings` ([section, table ampacity]) whose corrected ampacity
- * (table · factors.total) carries the load and whose voltage drop is within the limit.
+ * (table · factors.total) carries the load, is protected by the requested device and whose
+ * voltage drop is within the limit.
  */
 function selectSection(
   input: SectionSelectionInput,
   ratings: readonly (readonly [number, number])[],
   factors: CableSizingResult["factors"],
+  rules: ProtectionRules,
 ): CableSizingResult | null {
-  if ((input.material ?? "copper") !== "copper") {
-    throw new Error("Cable sizing tables are currently available for copper only");
-  }
   assertPositive(input.maxDropPercent, "maxDropPercent");
-  let ampacityOnly: number | null = null;
+  if (input.protection && smallestDevice(input.protection, input.current, rules) === null) {
+    throw new Error("אין מבטח מהסוג שנבחר בזרם נקוב שמתאים לזרם העומס");
+  }
+  let firstByAmpacity: number | null = null;
+  let firstProtected: number | null = null;
   for (const [section, tableAmpacity] of ratings) {
     const ampacity = tableAmpacity * factors.total;
     if (ampacity < input.current) continue;
-    ampacityOnly ??= section;
+    firstByAmpacity ??= section;
+    const protection = input.protection ? selectProtection(input.protection, input.current, ampacity, rules) : undefined;
+    if (protection === null) continue;
+    firstProtected ??= section;
     const { percent } = voltageDrop({ ...input, section });
     if (percent <= input.maxDropPercent) {
       return {
@@ -124,7 +145,8 @@ function selectSection(
         tableAmpacity,
         ampacity,
         dropPercent: percent,
-        governedBy: section === ampacityOnly ? "ampacity" : "voltageDrop",
+        governedBy: section === firstByAmpacity ? "ampacity" : section === firstProtected ? "protection" : "voltageDrop",
+        ...(protection ? { protection } : {}),
         factors,
       };
     }
@@ -138,6 +160,9 @@ function selectSection(
  * limit. Iz = Iz,table · k_temp · k_group · k_extra. Returns null if none fits.
  */
 export function sizeCable(input: CableSizingInput): CableSizingResult | null {
+  if ((input.material ?? "copper") !== "copper") {
+    throw new Error("טבלאות IEC זמינות כרגע לנחושת בלבד");
+  }
   const method = input.method ?? "C";
   const extra = input.deratingFactor ?? 1;
   assertPositive(extra, "deratingFactor");
@@ -145,7 +170,7 @@ export function sizeCable(input: CableSizingInput): CableSizingResult | null {
   const grouping = groupingFactor(input.groupedCircuits ?? 1);
   const table = AMPACITY_CU_PVC[method][input.phases === 3 ? 3 : 2];
   const ratings = STANDARD_SECTIONS_MM2.map((section) => [section, table[section]] as const);
-  return selectSection(input, ratings, { temperature, grouping, extra, total: temperature * grouping * extra });
+  return selectSection(input, ratings, { temperature, grouping, extra, total: temperature * grouping * extra }, "iec");
 }
 
 export interface IsraeliCableSizingInput extends SectionSelectionInput {
@@ -174,7 +199,11 @@ export function sizeCableIL(input: IsraeliCableSizingInput): CableSizingResult |
   );
   const grouping = input.grouping ? ilGroupingFactor(input.grouping) : 1;
   const extra = method.grouping === "buried-direct" ? ilSoilFactor(input.soilResistivity ?? 2.5) : 1;
-  const column = input.phases === 3 ? 2 : 1;
-  const ratings = IL_AMPACITY_CU[insulation][method.table].map((row) => [row[0], row[column]] as const);
-  return selectSection(input, ratings, { temperature, grouping, extra, total: temperature * grouping * extra });
+  const ratings = ilRatings(insulation, method.table, input.material ?? "copper", input.phases === 3 ? 3 : 1);
+  if (ratings.length === 0) {
+    throw new Error(`בטבלה ${insulation}.${method.table} בתקנות אין ערכים תקינים לאלומיניום`);
+  }
+  // Voltage drop at the insulation's maximum conductor temperature unless given.
+  const sizingInput = { conductorTemperature: insulation, ...input };
+  return selectSection(sizingInput, ratings, { temperature, grouping, extra, total: temperature * grouping * extra }, "il");
 }
