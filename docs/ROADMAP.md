@@ -23,9 +23,9 @@
 - Pro content: Technician and Academic tracks, practice exams, professional calculators.
 - Newsletter and transactional email.
 
-## Phase 4: Licensing-exam simulator (`apps/license-exam`)
-- Timed exams built from the `question` bank (`source = licensing`), by license class.
-- Regulation references per question; drawings and single-line-diagram questions.
+## Phase 4: Licensing-exam simulator (`/license-exam`)
+- ✅ Beta: the official bank (v8.1, 1,121 questions with drawings), 50-question timed exams by licence (technician, practical engineer, engineer), practice by topic, browse and search.
+- Verified answers and regulation references per question (`content/license-exam/answers.json`).
 - Readiness score and a weak-topic report linking back to lessons.
 - Sold as the `license_exam` entitlement; convert the waitlist at launch.
 

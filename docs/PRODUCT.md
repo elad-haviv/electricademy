@@ -47,7 +47,7 @@ Pricing is a placeholder: ₪39 per month or ₪349 per year (see `PRICING` in `
 ## Product promotion inside the platform
 - A `/products` page and the `product` table.
 - **Contextual banners**: lesson frontmatter `promote: ["blue-grid"]` renders a product card at the end of the lesson.
-- A `/license-exam` landing page with a **waitlist** to validate demand before launch.
+- `/license-exam`: the licensing-exam simulator (beta), built on the ministry's official question bank.
 - Home-page hero cards.
 
 ## KPIs

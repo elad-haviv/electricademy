@@ -28,7 +28,7 @@ export default async function ProductsPage() {
             <div className="mt-4">
               {p.slug === "license-exam" ? (
                 <Link href="/license-exam" className={buttonClass("primary")}>
-                  לרשימת ההמתנה
+                  לסימולטור
                 </Link>
               ) : p.url ? (
                 <a href={p.url} target="_blank" rel="noopener" className={buttonClass("primary")}>

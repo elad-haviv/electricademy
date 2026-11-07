@@ -1,0 +1,4 @@
+{
+  "_readme": "Answer key for bank.json, keyed by question number (שאלה N). The ministry publishes questions without answers; add an entry only after checking it against the regulations. serial must match the question's serial, so entries are ignored automatically if a new bank version renumbers the questions. answer is 1-4. Example: \"1\": { \"answer\": 3, \"serial\": \"14002\", \"source\": \"תקנות החשמל (הארקות ואמצעי הגנה בפני חישמול), תקנה ...\", \"explanation\": \"...\" }",
+  "answers": {}
+}

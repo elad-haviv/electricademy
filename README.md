@@ -27,6 +27,7 @@ With `AUTH_DEV_LOGIN=true` (development only), you can sign in with any email an
 | `pnpm lint` / `pnpm typecheck` / `pnpm test` | Runs the checks (also in CI) |
 | `pnpm db:generate` | Creates SQL migrations after a schema change |
 | `pnpm db:migrate` / `pnpm db:seed` | Applies migrations, seeds products, simulators and sample data |
+| `packages/content/scripts/license-exam/extract.py` | Rebuilds the licensing-exam question bank from the ministry's PDF (see the README next to it) |
 | `pnpm --filter @electricademy/content legislation:import` | Refreshes the Electricity Law and regulations (`content/legislation`) from Hebrew Wikisource |
 
 ## Layout

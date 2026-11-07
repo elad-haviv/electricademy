@@ -5,7 +5,6 @@ pnpm workspaces and Turborepo.
 
 ```
 apps/web            Next.js 16 (App Router, React 19, Tailwind v4). Main site.
-apps/license-exam   (phase 4) Licensing-exam simulator app.
 packages/ui         Design tokens (Tailwind @theme) + shared React components.
 packages/db         Drizzle ORM schema, migrations, seed (Postgres).
 packages/auth       Entitlements (`can()`), access resolution, PaymentProvider abstraction.
@@ -55,7 +54,14 @@ Schema: `packages/db/src/schema.ts`. Migrations: `packages/db/migrations` (`pnpm
 - **Hub side (implemented):** `components/SimFrame.tsx` listens with `listenToSimulators([simulator origin])`. On `ready` it calls the `issueSimSession` server action and replies with `sendSession` (user, plan, signed token). `progress` and `completed` go to the `recordSimEvent` server action, which writes `sim_session` for signed-in users: only progress that beats the best recorded value is stored, and the first `completed` per module awards 20 XP. Every visit is logged as `opened`, so the dashboard ("המעבדות שלי") shows labs even before they report progress.
 - **Tokens:** `@electricademy/auth/sim-token` (server-only) signs `{ sub, name, plan, sim, exp }` with HMAC-SHA256 under `AUTH_SECRET`, valid 15 minutes and bound to one simulator. Simulators verify with `POST /api/sim/verify`; CORS is open only to the registered simulator origins.
 - **Simulator side (to do per lab repo):** see [SIMULATOR_INTEGRATION.md](SIMULATOR_INTEGRATION.md).
-- New simulators (license-exam) live in the monorepo under `apps/` and reuse `ui`, `db` and `auth`.
+- New simulators live in the monorepo under `apps/` and reuse `ui`, `db` and `auth`.
+
+## Licensing-exam simulator (`/license-exam`)
+- **Data:** the ministry's question bank PDF is converted by `packages/content/scripts/license-exam/extract.py` (see its README) into `content/license-exam/bank.json` and figure crops in `apps/web/public/images/license-exam/`. Each question keeps its bank number, serial and licence scope (`all`, `practical-engineer`, `engineer`, from the tables at the end of the PDF).
+- **Answers:** the official bank has none. `content/license-exam/answers.json` is our key, keyed by question number and checked against the serial; unkeyed questions are shown for self-review and left out of the score.
+- **Topics:** assigned by keyword rules in `packages/content/src/licenseExamMeta.ts` (browser-safe, exported as `@electricademy/content/license-exam`); `licenseExam.ts` loads the bank on the server.
+- **Modes:** `/license-exam/exam` (50 random questions per licence, optional timer, graded by the `gradeExam` server action, which also writes `quiz_attempt` for signed-in users), `/practice` (by topic or bookmarks), `/browse` (search and filters, server-rendered) and `/q/[n]`. Bookmarks and exam history are kept in `localStorage`.
+- **Access:** free while in beta. `can(access, "license_exam")` is ready if it becomes a paid product.
 
 ## Deployment (Coolify)
 - **web:** `docker/web.Dockerfile` (Next.js standalone on port 3000). Set `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL` and the provider variables.

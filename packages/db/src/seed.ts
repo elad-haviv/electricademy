@@ -64,9 +64,10 @@ const productRows: (typeof schema.products.$inferInsert)[] = [
   {
     slug: "license-exam",
     name: "סימולטור בחינות רישוי",
-    tagline: "מתכוננים לבחינת הרישוי כמו בבחינה האמיתית",
-    description: "מבחני תרגול מתוזמנים, בנק שאלות מתויג לפי נושאים ותקנות, הסברים מלאים ומעקב מוכנות לבחינה.",
-    status: "coming_soon",
+    tagline: "מתכוננים לבחינת הרישוי על שאלות המאגר הרשמי",
+    description:
+      "סימולציית בחינה של 50 שאלות לפי סוג הרישיון (טכנאי, הנדסאי או מהנדס), תרגול לפי נושא ועיון בכל שאלות המאגר של משרד העבודה.",
+    status: "beta",
     featured: true,
     topics: ["regulations", "licensing"],
     sortOrder: 1,
