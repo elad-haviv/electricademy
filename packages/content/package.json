@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "legislation:import": "tsx scripts/import-legislation.ts"
   },
   "dependencies": {
     "gray-matter": "^4.0.3"
@@ -14,6 +17,7 @@
   "devDependencies": {
     "@types/node": "^22.10.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.0",
+    "tsx": "^4.20.0"
   }
 }

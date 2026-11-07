@@ -17,7 +17,10 @@ export async function SiteHeader() {
               {item.label}
             </Link>
           ))}
-          <Link href="/products" className={buttonClass("ghost")}>
+          <Link href="/law" className={buttonClass("ghost")}>
+            חוק ותקנות
+          </Link>
+          <Link href="/products" className={buttonClass("ghost", "hidden lg:inline-flex")}>
             מוצרים
           </Link>
         </nav>

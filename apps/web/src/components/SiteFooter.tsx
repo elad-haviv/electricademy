@@ -18,6 +18,7 @@ const COLUMNS = [
       { href: "/simulators", label: "סימולטורים" },
       { href: "/tools", label: "מחשבונים" },
       { href: "/license-exam", label: "סימולטור בחינות רישוי" },
+      { href: "/law", label: "חוק החשמל ותקנותיו" },
       { href: "/products", label: "מוצרים" },
     ],
   },

@@ -27,12 +27,13 @@ With `AUTH_DEV_LOGIN=true` (development only), you can sign in with any email an
 | `pnpm lint` / `pnpm typecheck` / `pnpm test` | Runs the checks (also in CI) |
 | `pnpm db:generate` | Creates SQL migrations after a schema change |
 | `pnpm db:migrate` / `pnpm db:seed` | Applies migrations, seeds products, simulators and sample data |
+| `pnpm --filter @electricademy/content legislation:import` | Refreshes the Electricity Law and regulations (`content/legislation`) from Hebrew Wikisource |
 
 ## Layout
 ```
 apps/web          Next.js site
 packages/{ui,db,auth,calc,content,sim-sdk}
-content/          MDX lessons & articles
+content/          MDX lessons & articles; legislation/ holds the Electricity Law and regulations (Open Law Book markup)
 docs/             Spec documents
 docker/           Dockerfiles for Coolify
 ```

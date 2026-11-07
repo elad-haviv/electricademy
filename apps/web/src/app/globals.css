@@ -84,3 +84,93 @@
 .prose-content code {
   @apply rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800;
 }
+
+/* ───────── Legislation (/law) ───────── */
+.law-doc {
+  @apply text-[15px] leading-8 text-slate-800 dark:text-slate-200;
+}
+.law-intro {
+  @apply mb-6 text-slate-600 italic dark:text-slate-400;
+}
+.law-chapter {
+  @apply mt-12 mb-4 scroll-mt-24 border-b-2 border-slate-900 pb-2 dark:border-slate-200;
+}
+.law-chapter h2 {
+  @apply text-xl font-black text-slate-950 dark:text-white;
+}
+.law-subchapter {
+  @apply mt-8 mb-3 scroll-mt-24;
+}
+.law-subchapter h3 {
+  @apply text-lg font-extrabold text-slate-900 dark:text-slate-100;
+}
+.law-subheading {
+  @apply -mt-2 mb-4 text-xs text-slate-500 dark:text-slate-400;
+}
+.law-section {
+  @apply mt-6 scroll-mt-24 rounded-xl px-2 py-1 target:bg-amber-50 dark:target:bg-amber-950/30;
+}
+.law-section-head {
+  @apply mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1;
+}
+.law-section-number {
+  @apply min-w-8 rounded-md bg-slate-900 px-1.5 text-center text-sm font-black text-spark-300 no-underline hover:bg-slate-700 dark:bg-slate-700;
+}
+.law-section-title {
+  @apply font-bold text-slate-950 dark:text-white;
+}
+.law-amendment {
+  @apply text-xs text-slate-500 dark:text-slate-400;
+}
+.law-para {
+  @apply my-1.5;
+}
+.law-def {
+  @apply border-s-2 border-slate-200 ps-3 dark:border-slate-700;
+}
+.law-note {
+  @apply text-slate-500 dark:text-slate-400;
+}
+.law-ref {
+  @apply text-brand-700 underline decoration-brand-300 underline-offset-2 hover:decoration-brand-700 dark:text-brand-300 dark:decoration-brand-700;
+}
+.law-center {
+  @apply block text-center;
+}
+.law-large {
+  @apply text-lg;
+}
+.law-bidi {
+  unicode-bidi: isolate;
+}
+.law-columns {
+  @apply my-1 grid gap-4 sm:grid-flow-col sm:auto-cols-fr;
+}
+.law-frac {
+  @apply mx-1 inline-flex flex-col items-center align-middle text-sm leading-tight;
+}
+.law-frac > span:first-child {
+  @apply border-b border-current px-1;
+}
+.law-math {
+  unicode-bidi: isolate;
+}
+.law-table-wrap {
+  @apply my-4 overflow-x-auto;
+}
+.law-table {
+  @apply min-w-full border-collapse text-sm leading-6;
+}
+.law-table th,
+.law-table td {
+  @apply border border-slate-300 px-2 py-1 align-top dark:border-slate-700;
+}
+.law-table th {
+  @apply bg-slate-100 font-bold dark:bg-slate-800;
+}
+.law-signoff {
+  @apply mt-12 space-y-1 border-t border-slate-200 pt-6 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400;
+}
+.law-sources {
+  @apply leading-6;
+}

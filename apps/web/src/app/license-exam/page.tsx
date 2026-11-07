@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Badge, Card } from "@electricademy/ui";
 import { PageBanner } from "@/components/PageBanner";
 import { WaitlistForm } from "@/components/forms";
+import { LawCallout } from "@/components/law/LawCallout";
 
 export const metadata: Metadata = {
   title: "סימולטור בחינות רישוי חשמלאים",
@@ -39,6 +40,7 @@ export default function LicenseExamPage() {
           </Card>
         ))}
       </div>
+      <LawCallout title="בינתיים: לומדים ישר מהתקנות" />
       <Card>
         <h2 className="mb-3 text-lg font-bold">רוצים להיות הראשונים לדעת?</h2>
         <WaitlistForm product="license-exam" />

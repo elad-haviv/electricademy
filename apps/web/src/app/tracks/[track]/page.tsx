@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Badge, Card } from "@electricademy/ui";
 import { PageBanner } from "@/components/PageBanner";
+import { LawCallout } from "@/components/law/LawCallout";
 import { getTrack, hasLesson, TRACKS } from "@electricademy/content";
 
 export function generateStaticParams() {
@@ -33,6 +34,7 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
           </span>
         }
       />
+      {(track.slug === "licensing" || track.slug === "professionals") && <LawCallout />}
       {track.modules.map((m, mi) => (
         <Card key={m.slug}>
           <h2 className="text-xl font-bold">
