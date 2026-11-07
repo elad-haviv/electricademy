@@ -37,7 +37,25 @@ export interface ParseOptions {
    * pattern "[[+|סעיף 13]] [[=החוק|...]]". Return null to keep the reference as plain text.
    */
   lawHref?: (name: string) => string | null;
+  /**
+   * Image for the n-th [[תמונה:...]] link in the document (0-based). Return null to drop the
+   * link, or undefined to show a placeholder.
+   */
+  image?: (index: number, name: string) => LawFigure | null | undefined;
+  /** Figures for the n-th editorial omission note, e.g. "(((איור הושמט)))" (0-based). */
+  omitted?: (index: number) => LawFigure[] | undefined;
 }
+
+export interface LawFigure {
+  /** Image URL. */
+  src: string;
+  alt: string;
+  /** Where the figure comes from, e.g. "קובץ התקנות 5375, עמ' 1101". */
+  source?: string;
+}
+
+/** Editorial notes that stand in for content left out of the source ("(((איור הושמט)))"). */
+const OMISSION_RE = /^\((?:איור|איורים|שרטוט|הטבלה|התוספת)[^)]*הושמט/;
 
 /* ───────────────────────── helpers ───────────────────────── */
 
@@ -96,7 +114,16 @@ const TOKEN_CLOSE = "\uE001";
 
 class Inline {
   private fragments: string[] = [];
+  private imageCount = 0;
+  private omissionCount = 0;
   constructor(private opts: ParseOptions) {}
+
+  private figure(f: LawFigure, caption: boolean): string {
+    const img = `<img src="${escapeHtml(f.src)}" alt="${escapeHtml(f.alt)}" loading="lazy" decoding="async"${f.source ? ` title="${escapeHtml(f.source)}"` : ""}>`;
+    if (!caption) return `<span class="law-figure law-figure-inline">${img}</span>`;
+    const source = f.source ? ` <span class="law-figure-source">(${escapeHtml(f.source)})</span>` : "";
+    return `<span class="law-figure">${img}<span class="law-figure-caption">${escapeHtml(f.alt)}${source}</span></span>`;
+  }
 
   private token(html: string): string {
     this.fragments.push(html);
@@ -164,6 +191,12 @@ class Inline {
   }
 
   private link(target: string, text: string, enabling: string | null = null): string {
+    const file = /^(?:תמונה|קובץ|File|Image):(.+)$/i.exec(target);
+    if (file?.[1]) {
+      const fig = this.opts.image?.(this.imageCount++, file[1].trim());
+      if (fig === null) return "";
+      return fig ? this.figure(fig, false) : `<span class="law-note">(איור)</span>`;
+    }
     const label = this.render(text);
     let href: string | null = null;
     if (target.startsWith("=")) {
@@ -278,6 +311,10 @@ class Inline {
   }
 
   private note(inner: string): string {
+    if (OMISSION_RE.test(inner)) {
+      const figs = this.opts.omitted?.(this.omissionCount++);
+      if (figs?.length) return figs.map((f) => this.figure(f, true)).join("");
+    }
     if (inner.startsWith("(")) return `<span class="law-note">${this.render(inner)}</span>`;
     const [text = "", title] = splitTopLevel(inner, "|");
     return title ? `<span title="${escapeHtml(title)}">${this.render(text)}</span>` : this.render(text);

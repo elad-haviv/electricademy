@@ -1,0 +1,359 @@
+{
+ "$comment": "Figures for /law, extracted from the original Reshumot scans (olaw.org.il). 'images' maps each [[תמונה:...]] link in document order (null drops it); 'omitted' maps each '(((איור הושמט)))'-style note in document order to one or more figures.",
+ "conductor-loading-and-protection": {
+  "images": [
+   {
+    "src": "conductor-loading-and-protection/arrangement-multi-core-direct.webp",
+    "alt": "סידור כבלים רב־גידיים המונחים במישרין באדמה, במרחק a ביניהם",
+    "source": "קובץ התקנות 7349, עמ' 725"
+   },
+   {
+    "src": "conductor-loading-and-protection/arrangement-single-core-direct.webp",
+    "alt": "סידור כבלים חד־גידיים המונחים במישרין באדמה, במרחק a ביניהם",
+    "source": "קובץ התקנות 7349, עמ' 725"
+   },
+   {
+    "src": "conductor-loading-and-protection/arrangement-single-core-ducts.webp",
+    "alt": "קבוצות כבלים חד־גידיים בתוך צינורות באדמה, במרחק a ביניהן",
+    "source": "קובץ התקנות 7349, עמ' 726"
+   },
+   {
+    "src": "conductor-loading-and-protection/arrangement-multi-core-ducts.webp",
+    "alt": "כבלים רב־גידיים בתוך צינורות באדמה, במרחק a ביניהם",
+    "source": "קובץ התקנות 7349, עמ' 726"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-01.webp",
+    "alt": "תיאור גרפי של שיטת התקנה א",
+    "source": "קובץ התקנות 7349, עמ' 737"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-02.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ב",
+    "source": "קובץ התקנות 7349, עמ' 737"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-03.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ג",
+    "source": "קובץ התקנות 7349, עמ' 737"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-04.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ד",
+    "source": "קובץ התקנות 7349, עמ' 737"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-05.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ה",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-06.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ו",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-07.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ז",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-08.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ח",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-09.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ט",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-10.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-11.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י\"א",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   null,
+   {
+    "src": "conductor-loading-and-protection/method-12.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י\"ב",
+    "source": "קובץ התקנות 7349, עמ' 738"
+   },
+   null,
+   {
+    "src": "conductor-loading-and-protection/method-13.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י\"ג",
+    "source": "קובץ התקנות 7349, עמ' 739"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-14.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י\"ד",
+    "source": "קובץ התקנות 7349, עמ' 739"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-15.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ט\"ו",
+    "source": "קובץ התקנות 7349, עמ' 739"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-16.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ט\"ז",
+    "source": "קובץ התקנות 7349, עמ' 739"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-17.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י\"ז",
+    "source": "קובץ התקנות 7349, עמ' 739"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-18.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י\"ח",
+    "source": "קובץ התקנות 7349, עמ' 739"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-19.webp",
+    "alt": "תיאור גרפי של שיטת התקנה י\"ט",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-20.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ'",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-21.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"א",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-22.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ב",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-23.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ג",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-24.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ד",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-25.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ה",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-26.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ו",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-27.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ז",
+    "source": "קובץ התקנות 7349, עמ' 740"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-28.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ח",
+    "source": "קובץ התקנות 7349, עמ' 741"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-29.webp",
+    "alt": "תיאור גרפי של שיטת התקנה כ\"ט",
+    "source": "קובץ התקנות 7349, עמ' 741"
+   },
+   {
+    "src": "conductor-loading-and-protection/method-30.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ל'",
+    "source": "קובץ התקנות 7349, עמ' 741"
+   },
+   null,
+   {
+    "src": "conductor-loading-and-protection/method-31.webp",
+    "alt": "תיאור גרפי של שיטת התקנה ל\"א",
+    "source": "קובץ התקנות 7349, עמ' 741"
+   }
+  ]
+ },
+ "earthing-and-shock-protection": {
+  "omitted": [
+   [
+    {
+     "src": "earthing-and-shock-protection/figure-1.webp",
+     "alt": "איור מס' 1: דוגמה להגנה באיפוס TN-C-S",
+     "source": "קובץ התקנות 5375, עמ' 1101"
+    }
+   ],
+   [
+    {
+     "src": "earthing-and-shock-protection/figure-2.webp",
+     "alt": "איור מס' 2: דוגמה להגנה בהארקת הגנה (TT)",
+     "source": "קובץ התקנות 5375, עמ' 1102"
+    }
+   ],
+   [
+    {
+     "src": "earthing-and-shock-protection/figure-3.webp",
+     "alt": "איור מס' 3: דוגמה להגנה בזינה צפה (IT)",
+     "source": "קובץ התקנות 5375, עמ' 1103"
+    }
+   ]
+  ]
+ },
+ "agricultural-premises": {
+  "omitted": [
+   [
+    {
+     "src": "agricultural-premises/equipotential-bonding.webp",
+     "alt": "דוגמה לביצוע השוואת פוטנציאלים בחצרים חקלאיים, עם מקרא הרכיבים",
+     "source": "קובץ התקנות 5375, עמ' 1108"
+    }
+   ]
+  ]
+ },
+ "swimming-pools": {
+  "omitted": [
+   [
+    {
+     "src": "swimming-pools/figure-1.webp",
+     "alt": "איור 1: בריכה מתחת למפלס הקרקע, אזורים 0, 1 ו־2",
+     "source": "קובץ התקנות 6226, עמ' 500"
+    }
+   ],
+   [
+    {
+     "src": "swimming-pools/figure-2.webp",
+     "alt": "איור 2: בריכה מעל מפלס הקרקע, אזורים 0, 1 ו־2",
+     "source": "קובץ התקנות 6226, עמ' 501"
+    }
+   ],
+   [
+    {
+     "src": "swimming-pools/figure-3.webp",
+     "alt": "איור 3: מבט על בריכה עם מחיצות קבועות",
+     "source": "קובץ התקנות 6226, עמ' 502"
+    }
+   ],
+   [
+    {
+     "src": "swimming-pools/figure-4.webp",
+     "alt": "איור 4: דוגמה להגדרת אזורים בבריכת מים מדורגת",
+     "source": "קובץ התקנות 6226, עמ' 503"
+    }
+   ]
+  ]
+ },
+ "live-work": {
+  "omitted": [
+   [
+    {
+     "src": "live-work/figure-1.webp",
+     "alt": "איור 1: תחום העבודה במיתקן חי ותחום הקרבה למיתקן חי",
+     "source": "קובץ התקנות 7349, עמ' 749"
+    }
+   ],
+   [
+    {
+     "src": "live-work/figure-2.webp",
+     "alt": "איור 2: תחום העבודה במיתקן חי לאחר התקנת מחיצה או כיסויים במרחק השווה לנדרש בטבלה או עולה עליו",
+     "source": "קובץ התקנות 7349, עמ' 750"
+    }
+   ],
+   [
+    {
+     "src": "live-work/figure-3.webp",
+     "alt": "איור 3: תחום העבודה במיתקן חי לאחר התקנת מחיצה או כיסויים במרחק הקטן מהנדרש בטבלה",
+     "source": "קובץ התקנות 7349, עמ' 750"
+    }
+   ]
+  ]
+ },
+ "lv-overhead-networks": {
+  "omitted": [
+   [
+    {
+     "src": "lv-overhead-networks/annex1.webp",
+     "alt": "התוספת הראשונה: נתונים טכניים ורשימת חומרים לעוגנים, איורים 1 עד 5",
+     "source": "קובץ התקנות 5656, עמ' 632"
+    }
+   ],
+   [
+    {
+     "src": "lv-overhead-networks/annex3-figure-1.webp",
+     "alt": "התוספת השלישית, איור 1",
+     "source": "קובץ התקנות 5656, עמ' 634"
+    },
+    {
+     "src": "lv-overhead-networks/annex3-figure-2.webp",
+     "alt": "התוספת השלישית, איור 2",
+     "source": "קובץ התקנות 5656, עמ' 635"
+    },
+    {
+     "src": "lv-overhead-networks/annex3-figure-3.webp",
+     "alt": "התוספת השלישית, איור 3",
+     "source": "קובץ התקנות 5656, עמ' 636"
+    },
+    {
+     "src": "lv-overhead-networks/annex3-figure-4.webp",
+     "alt": "התוספת השלישית, איור 4",
+     "source": "קובץ התקנות 5656, עמ' 637"
+    }
+   ],
+   [
+    {
+     "src": "lv-overhead-networks/annex4-figure-1.webp",
+     "alt": "מרחקים מזעריים בין רשת עם מוליכים ללא בידוד לבין מבנה",
+     "source": "קובץ התקנות 5656, עמ' 638"
+    }
+   ],
+   [
+    {
+     "src": "lv-overhead-networks/annex4-figure-2.webp",
+     "alt": "מרחקים מזעריים בין רשת כבלים או צרור מוליכי רשת אווירית מבודדת לבין מבנה",
+     "source": "קובץ התקנות 5656, עמ' 639"
+    }
+   ]
+  ]
+ },
+ "water-reservoirs": {
+  "omitted": [
+   [
+    {
+     "src": "water-reservoirs/reference-plane.webp",
+     "alt": "מישור הייחוס החשמלי: גובה מים מרבי, ציוד ומבנה צף",
+     "source": "קובץ התקנות 11224, עמ' 2019"
+    }
+   ]
+  ]
+ },
+ "final-circuits": {
+  "omitted": [
+   [
+    {
+     "src": "final-circuits/bathroom-zones-1.webp",
+     "alt": "דוגמאות לקביעת אזורים בחדרי אמבטיה ומקלחת: אמבט ללא מחיצה ועם מחיצה קבועה",
+     "source": "קובץ התקנות 5708, עמ' 20"
+    },
+    {
+     "src": "final-circuits/bathroom-zones-2.webp",
+     "alt": "דוגמאות לקביעת אזורים במקלחות: עם אגן לרגליים, עם מחיצה קבועה וללא מחיצה",
+     "source": "קובץ התקנות 5708, עמ' 21"
+    }
+   ],
+   [
+    {
+     "src": "final-circuits/ip-table.webp",
+     "alt": "טבלה: מיון דרגות הגנה של מעטפות (IPXXX) לפי ת\"י 981",
+     "source": "קובץ התקנות 5474, עמ' 6"
+    }
+   ]
+  ]
+ }
+}

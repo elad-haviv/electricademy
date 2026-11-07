@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { contentRoot } from "../files";
+import { readLegislationFigures } from "./files";
 import { LEGISLATION } from "./manifest";
 import { lawToc, parseLaw, type Block } from "./parse";
 
@@ -58,6 +59,19 @@ describe("Open Law Book parser", () => {
     expect(doc.intro).toBe("לפי סעיפים 3 סעיף 22א לפקודת הקרקעות");
   });
 
+  it("replaces image links and omission notes with figures, in document order", () => {
+    const doc = parseLaw("@ 1. x\n: [[תמונה:a.png]] [[תמונה:b.png|200px]] [[תמונה:c.png]]\n: (((איור הושמט))) (((בוטל)))", {
+      image: (i) => (i === 0 ? { src: "/a.webp", alt: 'א"ב' } : i === 1 ? null : undefined),
+      omitted: (i) => (i === 0 ? [{ src: "/f.webp", alt: "איור 1", source: "ק\"ת 1, עמ' 2" }] : undefined),
+    });
+    const html = all(doc.blocks).join("\n");
+    expect(html).toContain('<img src="/a.webp" alt="א&quot;ב"');
+    expect(html).not.toContain("b.png");
+    expect(html).toContain('<span class="law-note">(איור)</span>');
+    expect(html).toContain(`<span class="law-figure-caption">איור 1 <span class="law-figure-source">(ק&quot;ת 1, עמ' 2)</span>`);
+    expect(html).toContain('<span class="law-note">(בוטל)</span>');
+  });
+
   it("escapes source text and only emits its own tags", () => {
     const doc = parseLaw('@ 1. ניסיון\n: <script>alert(1)</script> <img src=x onerror="a"> 10A < In');
     const html = all(doc.blocks).join("");
@@ -100,6 +114,29 @@ describe("committed legislation sources", () => {
       expect(doc.published).toBeTruthy();
       const html = all(doc.blocks).join("\n");
       for (const leftover of ["{{", "}}", "[[", "]]", "{|", "|}", "((", ""]) expect(html).not.toContain(leftover);
+    });
+  }
+});
+
+describe("legislation figures", () => {
+  const publicDir = path.join(contentRoot(), "..", "apps", "web", "public", "images", "legislation");
+  for (const entry of LEGISLATION) {
+    const figures = readLegislationFigures(entry.slug);
+    if (!figures.images && !figures.omitted) continue;
+    it(`${entry.slug}: one figure entry per image link / omission note, and the files exist`, () => {
+      const text = fs.readFileSync(path.join(contentRoot(), "legislation", `${entry.slug}.txt`), "utf8");
+      const links = text.match(/\[\[(?:תמונה|קובץ|File|Image):/g)?.length ?? 0;
+      const notes = text.match(/\(\(\((?:איור|איורים|שרטוט|הטבלה|התוספת)[^)]*הושמט/g)?.length ?? 0;
+      expect(figures.images?.length ?? 0).toBe(links);
+      expect(figures.omitted?.length ?? 0).toBe(notes);
+      for (const f of [...(figures.images ?? []), ...(figures.omitted ?? []).flat()]) {
+        if (!f) continue;
+        expect(fs.existsSync(path.join(publicDir, f.src)), f.src).toBe(true);
+        expect(f.alt.length).toBeGreaterThan(3);
+      }
+      let shown = 0;
+      parseLaw(text, { image: (i) => { const f = figures.images?.[i]; if (f) shown++; return f ?? null; }, omitted: (i) => { const fs_ = figures.omitted?.[i]; shown += fs_?.length ?? 0; return fs_; } });
+      expect(shown).toBe([...(figures.images ?? []).filter(Boolean), ...(figures.omitted ?? []).flat()].length);
     });
   }
 });

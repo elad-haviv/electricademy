@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import katex from "katex";
-import { getLegislationEntry, LEGISLATION, parseLaw, readLegislationSource, type LawDoc } from "@electricademy/content";
+import { getLegislationEntry, LEGISLATION, parseLaw, readLegislationFigures, readLegislationSource, type LawDoc, type LawFigure } from "@electricademy/content";
 
 const LAW_SLUG = "electricity-law";
 
@@ -21,7 +21,14 @@ export const getLawDoc = cache((slug: string): LawDoc | null => {
   const entry = getLegislationEntry(slug);
   const source = entry && readLegislationSource(slug);
   if (!source) return null;
+  const figures = readLegislationFigures(slug);
+  const asFigure = (f: { src: string; alt: string; source?: string }): LawFigure => ({ ...f, src: `/images/legislation/${f.src}` });
   return parseLaw(source, {
+    image: (i) => {
+      const f = figures.images?.[i];
+      return f === undefined ? undefined : f === null ? null : asFigure(f);
+    },
+    omitted: (i) => figures.omitted?.[i]?.map(asFigure),
     renderMath: (tex, display) => katex.renderToString(tex, { displayMode: display, throwOnError: false, output: "html" }),
     lawHref,
   });

@@ -4,6 +4,10 @@
  *
  * Uses index.php?action=raw (one request every few seconds) with an identifying User-Agent,
  * per https://www.mediawiki.org/wiki/Wikimedia_APIs/Rate_limits.
+ *
+ * Figures come from the Reshumot scans, not from here (see scripts/figures/README.md). After an
+ * import, `pnpm --filter @electricademy/content test` checks that content/legislation/figures.json
+ * still matches the image links and omission notes in each document.
  */
 import fs from "node:fs";
 import path from "node:path";
