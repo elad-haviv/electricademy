@@ -122,7 +122,7 @@ export interface ShowcaseSample {
 }
 
 /** Hand-picked: text-only, high-confidence answers across topics (a calculation, regulations, live work). */
-const SHOWCASE = [247, 3, 623, 368, 892];
+const SHOWCASE = [247, 3, 368];
 
 export function showcaseSamples(): { samples: ShowcaseSample[]; total: number; version: string | null } {
   const bank = loadExamBank();
