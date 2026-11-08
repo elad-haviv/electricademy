@@ -379,6 +379,23 @@ function LicensingPanel({ samples, total, version }: LicensingTeaser) {
           <span className="rounded-md border border-sky-800/70 bg-sky-950/60 px-2.5 py-0.5 text-sky-400">{q.topic}</span>
         </div>
         <p className="text-base leading-relaxed font-bold text-slate-100 sm:text-lg" dangerouslySetInnerHTML={{ __html: q.question }} />
+        {q.figures.length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {q.figures.map((f) => (
+              // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP crops, served as-is
+              <img
+                key={f.src}
+                src={f.src}
+                alt={f.alt}
+                width={f.w}
+                height={f.h}
+                loading="lazy"
+                style={{ width: Math.round(f.w * 0.5) }}
+                className="h-auto max-w-full rounded-lg bg-white p-1"
+              />
+            ))}
+          </div>
+        )}
 
         <div className="space-y-2.5">
           {q.options.map((opt, i) => {

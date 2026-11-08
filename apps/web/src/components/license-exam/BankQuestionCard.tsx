@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Card } from "@electricademy/ui";
 import type { ClientQuestion } from "@/lib/licenseExam";
 import { BookmarkButton } from "./BookmarkButton";
-import { KeyNote, OptionList, QuestionMeta, QuestionStem } from "./Question";
+import { OptionList, QuestionMeta, QuestionStem } from "./Question";
+import { RevealAnswer } from "./RevealAnswer";
 
 /** A question as it appears in the bank (browse / single page): options static, answer on demand. */
 export function BankQuestionCard({ q, link = true, comments }: { q: ClientQuestion; link?: boolean; comments?: number }) {
@@ -12,7 +13,7 @@ export function BankQuestionCard({ q, link = true, comments }: { q: ClientQuesti
         <QuestionMeta q={q} />
         <div className="flex items-center gap-2">
           {link && (
-            <Link href={`/license-exam/q/${q.n}#discussion`} className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
+            <Link href={`/license-exam/q/${q.n}#discussion`} prefetch={false} className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
               💬 דיון{comments ? ` (${comments})` : ""}
             </Link>
           )}
@@ -21,13 +22,8 @@ export function BankQuestionCard({ q, link = true, comments }: { q: ClientQuesti
       </div>
       <QuestionStem q={q} />
       <OptionList q={q} stateOf={() => "idle"} />
-      {q.key ? (
-        <details className="group">
-          <summary className="cursor-pointer text-sm font-semibold text-brand-700 dark:text-brand-300">הצגת התשובה</summary>
-          <div className="mt-2">
-            <KeyNote q={q} />
-          </div>
-        </details>
+      {q.keyed ? (
+        <RevealAnswer n={q.n} />
       ) : (
         <p className="text-xs text-slate-500 dark:text-slate-400">עוד אין לנו תשובה מאומתת לשאלה הזו.</p>
       )}

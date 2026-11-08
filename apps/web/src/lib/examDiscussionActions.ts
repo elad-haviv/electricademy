@@ -8,6 +8,7 @@ import { can } from "@electricademy/auth";
 import { loadExamBank } from "@electricademy/content";
 import { examComments, getDb } from "@electricademy/db";
 import type { FormState } from "./actions";
+import { guardExamContent } from "./contentGuard";
 import { getCurrentAccess, getSessionUser } from "./session";
 
 const commentSchema = z.object({
@@ -20,8 +21,11 @@ const commentSchema = z.object({
 export async function addExamComment(_: FormState, formData: FormData): Promise<FormState> {
   const n = formData.get("n");
   const user = await getSessionUser();
-  if (!user) redirect(`/login?callbackUrl=/license-exam/q/${n}`);
+  if (!user) redirect(`/login?callbackUrl=${encodeURIComponent(`/license-exam/q/${/^\d+$/.test(String(n)) ? n : ""}`)}`);
   if (!can(await getCurrentAccess(), "community.post")) return { error: "אין הרשאה לפרסם" };
+  // shares the per-minute request limit with the rest of the bank
+  const guard = await guardExamContent(user.id, {});
+  if (!guard.ok) return { error: guard.message };
 
   const parsed = commentSchema.safeParse({
     n,

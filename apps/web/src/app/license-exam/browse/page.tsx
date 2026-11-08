@@ -12,12 +12,16 @@ import {
   type ExamTopic,
 } from "@electricademy/content";
 import { BankQuestionCard } from "@/components/license-exam/BankQuestionCard";
+import { LimitNotice } from "@/components/license-exam/LimitNotice";
+import { guardExamContent } from "@/lib/contentGuard";
 import { getCommentCounts } from "@/lib/examDiscussion";
 import { requireExamUser, toClient } from "@/lib/licenseExam";
 
 export const metadata: Metadata = {
   title: "מאגר שאלות לבחינות רישוי בחשמל",
   description: "עיון וחיפוש בכל שאלות המאגר הרשמי לבחינות הרישוי בחשמל (טכנאים, הנדסאים ומהנדסים), לפי נושא ורישיון.",
+  // members-only bank content: keep it out of search engines (robots.ts also disallows the path)
+  robots: { index: false, follow: false },
 };
 
 // Comment counts come from the database.
@@ -29,7 +33,7 @@ type Params = { level?: string; topic?: string; q?: string; page?: string };
 
 export default async function BrowsePage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
-  await requireExamUser(`/license-exam/browse?${new URLSearchParams(params as Record<string, string>)}`);
+  const user = await requireExamUser(`/license-exam/browse?${new URLSearchParams(params as Record<string, string>)}`);
   const bank = loadExamBank();
   const level = isExamLevel(params.level) ? params.level : undefined;
   const topic = params.topic && params.topic in EXAM_TOPICS ? (params.topic as ExamTopic) : undefined;
@@ -49,7 +53,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   }
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const page = Math.min(Math.max(Number(params.page) || 1, 1), pages);
-  const shown = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((q) => toClient(q, true));
+  const slice = rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // each page of questions counts against the daily budget (lib/contentGuard.ts); answers are revealed on demand
+  const guard = slice.length ? await guardExamContent(user.id, { view: slice.map((q) => q.n) }) : ({ ok: true } as const);
+  const shown = guard.ok ? slice.map((q) => toClient(q)) : [];
   const comments = await getCommentCounts(shown.map((q) => q.n));
 
   const href = (p: Partial<Params>) => {
@@ -118,13 +125,14 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
         {shown.map((q) => (
           <BankQuestionCard key={q.n} q={q} comments={comments[q.n]} />
         ))}
-        {shown.length === 0 && <p className="text-slate-600 dark:text-slate-400">לא נמצאו שאלות. נסו חיפוש אחר.</p>}
+        {!guard.ok && <LimitNotice notice={guard} />}
+        {guard.ok && shown.length === 0 && <p className="text-slate-600 dark:text-slate-400">לא נמצאו שאלות. נסו חיפוש אחר.</p>}
       </div>
 
       {pages > 1 && (
         <nav aria-label="עמודים" className="flex flex-wrap items-center justify-center gap-1">
           {page > 1 && (
-            <Link href={href({ page: String(page - 1) })} className={buttonClass("secondary")}>
+            <Link href={href({ page: String(page - 1) })} prefetch={false} className={buttonClass("secondary")}>
               → הקודם
             </Link>
           )}
@@ -135,6 +143,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
                 {i > 0 && p - arr[i - 1]! > 1 && <span aria-hidden>…</span>}
                 <Link
                   href={href({ page: String(p) })}
+                  prefetch={false}
                   aria-current={p === page ? "page" : undefined}
                   className={cn("grid size-9 place-items-center rounded-lg text-sm tabular-nums ring-1", p === page ? "bg-brand-600 text-white ring-brand-600" : "ring-slate-200 dark:ring-slate-700")}
                 >
@@ -143,7 +152,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
               </span>
             ))}
           {page < pages && (
-            <Link href={href({ page: String(page + 1) })} className={buttonClass("secondary")}>
+            <Link href={href({ page: String(page + 1) })} prefetch={false} className={buttonClass("secondary")}>
               הבא ←
             </Link>
           )}

@@ -6,7 +6,8 @@ import { formatDate } from "@/lib/labels";
 import { CommentForm, ReplyToggle } from "./DiscussionForms";
 
 /** Discussion under a bank question: comments, one level of replies, and the community's answer tally. */
-export async function ExamDiscussion({ n, userId, keyAnswer }: { n: number; userId: string | null; keyAnswer?: number }) {
+/** The official key is not marked in the tally: it is revealed only through "show answer" (rate-limited). */
+export async function ExamDiscussion({ n, userId }: { n: number; userId: string | null }) {
   const data = await getExamDiscussion(n).catch(() => null);
   if (!data) {
     return (
@@ -38,7 +39,7 @@ export async function ExamDiscussion({ n, userId, keyAnswer }: { n: number; user
                 <li key={a} className="flex items-center gap-2 text-sm">
                   <span className="w-4 font-bold tabular-nums">{a}</span>
                   <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                    <span className={`block h-full ${a === keyAnswer ? "bg-emerald-500" : "bg-brand-500"}`} style={{ width: `${(v / voters) * 100}%` }} />
+                    <span className="block h-full bg-brand-500" style={{ width: `${(v / voters) * 100}%` }} />
                   </span>
                   <span className="w-8 text-end text-slate-600 tabular-nums dark:text-slate-400">{v}</span>
                 </li>

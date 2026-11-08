@@ -7,7 +7,7 @@ import {
   SCOPE_LABELS,
   type AnswerConfidence,
 } from "@electricademy/content/license-exam";
-import type { ClientFigure, ClientQuestion } from "@/lib/licenseExam";
+import type { ClientFigure, ClientKey, ClientQuestion } from "@/lib/licenseExam";
 
 // The bank numbers its options 1-4; keep that so learners can match the PDF.
 const OPTION_LABELS = ["1", "2", "3", "4"];
@@ -136,8 +136,7 @@ const CONFIDENCE: Record<AnswerConfidence, { label: string; tone: "success" | "b
 };
 
 /** Shown under a question once its answer may be revealed. */
-export function KeyNote({ q, picked }: { q: ClientQuestion; picked?: number | null }) {
-  const k = q.key;
+export function KeyNote({ k, picked }: { k: ClientKey | null | undefined; picked?: number | null }) {
   if (!k) {
     return (
       <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800">

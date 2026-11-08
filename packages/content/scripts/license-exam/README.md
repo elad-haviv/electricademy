@@ -9,7 +9,8 @@ to time; the version and date are printed in the page header. The PDF holds ques
 - `content/license-exam/bank.json`: `meta` (version, PDF date, count) and `questions`, each with its
   number (`n`, "שאלה N"), the ministry serial, `level` (`all`, `practical-engineer` or `engineer`,
   read from the two tables at the end of the PDF), stem lines, figures and four options.
-- `apps/web/public/images/license-exam/q<NNNN>-*.webp`: figure crops at 200 dpi. Stems or options set
+- `content/license-exam/figures/q<NNNN>-*.webp`: figure crops at 200 dpi (not under `public/`: the app
+  serves them through a signed-URL route, see "Content protection" in docs/ARCHITECTURE.md). Stems or options set
   as stacked formulas are cropped whole and flagged `stemRendered` / `rendered`.
 
 ## Refreshing after a new version
@@ -17,7 +18,7 @@ to time; the version and date are printed in the page header. The PDF holds ques
 ```bash
 curl -L -o /tmp/bank.pdf "https://www.gov.il/BlobFolder/generalpage/electricity-questions/he/mahat_exams_maagarq-18-1.pdf"
 python3 -m venv /tmp/venv && /tmp/venv/bin/pip install pymupdf pillow python-bidi
-/tmp/venv/bin/python -I packages/content/scripts/license-exam/extract.py /tmp/bank.pdf content/license-exam apps/web/public/images/license-exam
+/tmp/venv/bin/python -I packages/content/scripts/license-exam/extract.py /tmp/bank.pdf content/license-exam content/license-exam/figures
 pnpm --filter @electricademy/content test
 ```
 

@@ -6,6 +6,8 @@ import { bankSummary, EXAM_SIZE, requireExamUser } from "@/lib/licenseExam";
 export const metadata: Metadata = {
   title: "סימולציית בחינת רישוי",
   description: "50 שאלות אקראיות מהמאגר הרשמי של משרד העבודה, לפי סוג הרישיון: טכנאי, הנדסאי או מהנדס.",
+  // members-only bank content: keep it out of search engines (robots.ts also disallows the path)
+  robots: { index: false, follow: false },
 };
 
 export default async function ExamPage() {

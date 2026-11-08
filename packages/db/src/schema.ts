@@ -267,3 +267,51 @@ export const simSessions = pgTable(
   },
   (t) => [index("sim_session_user_sim_idx").on(t.userId, t.simulatorSlug)],
 );
+
+/* ───────────── License-exam content protection (docs/ARCHITECTURE.md, "Content protection") ───────────── */
+
+/**
+ * Which bank questions each user and each IP saw ("view") or opened the answer of ("answer"), one row per
+ * distinct question per day. The daily budgets count these rows, so seeing a question again is free.
+ * Rows older than a week are pruned.
+ */
+export const examContentAccess = pgTable(
+  "exam_content_access",
+  {
+    /** "u:<user id>" or "ip:<address or IPv6 /64>". */
+    subject: text("subject").notNull(),
+    /** YYYY-MM-DD, Israel time. */
+    day: text("day").notNull(),
+    /** "view" | "answer" */
+    kind: text("kind").notNull(),
+    questionN: integer("question_n").notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.subject, t.day, t.kind, t.questionN] }), index("exam_content_access_day_idx").on(t.day)],
+);
+
+/** Fixed-window request counters ("u:<id>" / "ip:<addr>" per minute). Pruned after a day. */
+export const rateLimitCounters = pgTable(
+  "rate_limit_counter",
+  {
+    key: text("key").notNull(),
+    windowStart: timestamp("window_start", { mode: "date" }).notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.key, t.windowStart] }), index("rate_limit_counter_window_idx").on(t.windowStart)],
+);
+
+/** Requests refused by the content limits, for the owner to review (at most one row per subject and reason per 10 minutes). */
+export const contentAbuseEvents = pgTable(
+  "content_abuse_event",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id"),
+    ip: text("ip"),
+    /** e.g. "user-per-minute", "user-views-per-day", "ip-answers-per-day", "bad-exam-ticket". */
+    reason: text("reason").notNull(),
+    detail: jsonb("detail").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  },
+  (t) => [index("content_abuse_event_created_idx").on(t.createdAt), index("content_abuse_event_user_idx").on(t.userId)],
+);
