@@ -54,12 +54,33 @@ export function richHtml(text: string): string {
 }
 
 /** Plain text for search and screen-reader labels: math source without the dollars. */
+const SYMBOLS: Record<string, string> = {
+  times: "×", cdot: "·", le: "≤", leq: "≤", ge: "≥", geq: "≥", ne: "≠", neq: "≠", approx: "≈", pm: "±",
+  Omega: "Ω", omega: "ω", varphi: "φ", phi: "φ", Phi: "Φ", Delta: "Δ", delta: "δ", alpha: "α", beta: "β",
+  theta: "θ", eta: "η", rho: "ρ", mu: "μ", pi: "π", sum: "Σ", infty: "∞", circ: "°", to: "→", rightarrow: "→",
+  backslash: "\\", cos: "cos", sin: "sin", tan: "tan", ln: "ln", log: "log",
+};
+
+/** Plain text for search and screen readers: "$I_n=250\,[\text{A}]$" → "I_n=250 [A]". */
 export function plainText(text: string): string {
-  return text
-    .replace(/\\text\{([^}]*)\}/g, "$1")
-    .replace(/\$+/g, "")
-    .replace(/\\[a-zA-Z]+/g, " ")
-    .replace(/[{}]/g, "")
+  let s = text.replace(/\$/g, "");
+  // innermost-first, so nested fractions and roots unwrap
+  for (let i = 0; i < 4; i++) {
+    s = s
+      .replace(/\\(?:d|t)?frac\{([^{}]*)\}\{([^{}]*)\}/g, "($1)/($2)")
+      .replace(/\\sqrt\{([^{}]*)\}/g, "√($1)")
+      // the word joiner keeps "\circ\text{C}" from fusing into the unknown command "\circC"
+      .replace(/\\(?:text|mathrm|mathit|operatorname)\{([^{}]*)\}/g, "\u2060$1")
+      .replace(/\\left|\\right/g, "");
+  }
+  return s
+    .replace(/\\[,;:! ]/g, " ")
+    .replace(/\\([a-zA-Z]+)/g, (_, cmd: string) => SYMBOLS[cmd] ?? " ")
+    .replace(/\^\{?2\}?/g, "²")
+    .replace(/\^\{?3\}?/g, "³")
+    .replace(/\^\{?\\?circ\}?|\^°/g, "°")
+    .replace(/\\([%$#&_{}])/g, "$1")
+    .replace(/[{}\u2060]/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }

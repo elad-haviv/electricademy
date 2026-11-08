@@ -123,7 +123,8 @@ async function signIn(page) {
   await open(page, "/login");
   const form = page.locator("form", { has: page.locator('input[name="provider"][value="dev"]') });
   if (!(await form.count())) return false;
-  await form.locator('input[type="email"]').fill("a11y@example.com");
+  // a fresh dev user per run: repeated runs would otherwise use up one user's daily content budget (lib/contentGuard.ts)
+  await form.locator('input[type="email"]').fill(`a11y-${Date.now()}@example.com`);
   await Promise.all([page.waitForURL((u) => !u.pathname.startsWith("/login")), form.getByRole("button").click()]);
   return true;
 }

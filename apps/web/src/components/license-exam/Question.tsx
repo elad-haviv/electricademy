@@ -81,6 +81,13 @@ export function OptionContent({ option, index, state }: { option: ClientQuestion
       <span className="min-w-0 space-y-2">
         {option.rendered ? (
           <span className="sr-only">{option.text}</span>
+        ) : option.html.includes('class="katex"') ? (
+          // A button takes its name from text, not from MathML, so an option with a formula reads its
+          // plain-text form ("15.16 kA") and hides the visual formula from assistive tech.
+          <>
+            <span className="sr-only">{option.text}</span>
+            <span aria-hidden className="block" dangerouslySetInnerHTML={{ __html: option.html }} />
+          </>
         ) : (
           option.html && <span className="block" dangerouslySetInnerHTML={{ __html: option.html }} />
         )}
