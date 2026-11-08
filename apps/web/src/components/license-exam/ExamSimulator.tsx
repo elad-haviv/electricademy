@@ -6,6 +6,7 @@ import { Badge, Button, buttonClass, Card, cn } from "@electricademy/ui";
 import { EXAM_LEVELS, EXAM_TOPICS, type ExamLevel, type ExamTopic } from "@electricademy/content/license-exam";
 import type { ClientQuestion } from "@/lib/licenseExam";
 import { drawExam, gradeExam, type ExamGrade } from "@/lib/licenseExamActions";
+import { Modal } from "@/components/Modal";
 import { BookmarkButton } from "./BookmarkButton";
 import { DiscussionLink, KeyNote, OptionList, QuestionStem, type OptionState } from "./Question";
 import { useExamStorage, type ExamHistoryEntry } from "./storage";
@@ -43,11 +44,15 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
   const [exiting, setExiting] = useState(false);
   const [sheet, setSheet] = useState<Filter | null>(null);
   const [panelFilter, setPanelFilter] = useState<Filter>("all");
+  // screen-reader announcements: time warnings interrupt (assertive); question changes do not (polite)
   const [announce, setAnnounce] = useState("");
+  const [navAnnounce, setNavAnnounce] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const topRef = useRef<HTMLDivElement>(null);
+  const reviewRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const submitted = useRef(false);
   const warned = useRef(new Set<number>());
 
@@ -155,12 +160,21 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
 
   const go = useCallback(
     (i: number) => {
-      setCurrent(Math.min(Math.max(i, 0), questions.length - 1));
+      const next = Math.min(Math.max(i, 0), questions.length - 1);
+      setCurrent(next);
+      setNavAnnounce(`שאלה ${next + 1} מתוך ${questions.length}`);
       setSheet(null);
       topRef.current?.scrollIntoView({ block: "start" });
     },
     [questions.length],
   );
+
+  /** The question overview: the side panel on wide screens, a bottom sheet on phones. */
+  const openOverview = (filter: Filter) => {
+    setPanelFilter(filter);
+    if (window.matchMedia("(min-width: 1024px)").matches) panelRef.current?.focus();
+    else setSheet(filter);
+  };
 
   const toggleFlag = useCallback((n: number) => {
     setFlags((f) => {
@@ -215,7 +229,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
             <select
               value={minutes}
               onChange={(e) => setMinutes(Number(e.target.value))}
-              className="w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-slate-200 sm:w-72 dark:bg-slate-900 dark:ring-slate-700"
+              className="w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-control sm:w-72 dark:bg-slate-900 dark:ring-control-dark"
             >
               {TIME_LIMITS.map((t) => (
                 <option key={t.minutes} value={t.minutes}>
@@ -238,7 +252,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
           <Button onClick={start} disabled={pending}>
             {pending ? "מכינים בחינה…" : `התחלת בחינה`}
           </Button>
-          {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
+          {error && <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">{error}</p>}
         </Card>
         <History entries={store.history} />
       </div>
@@ -261,14 +275,19 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
 
   const q = questions[current]!;
   const stateOf = (c: number): OptionState => (answers[q.n] === c ? "selected" : "idle");
-  const timerTone = remaining === null ? "" : remaining <= 300 ? "text-rose-600 dark:text-rose-400" : remaining <= 1800 ? "text-amber-600 dark:text-amber-400" : "";
+  const timerTone = remaining === null ? "" : remaining <= 300 ? "text-rose-600 dark:text-rose-400" : remaining <= 1800 ? "text-amber-700 dark:text-amber-400" : "";
   const isLast = current === questions.length - 1;
   const overviewProps = { questions, answers, flags, current, onJump: go };
 
   return (
     <div ref={topRef} className="scroll-mt-4 pb-24 lg:pb-0">
+      {/* the page heading is hidden with the site chrome in focus mode */}
+      <h1 className="sr-only">סימולציית בחינה</h1>
       <p className="sr-only" aria-live="assertive">
         {announce}
+      </p>
+      <p className="sr-only" aria-live="polite">
+        {navAnnounce}
       </p>
 
       {/* top bar */}
@@ -278,15 +297,15 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
             type="button"
             onClick={() => setExiting(true)}
             aria-label="יציאה מהבחינה"
-            className="grid size-10 place-items-center rounded-lg text-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="grid size-11 place-items-center rounded-lg text-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
           >
-            ✕
+            <span aria-hidden>✕</span>
           </button>
-          <span className="flex-1 font-bold">
+          <h2 className="flex-1 font-bold">
             שאלה {current + 1} מתוך {questions.length}
-            <span className="ms-2 hidden text-sm font-normal text-slate-500 sm:inline dark:text-slate-400">· {EXAM_LEVELS[level].title}</span>
-          </span>
-          <span className={cn("font-mono text-base font-bold tabular-nums lg:hidden", timerTone)} dir="ltr">
+            <span className="ms-2 hidden text-sm font-normal text-slate-600 sm:inline dark:text-slate-400">· {EXAM_LEVELS[level].title}</span>
+          </h2>
+          <span className={cn("font-mono text-base font-bold tabular-nums lg:hidden", timerTone)} dir="ltr" role="timer" aria-label={remaining !== null ? "זמן שנותר" : "זמן שעבר"}>
             {remaining !== null ? clock(remaining) : clock(elapsed)}
           </span>
         </div>
@@ -303,12 +322,12 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
       </div>
 
       {remaining !== null && remaining <= 300 && remaining > 0 && (
-        <div role="status" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800 ring-1 ring-rose-200 dark:bg-rose-950/50 dark:text-rose-200 dark:ring-rose-900">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800 ring-1 ring-rose-200 dark:bg-rose-950/50 dark:text-rose-200 dark:ring-rose-900">
           <span>
             נותרו {Math.ceil(remaining / 60)} דקות · {unansweredCount} ללא תשובה
           </span>
           {unansweredCount > 0 && (
-            <button type="button" className="underline" onClick={() => setSheet("unanswered")}>
+            <button type="button" className="min-h-6 underline" onClick={() => openOverview("unanswered")}>
               הצגת השאלות ללא תשובה
             </button>
           )}
@@ -337,7 +356,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
                     : "text-slate-600 ring-slate-300 dark:text-slate-300 dark:ring-slate-700",
                 )}
               >
-                🚩 {flags.has(q.n) ? "מסומנת" : "סימון"}
+                <span aria-hidden>🚩</span> {flags.has(q.n) ? "מסומנת" : "סימון"}
               </button>
             </div>
             <QuestionStem q={q} />
@@ -352,17 +371,22 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
             {isLast ? <Button onClick={() => setConfirming(true)}>סיום והגשה</Button> : <Button onClick={() => go(current + 1)}>הבאה ←</Button>}
           </div>
           {error && (
-            <p role="alert" className="text-sm text-rose-600">
+            <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
               {error}
             </p>
           )}
         </div>
 
         {/* desktop side panel */}
-        <aside className="sticky top-4 hidden space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200 lg:block dark:bg-slate-900 dark:ring-slate-800">
+        <aside
+          ref={panelRef}
+          tabIndex={-1}
+          aria-label="סקירת שאלות"
+          className="sticky top-4 hidden space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200 lg:block dark:bg-slate-900 dark:ring-slate-800"
+        >
           <div className="text-center">
             <p className="text-xs text-slate-500 dark:text-slate-400">{remaining !== null ? "זמן שנותר" : "זמן שעבר"}</p>
-            <p className={cn("font-mono text-3xl font-extrabold tabular-nums", timerTone)} dir="ltr">
+            <p className={cn("font-mono text-3xl font-extrabold tabular-nums", timerTone)} dir="ltr" role="timer">
               {remaining !== null ? clock(remaining) : clock(elapsed)}
             </p>
             <p className="mt-1 text-sm text-slate-600 tabular-nums dark:text-slate-400">
@@ -383,7 +407,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
           <Button variant="secondary" onClick={() => go(current - 1)} disabled={current === 0}>
             → הקודמת
           </Button>
-          <Button variant="ghost" className="px-2 whitespace-nowrap" onClick={() => setSheet("all")} aria-haspopup="dialog">
+          <Button ref={reviewRef} variant="ghost" className="px-2 whitespace-nowrap" onClick={() => setSheet("all")} aria-haspopup="dialog">
             סקירה <span className="tabular-nums">{answeredCount}/{questions.length}</span>
           </Button>
           {isLast ? <Button onClick={() => setConfirming(true)}>סיום והגשה</Button> : <Button onClick={() => go(current + 1)}>הבאה ←</Button>}
@@ -392,140 +416,124 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
 
       {/* mobile overview sheet */}
       {sheet && (
-        <div role="dialog" aria-modal="true" aria-labelledby="overview-title" className="fixed inset-0 z-50 lg:hidden">
-          <button type="button" aria-label="סגירה" className="absolute inset-0 bg-slate-950/50" onClick={() => setSheet(null)} />
-          <div className="absolute inset-x-0 bottom-0 flex h-[85vh] flex-col rounded-t-3xl bg-white pb-[env(safe-area-inset-bottom)] dark:bg-slate-900">
-            <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700" aria-hidden />
-            <div className="flex items-center justify-between px-5 pt-3 pb-2">
-              <h2 id="overview-title" className="text-lg font-bold">
-                סקירת שאלות
-              </h2>
-              <span className={cn("font-mono font-bold tabular-nums", timerTone)} dir="ltr">
-                {remaining !== null ? clock(remaining) : clock(elapsed)}
-              </span>
-              <button type="button" onClick={() => setSheet(null)} aria-label="סגירה" className="grid size-10 place-items-center rounded-lg text-xl">
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto px-5">
-              <Overview {...overviewProps} filter={sheet} onFilter={setSheet} size="lg" />
-            </div>
-            <div className="border-t border-slate-200 p-4 dark:border-slate-800">
-              <Button
-                className="w-full"
-                onClick={() => {
-                  setSheet(null);
-                  setConfirming(true);
-                }}
-              >
-                הגשת הבחינה
-              </Button>
-            </div>
+        <Modal
+          variant="sheet"
+          title="סקירת שאלות"
+          onClose={() => setSheet(null)}
+          returnFocus={reviewRef}
+          className="h-[85dvh]"
+          headerExtra={
+            <span className={cn("ms-auto font-mono font-bold tabular-nums", timerTone)} dir="ltr">
+              {remaining !== null ? clock(remaining) : clock(elapsed)}
+            </span>
+          }
+        >
+          <div className="flex-1 overflow-y-auto px-5 py-1">
+            <Overview {...overviewProps} filter={sheet} onFilter={setSheet} size="lg" />
           </div>
-        </div>
+          <div className="border-t border-slate-200 p-4 dark:border-slate-800">
+            <Button
+              className="w-full"
+              onClick={() => {
+                setSheet(null);
+                setConfirming(true);
+              }}
+            >
+              הגשת הבחינה
+            </Button>
+          </div>
+        </Modal>
       )}
 
       {toast && (
-        <div role="status" className="fixed inset-x-4 top-20 z-40 mx-auto max-w-sm rounded-xl bg-amber-100 p-3 text-center text-sm font-semibold text-amber-900 shadow-lg ring-1 ring-amber-300 dark:bg-amber-950 dark:text-amber-100 dark:ring-amber-800">
+        // visual only: the same warning is announced through the assertive region above
+        <div aria-hidden className="fixed inset-x-4 top-20 z-40 mx-auto max-w-sm rounded-xl bg-amber-100 p-3 text-center text-sm font-semibold text-amber-900 shadow-lg ring-1 ring-amber-300 dark:bg-amber-950 dark:text-amber-100 dark:ring-amber-800">
           ⏳ {toast}
         </div>
       )}
 
       {confirming && (
-        <Dialog title="להגיש את הבחינה?" onClose={() => setConfirming(false)}>
-          {remaining !== null && (
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              נותר זמן: <span dir="ltr" className="font-mono">{clock(remaining)}</span>
-            </p>
-          )}
-          <ul className="divide-y divide-slate-200 rounded-xl ring-1 ring-slate-200 dark:divide-slate-800 dark:ring-slate-800">
-            <li className="flex justify-between p-3">
-              <span>נענו</span>
-              <strong className="tabular-nums">{answeredCount}</strong>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="flex w-full justify-between p-3 text-start"
-                onClick={() => {
-                  setConfirming(false);
-                  setSheet("unanswered");
-                  setPanelFilter("unanswered");
-                }}
-              >
-                <span>ללא תשובה ›</span>
-                <strong className="tabular-nums">{unansweredCount}</strong>
-              </button>
-            </li>
-            <li>
-              <button
-                type="button"
-                className="flex w-full justify-between p-3 text-start"
-                onClick={() => {
-                  setConfirming(false);
-                  setSheet("flagged");
-                  setPanelFilter("flagged");
-                }}
-              >
-                <span>מסומנות ›</span>
-                <strong className="tabular-nums">{flags.size}</strong>
-              </button>
-            </li>
-          </ul>
-          {unansweredCount > 0 && (
-            <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-100 dark:ring-amber-900">
-              שאלה בלי תשובה נספרת כשגויה, עדיף לנחש.
-            </p>
-          )}
-          <div className="flex gap-2">
-            <Button variant={unansweredCount ? "primary" : "secondary"} onClick={() => setConfirming(false)} autoFocus={unansweredCount > 0}>
-              חזרה לבחינה
-            </Button>
-            <Button variant={unansweredCount ? "secondary" : "primary"} onClick={submit} disabled={pending} autoFocus={unansweredCount === 0}>
-              {pending ? "מגישים…" : "הגשה סופית"}
-            </Button>
+        <Modal title="להגיש את הבחינה?" onClose={() => setConfirming(false)} returnFocus={reviewRef}>
+          <div className="space-y-4 px-5 pb-5">
+            {remaining !== null && (
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                נותר זמן: <span dir="ltr" className="font-mono">{clock(remaining)}</span>
+              </p>
+            )}
+            <ul className="divide-y divide-slate-200 rounded-xl ring-1 ring-slate-200 dark:divide-slate-800 dark:ring-slate-800">
+              <li className="flex justify-between p-3">
+                <span>נענו</span>
+                <strong className="tabular-nums">{answeredCount}</strong>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="flex w-full justify-between p-3 text-start"
+                  onClick={() => {
+                    setConfirming(false);
+                    openOverview("unanswered");
+                  }}
+                >
+                  <span>
+                  ללא תשובה <span aria-hidden>›</span>
+                </span>
+                  <strong className="tabular-nums">{unansweredCount}</strong>
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  className="flex w-full justify-between p-3 text-start"
+                  onClick={() => {
+                    setConfirming(false);
+                    openOverview("flagged");
+                  }}
+                >
+                  <span>
+                  מסומנות <span aria-hidden>›</span>
+                </span>
+                  <strong className="tabular-nums">{flags.size}</strong>
+                </button>
+              </li>
+            </ul>
+            {unansweredCount > 0 && (
+              <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-100 dark:ring-amber-900">
+                שאלה בלי תשובה נספרת כשגויה, עדיף לנחש.
+              </p>
+            )}
+            <div className="flex gap-2">
+              <Button variant={unansweredCount ? "primary" : "secondary"} onClick={() => setConfirming(false)} data-autofocus={unansweredCount > 0 || undefined}>
+                חזרה לבחינה
+              </Button>
+              <Button variant={unansweredCount ? "secondary" : "primary"} onClick={submit} disabled={pending} data-autofocus={unansweredCount === 0 || undefined}>
+                {pending ? "מגישים…" : "הגשה סופית"}
+              </Button>
+            </div>
           </div>
-        </Dialog>
+        </Modal>
       )}
 
       {exiting && (
-        <Dialog title="לצאת מהבחינה?" onClose={() => setExiting(false)}>
-          <p className="text-sm">הבחינה לא תישמר והתשובות יאבדו.</p>
-          <div className="flex gap-2">
-            <Button onClick={() => setExiting(false)} autoFocus>
-              חזרה לבחינה
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setExiting(false);
-                setPhase({ name: "setup" });
-              }}
-            >
-              יציאה
-            </Button>
+        <Modal title="לצאת מהבחינה?" onClose={() => setExiting(false)}>
+          <div className="space-y-4 px-5 pb-5">
+            <p className="text-sm">הבחינה לא תישמר והתשובות יאבדו.</p>
+            <div className="flex gap-2">
+              <Button onClick={() => setExiting(false)} data-autofocus>
+                חזרה לבחינה
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setExiting(false);
+                  setPhase({ name: "setup" });
+                }}
+              >
+                יציאה
+              </Button>
+            </div>
           </div>
-        </Dialog>
+        </Modal>
       )}
-    </div>
-  );
-}
-
-function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-  return (
-    <div role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <button type="button" aria-label="סגירה" className="absolute inset-0 bg-slate-950/50" onClick={onClose} />
-      <div className="relative w-full max-w-sm space-y-4 rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-2xl dark:bg-slate-900">
-        <h2 id="dialog-title" className="text-lg font-bold">
-          {title}
-        </h2>
-        {children}
-      </div>
     </div>
   );
 }
@@ -561,15 +569,15 @@ function Overview({
     .filter(({ q }) => (filter === "unanswered" ? !answers[q.n] : filter === "flagged" ? flags.has(q.n) : true));
   return (
     <div className="space-y-3">
-      <div className="flex gap-1.5" role="tablist" aria-label="סינון שאלות">
+      <div className="flex gap-1.5" role="group" aria-label="סינון שאלות">
         {tabs.map((t) => (
           <button
             key={t.id}
-            role="tab"
-            aria-selected={filter === t.id}
+            type="button"
+            aria-pressed={filter === t.id}
             onClick={() => onFilter(t.id)}
             className={cn(
-              "flex-1 rounded-full px-2 py-1.5 text-xs font-semibold whitespace-nowrap ring-1",
+              "min-h-8 flex-1 rounded-full px-2 py-1.5 text-xs font-semibold whitespace-nowrap ring-1",
               filter === t.id ? "bg-slate-900 text-white ring-slate-900 dark:bg-white dark:text-slate-900 dark:ring-white" : "ring-slate-300 dark:ring-slate-700",
             )}
           >
@@ -578,7 +586,7 @@ function Overview({
         ))}
       </div>
       {shown.length === 0 ? (
-        <p className="py-6 text-center text-sm text-slate-600 dark:text-slate-400">{filter === "unanswered" ? "כל השאלות נענו ✓" : "אין שאלות מסומנות"}</p>
+        <p className="py-6 text-center text-sm text-slate-600 dark:text-slate-400">{filter === "unanswered" ? "כל השאלות נענו" : "אין שאלות מסומנות"}</p>
       ) : (
         <div className="grid grid-cols-5 gap-2">
           {shown.map(({ q, i }) => {
@@ -597,7 +605,7 @@ function Overview({
                   answered
                     ? "bg-blue-600 text-white dark:bg-blue-400 dark:text-slate-950"
                     : "border border-slate-500 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100",
-                  flagged && "outline-2 outline-amber-700 dark:outline-amber-400",
+                  flagged && "outline-2 outline-amber-700 focus-visible:outline-offset-4 focus-visible:outline-brand-600 dark:outline-amber-400 dark:focus-visible:outline-brand-300",
                   i === current && "ring-2 ring-slate-900 ring-offset-2 ring-offset-white dark:ring-white dark:ring-offset-slate-900",
                 )}
               >
@@ -619,7 +627,9 @@ function Overview({
         <span className="flex items-center gap-1">
           <span aria-hidden className="size-3 rounded border border-slate-500" /> ללא תשובה
         </span>
-        <span>🚩 מסומנת</span>
+        <span>
+          <span aria-hidden>🚩</span> מסומנת
+        </span>
       </p>
     </div>
   );
@@ -688,7 +698,13 @@ function Results({
           <>
             {complete ? (
               <p className={cn("text-4xl font-black", passed ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
-                {passed ? "עברת ✓" : "לא עברת"}
+                {passed ? (
+                  <>
+                    עברת <span aria-hidden>✓</span>
+                  </>
+                ) : (
+                  "לא עברת"
+                )}
               </p>
             ) : (
               <p className="text-lg font-bold">ציון חלקי (על {grade.keyed} שאלות עם מפתח)</p>
@@ -719,18 +735,18 @@ function Results({
 
       {weakest.length > 0 && (
         <Card>
-          <h3 className="mb-3 font-bold">הנושאים לחיזוק</h3>
+          <h2 className="mb-3 font-bold">הנושאים לחיזוק</h2>
           <ul className="space-y-2">
             {weakest.map(([topic, t]) => (
               <li key={topic} className="flex items-center justify-between gap-2 text-sm">
                 <span>
                   {EXAM_TOPICS[topic].title}{" "}
-                  <span className="text-slate-500 tabular-nums">
+                  <span className="text-slate-500 dark:text-slate-400 tabular-nums">
                     ({t.correct}/{t.keyed})
                   </span>
                 </span>
                 <Link href={`/license-exam/practice?topic=${topic}`} className="font-semibold text-brand-700 hover:underline dark:text-brand-300">
-                  תרגול ←
+                  תרגול <span className="sr-only">{EXAM_TOPICS[topic].title}</span> <span aria-hidden>←</span>
                 </Link>
               </li>
             ))}
@@ -739,16 +755,17 @@ function Results({
       )}
 
       <section className="space-y-3">
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="סינון שאלות">
+        <h2 className="sr-only">השאלות בבחינה</h2>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="סינון שאלות">
           {FILTERS.map((f) => (
             <button
               key={f.id}
-              role="tab"
-              aria-selected={filter === f.id}
+              type="button"
+              aria-pressed={filter === f.id}
               onClick={() => setFilter(f.id)}
-              className={cn("rounded-full px-3 py-1 text-sm font-semibold ring-1", filter === f.id ? "bg-brand-600 text-white ring-brand-600" : "ring-slate-200 dark:ring-slate-700")}
+              className={cn("min-h-8 rounded-full px-3 py-1 text-sm font-semibold ring-1", filter === f.id ? "bg-brand-600 text-white ring-brand-600" : "ring-slate-300 dark:ring-slate-600")}
             >
-              {f.label} <span className="tabular-nums opacity-75">({withKeys.filter(f.test).length})</span>
+              {f.label} <span className="tabular-nums">({withKeys.filter(f.test).length})</span>
             </button>
           ))}
         </div>
@@ -763,11 +780,15 @@ function Results({
             <Card key={q.n} className="space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div className="space-y-1">
-                  <p className="text-sm font-bold">שאלה {i + 1}</p>
+                  <h3 className="text-sm font-bold">שאלה {i + 1}</h3>
                   <Badge tone="brand">{EXAM_TOPICS[q.topic].title}</Badge>
                 </div>
                 <div className="flex gap-2">
-                  {flags.has(q.n) && <Badge tone="pro">🚩 סימנתם</Badge>}
+                  {flags.has(q.n) && (
+                    <Badge tone="pro">
+                      <span aria-hidden>🚩</span> סימנתם
+                    </Badge>
+                  )}
                   {!picked && <Badge>לא נענתה</Badge>}
                   <BookmarkButton n={q.n} />
                 </div>

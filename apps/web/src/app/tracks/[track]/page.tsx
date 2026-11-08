@@ -101,7 +101,7 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
 
   return (
     <div className="space-y-6">
-      <nav aria-label="פירורי לחם" className="flex flex-wrap items-center gap-1.5 text-sm text-slate-500">
+      <nav aria-label="פירורי לחם" className="flex flex-wrap items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
         <Link href="/" className="hover:text-brand-700 dark:hover:text-brand-300">
           דף הבית
         </Link>
@@ -160,7 +160,7 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
           </Card>
 
           <Card className="hidden lg:block">
-            <p className="mb-3 text-sm font-semibold text-slate-500">מפת המסלול</p>
+            <p className="mb-3 text-sm font-semibold text-slate-500 dark:text-slate-400">מפת המסלול</p>
             <ol className="relative space-y-3 before:absolute before:inset-y-2 before:start-[7px] before:w-px before:bg-slate-200 dark:before:bg-slate-800">
               {view.modules.map((m) => {
                 const complete = m.done === m.lessons.length && m.lessons.length > 0;
@@ -185,7 +185,7 @@ export default async function TrackPage({ params }: { params: Promise<{ track: s
                     >
                       {m.title}
                     </a>
-                    <span className="text-xs text-slate-500 tabular-nums">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                       {m.done}/{m.lessons.length}
                     </span>
                   </li>
@@ -225,21 +225,18 @@ function ContinueCta({
         סיימתם את כל השיעורים הזמינים 🎉
       </p>
     ) : (
-      <p className="text-center text-sm text-slate-500">השיעורים בהכנה. בקרוב!</p>
+      <p className="text-center text-sm text-slate-500 dark:text-slate-400">השיעורים בהכנה. בקרוב!</p>
     );
   }
   return (
     <div className="space-y-2">
       <Link
         href={next.href}
-        className={buttonClass(
-          "primary",
-          "w-full bg-spark-400 py-3 text-base text-slate-900 shadow-[0_0_24px_-6px] shadow-spark-400 hover:bg-spark-300",
-        )}
+        className={buttonClass("spark", "w-full py-3 text-base shadow-[0_0_24px_-6px] shadow-spark-400")}
       >
         {started ? "המשך ללמוד" : "להתחיל ללמוד"} ←
       </Link>
-      <p className="truncate text-center text-xs text-slate-500">
+      <p className="truncate text-center text-xs text-slate-500 dark:text-slate-400">
         הבא בתור: {next.number} {next.title}
       </p>
       {!loggedIn && (
@@ -293,7 +290,7 @@ function ModuleCard({
           <h3 className="font-bold">
             מודול {index + 1}: {m.title}
           </h3>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {m.lessons.length} שיעורים{m.minutes > 0 && ` · ${formatDuration(m.minutes)}`}
           </p>
         </div>
@@ -327,10 +324,11 @@ function LessonRow({ lesson: l, locked }: { lesson: LessonView; locked: boolean 
   const body = (
     <>
       <span className="min-w-0 flex-1">
-        <span className="me-2 text-xs font-semibold text-slate-400 tabular-nums">{l.number}</span>
-        <span className={cn("font-medium", l.state === "soon" && "text-slate-400", l.state === "done" && "text-slate-600 dark:text-slate-400")}>
+        <span className="me-2 text-xs font-semibold text-slate-500 tabular-nums dark:text-slate-400">{l.number}</span>
+        <span className={cn("font-medium", l.state === "soon" && "text-slate-500 dark:text-slate-400", l.state === "done" && "text-slate-600 dark:text-slate-400")}>
           {l.title}
         </span>
+        {l.state === "done" && <span className="sr-only"> (הושלם)</span>}
         {isNext && (
           <span className="ms-2 inline-block whitespace-nowrap rounded-full bg-spark-400 px-2 py-0.5 text-[11px] font-bold text-slate-900">הבא בתור</span>
         )}
@@ -364,7 +362,7 @@ function LessonRow({ lesson: l, locked }: { lesson: LessonView; locked: boolean 
     <li className="relative flex items-center gap-3">
       <StatusNode state={l.state} locked={locked} />
       {clickable ? (
-        <Link href={l.href} className={rowClass} aria-label={`${l.number} ${l.title}${l.state === "done" ? " (הושלם)" : ""}`}>
+        <Link href={l.href} className={rowClass}>
           {body}
         </Link>
       ) : (
@@ -413,7 +411,7 @@ function ProgressRing({ pct }: { pct: number }) {
   const c = 2 * Math.PI * r;
   return (
     <div className="relative size-16 shrink-0" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label="אחוז השלמה">
-      <svg viewBox="0 0 64 64" className="size-16 -rotate-90">
+      <svg viewBox="0 0 64 64" className="size-16 -rotate-90" aria-hidden>
         <circle cx="32" cy="32" r={r} fill="none" strokeWidth="6" className="stroke-slate-100 dark:stroke-slate-800" />
         <circle
           cx="32"

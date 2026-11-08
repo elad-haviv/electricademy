@@ -52,7 +52,7 @@ export default async function SimulatorsPage() {
           );
         })}
       </div>
-      {rows.length === 0 && <p className="text-slate-500">עדיין אין סימולטורים. יש להריץ את סקריפט ה־seed.</p>}
+      {rows.length === 0 && <p className="text-slate-500 dark:text-slate-400">עדיין אין סימולטורים. יש להריץ את סקריפט ה־seed.</p>}
     </>
   );
 }

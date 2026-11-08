@@ -149,14 +149,14 @@ export function MethodCombobox({
             openList();
           }
         }}
-        className="flex w-full items-center gap-3 rounded-xl bg-white p-2 text-start ring-1 ring-slate-300 outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700"
+        className="flex w-full items-center gap-3 rounded-xl bg-white p-2 text-start ring-1 ring-control outline-none focus-visible:ring-2 focus-visible:ring-brand-600 dark:bg-slate-950 dark:ring-control-dark dark:focus-visible:ring-brand-300"
       >
         <Thumb item={selected.item} className="h-20 w-28" />
         <span id={`${baseId}-value`} className="min-w-0 flex-1">
           <span className="block font-bold">שיטה {selected.code}</span>
           <span className="block text-slate-600 dark:text-slate-400">{selected.description}</span>
         </span>
-        <span aria-hidden className="px-1 text-slate-500">
+        <span aria-hidden className="px-1 text-slate-500 dark:text-slate-400">
           ▾
         </span>
       </button>
@@ -203,7 +203,7 @@ export function MethodCombobox({
                 <span className="min-w-0 flex-1">
                   <span className="block">
                     שיטה {m.code}
-                    <span className="ms-2 text-xs font-normal text-slate-500">טבלה {insulation}.{m.table}</span>
+                    <span className="ms-2 text-xs font-normal text-slate-500 dark:text-slate-400">טבלה {insulation}.{m.table}</span>
                   </span>
                   <span className="block font-normal text-slate-600 dark:text-slate-400">{m.description}</span>
                 </span>
@@ -214,7 +214,7 @@ export function MethodCombobox({
                 )}
               </li>
             ))}
-            {filtered.length === 0 && <li className="p-3 text-slate-500">לא נמצאה שיטה מתאימה</li>}
+            {filtered.length === 0 && <li className="p-3 text-slate-500 dark:text-slate-400">לא נמצאה שיטה מתאימה</li>}
           </ul>
         </div>
       )}

@@ -29,14 +29,22 @@ const COLUMNS = [
       { href: "/articles", label: "מאמרים" },
       { href: "/pricing", label: "מחירים" },
       { href: "/tracks/licensing", label: "בחינות רישוי" },
+      { href: "/accessibility", label: "הצהרת נגישות" },
     ],
   },
 ];
 
+/** On phones the full footer gives way to the tab bar, so a slim row keeps the legal links (the accessibility statement) on every page. */
 export function SiteFooter() {
   return (
-    <footer data-site-chrome className="hidden border-t border-slate-800 bg-slate-900 pt-14 pb-10 text-slate-300 md:block">
-      <div className="mx-auto max-w-6xl px-4">
+    <footer data-site-chrome className="on-dark border-t border-slate-800 bg-slate-900 text-slate-300 md:pt-14 md:pb-10">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] text-xs md:hidden">
+        <Link href="/accessibility" className="inline-flex min-h-11 items-center font-semibold text-slate-200 underline underline-offset-4">
+          הצהרת נגישות
+        </Link>
+        <p className="text-slate-400">© {new Date().getFullYear()} Electricademy</p>
+      </div>
+      <div className="mx-auto hidden max-w-6xl px-4 md:block">
         <div className="grid gap-8 border-b border-slate-800 pb-10 md:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-3 lg:col-span-2">
             <div className="flex items-center gap-3">
@@ -56,7 +64,7 @@ export function SiteFooter() {
               <ul className="space-y-2 text-xs font-semibold text-slate-400">
                 {col.links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="hover:text-spark-400">
+                    <Link href={l.href} className="hover:text-spark-400 hover:underline">
                       {l.label}
                     </Link>
                   </li>
@@ -73,7 +81,7 @@ export function SiteFooter() {
               לבעלי רישיון מתאים ובתוקף, בהתאם ל<strong className="text-spark-400">חוק החשמל, התשי״ד-1954</strong> ולתקנותיו.
             </span>
           </p>
-          <p className="font-semibold whitespace-nowrap text-slate-500">
+          <p className="font-semibold whitespace-nowrap text-slate-400">
             © {new Date().getFullYear()} Electricademy · From Zero to Hero
           </p>
         </div>

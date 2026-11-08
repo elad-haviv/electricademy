@@ -65,7 +65,14 @@ export function QuestionStem({ q }: { q: ClientQuestion }) {
 
 export type OptionState = "idle" | "selected" | "correct" | "wrong" | "dim";
 
-export function OptionContent({ option, index }: { option: ClientQuestion["options"][number]; index: number }) {
+/** Says in words what the colour of a reviewed option means (WCAG 1.4.1: not by colour alone). */
+const STATE_TAG: Partial<Record<OptionState, { text: string; className: string }>> = {
+  correct: { text: "✓ התשובה הנכונה", className: "text-emerald-800 dark:text-emerald-300" },
+  wrong: { text: "✗ התשובה שלכם", className: "text-rose-800 dark:text-rose-300" },
+};
+
+export function OptionContent({ option, index, state }: { option: ClientQuestion["options"][number]; index: number; state?: OptionState }) {
+  const tag = state && STATE_TAG[state];
   return (
     <span className="flex items-start gap-3">
       <span aria-hidden className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-slate-100 text-xs font-bold dark:bg-slate-800">
@@ -80,6 +87,7 @@ export function OptionContent({ option, index }: { option: ClientQuestion["optio
         {option.figures.map((f) => (
           <Figure key={f.src} figure={f} className="block" />
         ))}
+        {tag && <span className={cn("block text-xs font-bold", tag.className)}>{tag.text}</span>}
       </span>
     </span>
   );
@@ -90,10 +98,14 @@ const STATE_CLASS: Record<OptionState, string> = {
   selected: "bg-brand-50 ring-2 ring-brand-500 dark:bg-brand-950/50",
   correct: "bg-emerald-50 ring-2 ring-emerald-500 dark:bg-emerald-950/50",
   wrong: "bg-rose-50 ring-2 ring-rose-500 dark:bg-rose-950/50",
-  dim: "opacity-60 ring-slate-200 dark:ring-slate-700",
+  // dimmed, but text keeps its contrast: only the frame fades
+  dim: "text-slate-600 ring-slate-200 dark:text-slate-400 dark:ring-slate-700",
 };
 
-/** The four options. Interactive when onPick is given; stateOf decides each option's look. */
+/**
+ * The four options. Interactive when onPick is given; stateOf decides each option's look.
+ * `disabled` locks the choice without disabling the buttons, so keyboard focus stays where it is.
+ */
 export function OptionList({
   q,
   stateOf,
@@ -114,12 +126,18 @@ export function OptionList({
         return (
           <li key={i}>
             {onPick ? (
-              <button type="button" className={cls} disabled={disabled} aria-pressed={state === "selected"} onClick={() => onPick(choice)}>
-                <OptionContent option={o} index={i} />
+              <button
+                type="button"
+                className={cn(cls, disabled && "cursor-default")}
+                aria-disabled={disabled || undefined}
+                aria-pressed={state === "selected"}
+                onClick={() => !disabled && onPick(choice)}
+              >
+                <OptionContent option={o} index={i} state={state} />
               </button>
             ) : (
               <div className={cls}>
-                <OptionContent option={o} index={i} />
+                <OptionContent option={o} index={i} state={state} />
               </div>
             )}
           </li>
@@ -147,9 +165,13 @@ export function KeyNote({ q, picked }: { q: ClientQuestion; picked?: number | nu
   }
   const right = picked === k.answer;
   return (
-    <div role="status" className="space-y-3 rounded-xl bg-slate-50 p-4 text-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+    <div className="space-y-3 rounded-xl bg-slate-50 p-4 text-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
       <div className="flex flex-wrap items-center gap-2">
-        {picked != null && <strong>{right ? "✅ נכון!" : "❌ לא נכון."}</strong>}
+        {picked != null && (
+          <strong>
+            <span aria-hidden>{right ? "✅" : "❌"}</span> {right ? "נכון!" : "לא נכון."}
+          </strong>
+        )}
         <span>
           התשובה: <strong>{OPTION_LABELS[k.answer - 1]}</strong>
         </span>
@@ -222,7 +244,8 @@ export function KeyNote({ q, picked }: { q: ClientQuestion; picked?: number | nu
 export function DiscussionLink({ n }: { n: number }) {
   return (
     <a href={`/license-exam/q/${n}#discussion`} target="_blank" rel="noopener" className="text-xs font-semibold text-brand-700 hover:underline dark:text-brand-300">
-      💬 דיון על השאלה ↗
+      <span aria-hidden>💬</span> דיון על השאלה <span aria-hidden>↗</span>
+      <span className="sr-only"> (נפתח בכרטיסייה חדשה)</span>
     </a>
   );
 }

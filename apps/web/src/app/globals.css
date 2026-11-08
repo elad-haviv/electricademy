@@ -21,6 +21,37 @@
       --grid-line: rgb(148 163 184 / 0.04);
     }
   }
+
+  /* Accessibility: one visible keyboard-focus style everywhere (WCAG 2.4.7). Components may add their own ring. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+  }
+  /* Surfaces that are dark in both themes (footer, banners, home hero): the amber spark reads best there. */
+  .on-dark :focus-visible {
+    outline-color: var(--color-spark-400);
+  }
+  @media (prefers-color-scheme: dark) {
+    :focus-visible {
+      outline-color: var(--color-brand-300);
+    }
+  }
+  /* Elements focused by script (the skip-link target, dialogs, the exam's side panel) need no ring. */
+  [tabindex="-1"]:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* prefers-reduced-motion: stop animations and smooth scrolling site-wide (WCAG 2.3.3). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 /* Blue Grid wire flow: dashes travel from source to load. */

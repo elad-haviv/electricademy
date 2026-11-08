@@ -60,7 +60,7 @@ export default async function LicenseExamPage() {
       >
         <Link
           href={user ? "/license-exam/exam" : `/login?callbackUrl=${encodeURIComponent("/license-exam/exam")}`}
-          className={buttonClass("primary", "mt-3 self-start bg-spark-400 text-slate-900 hover:bg-spark-300")}
+          className={buttonClass("spark", "mt-3 self-start")}
         >
           {user ? "להתחיל בחינה" : "הרשמה חינמית והתחלה"}
         </Link>
@@ -109,7 +109,7 @@ export default async function LicenseExamPage() {
                 href={`/license-exam/browse?topic=${t}`}
                 className="rounded-full bg-white px-3 py-1.5 text-sm ring-1 ring-slate-200 transition hover:bg-slate-50 dark:bg-slate-900 dark:ring-slate-800 dark:hover:bg-slate-800"
               >
-                {EXAM_TOPICS[t].title} <span className="text-slate-500 tabular-nums">{perTopic[t]}</span>
+                {EXAM_TOPICS[t].title} <span className="text-slate-500 dark:text-slate-400 tabular-nums">{perTopic[t]}</span>
               </Link>
             ))}
         </div>

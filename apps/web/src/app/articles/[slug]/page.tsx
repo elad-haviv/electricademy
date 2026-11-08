@@ -24,7 +24,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <Link href="/articles" className="text-sm text-brand-700 dark:text-brand-300">
         → כל המאמרים
       </Link>
-      <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+      <div className="mt-4 flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
         <Badge tone="brand">{ARTICLE_CATEGORIES[meta.category] ?? meta.category}</Badge>
         {formatDate(meta.date)} · {meta.author}
       </div>

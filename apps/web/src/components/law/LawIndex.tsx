@@ -35,11 +35,11 @@ export function LawIndex({ groups }: { groups: LawIndexGroup[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="חיפוש לפי שם או נושא: הארקות, לוחות, גנרטור…"
-          className="w-full rounded-xl border border-slate-300 bg-white py-3 ps-10 pe-4 text-sm shadow-xs focus:border-brand-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+          className="w-full rounded-xl border border-control bg-white py-3 ps-10 pe-4 text-sm shadow-xs focus:border-brand-600 focus:outline-2 focus:outline-brand-600 dark:border-control-dark dark:bg-slate-900 dark:focus:outline-brand-300"
         />
       </label>
       {q && (
-        <p className="text-sm text-slate-500" aria-live="polite">
+        <p className="text-sm text-slate-500 dark:text-slate-400" aria-live="polite">
           {count === 0 ? "לא נמצאו תקנות מתאימות." : `נמצאו ${count} מסמכים.`}
         </p>
       )}

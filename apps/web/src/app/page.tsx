@@ -24,7 +24,7 @@ export default function HomePage() {
   const articles = listArticles().slice(0, 2);
   return (
     <div className="space-y-16 lg:space-y-20">
-      <section className="relative isolate overflow-hidden rounded-3xl bg-brand-950 px-5 py-10 text-white sm:px-10 sm:py-14 lg:py-16">
+      <section className="on-dark relative isolate overflow-hidden rounded-3xl bg-brand-950 px-5 py-10 text-white sm:px-10 sm:py-14 lg:py-16">
         <Image
           src="/images/hero-substation.webp"
           alt=""
@@ -92,7 +92,7 @@ export default function HomePage() {
               </span>
               <h2 className="mt-3 text-2xl font-black sm:text-3xl">מאמרים ומדריכי שטח</h2>
             </div>
-            <Link href="/articles" className="flex items-center gap-1 text-sm font-extrabold text-slate-700 hover:text-amber-600 dark:text-slate-300 dark:hover:text-spark-300">
+            <Link href="/articles" className="flex items-center gap-1 text-sm font-extrabold text-slate-700 hover:text-amber-700 dark:text-slate-300 dark:hover:text-spark-300">
               לכל המאמרים
               <ChevronLeft className="size-4" aria-hidden />
             </Link>
@@ -108,15 +108,15 @@ export default function HomePage() {
                 <span aria-hidden>·</span>
                 <span>{a.author}</span>
               </p>
-              <h3 className="text-xl font-black transition-colors group-hover:text-amber-600 dark:group-hover:text-spark-300">{a.title}</h3>
+              <h3 className="text-xl font-black transition-colors group-hover:text-amber-700 dark:group-hover:text-spark-300">{a.title}</h3>
               <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{a.summary}</p>
-              <p className="mt-4 flex items-center justify-end gap-1 border-t border-slate-100 pt-3 text-xs font-extrabold text-amber-600 dark:border-slate-800 dark:text-spark-300">
+              <p className="mt-4 flex items-center justify-end gap-1 border-t border-slate-100 pt-3 text-xs font-extrabold text-amber-700 dark:border-slate-800 dark:text-spark-300">
                 לקריאת המאמר
                 <ChevronLeft className="size-4" aria-hidden />
               </p>
             </Link>
           ))}
-          {articles.length === 0 && <p className="text-slate-500">מאמרים חדשים בדרך.</p>}
+          {articles.length === 0 && <p className="text-slate-500 dark:text-slate-400">מאמרים חדשים בדרך.</p>}
         </div>
 
         <Link href="/community" className="group relative isolate flex min-h-96 flex-col justify-end overflow-hidden rounded-2xl bg-[#0d1a4a] p-6 text-white lg:col-span-5">

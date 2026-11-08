@@ -20,7 +20,7 @@ export function NumberField({
   return (
     <label className="block text-sm">
       <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">{label}</span>
-      <span className="flex items-center rounded-xl bg-white ring-1 ring-slate-300 focus-within:ring-2 focus-within:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700">
+      <span className="flex items-center rounded-xl bg-white ring-1 ring-control focus-within:ring-2 focus-within:ring-brand-600 dark:bg-slate-950 dark:ring-control-dark dark:focus-within:ring-brand-300">
         <input
           type="number"
           inputMode="decimal"
@@ -31,7 +31,7 @@ export function NumberField({
           min={min}
           onChange={(e) => onChange(e.target.valueAsNumber)}
         />
-        {unit && <span className="px-3 text-slate-500" dir="ltr">{unit}</span>}
+        {unit && <span className="px-3 text-slate-500 dark:text-slate-400" dir="ltr">{unit}</span>}
       </span>
     </label>
   );
@@ -52,7 +52,7 @@ export function SelectField<T extends string | number>({
     <label className="block text-sm">
       <span className="mb-1 block font-medium text-slate-700 dark:text-slate-300">{label}</span>
       <select
-        className="w-full rounded-xl bg-white px-3 py-2 ring-1 ring-slate-300 outline-none focus:ring-2 focus:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700"
+        className="w-full rounded-xl bg-white px-3 py-2 ring-1 ring-control outline-none focus:ring-2 focus:ring-brand-600 dark:bg-slate-950 dark:ring-control-dark dark:focus:ring-brand-300"
         value={String(value)}
         onChange={(e) => {
           const opt = options.find((o) => String(o.value) === e.target.value);

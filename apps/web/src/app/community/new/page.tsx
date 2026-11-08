@@ -19,7 +19,7 @@ export default async function NewThreadPage({ searchParams }: { searchParams: Pr
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-3xl font-extrabold">דיון חדש</h1>
       <Card>
-        {lessonPath && <p className="mb-4 text-sm text-slate-500">הדיון יקושר לשיעור: {lessonPath}</p>}
+        {lessonPath && <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">הדיון יקושר לשיעור: {lessonPath}</p>}
         <NewThreadForm lessonPath={lessonPath} />
       </Card>
     </div>

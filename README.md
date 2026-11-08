@@ -28,6 +28,7 @@ With `AUTH_DEV_LOGIN=true` (development only), you can sign in with any email an
 | `pnpm db:generate` | Creates SQL migrations after a schema change |
 | `pnpm db:migrate` / `pnpm db:seed` | Applies migrations, seeds products, simulators and sample data |
 | `packages/content/scripts/license-exam/extract.py` | Rebuilds the licensing-exam question bank from the ministry's PDF (see the README next to it) |
+| `pnpm --filter @electricademy/web test:a11y` | Accessibility check: axe-core (WCAG 2.1 AA) on every route type, mobile and desktop, light and dark. Needs a running site with `AUTH_DEV_LOGIN=true`; set `A11Y_BASE_URL` (default `http://localhost:3000`). See [Architecture → Accessibility](docs/ARCHITECTURE.md#accessibility) |
 | `pnpm --filter @electricademy/content legislation:import` | Refreshes the Electricity Law and regulations (`content/legislation`) from Hebrew Wikisource |
 
 ## Layout

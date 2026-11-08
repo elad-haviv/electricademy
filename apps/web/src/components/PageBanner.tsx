@@ -16,7 +16,7 @@ export function PageBanner({
   children?: ReactNode;
 }) {
   return (
-    <header className="relative mb-8 grid overflow-hidden rounded-3xl bg-[#0d1a4a] text-white md:grid-cols-[1.2fr_1fr]">
+    <header className="on-dark relative mb-8 grid overflow-hidden rounded-3xl bg-[#0d1a4a] text-white md:grid-cols-[1.2fr_1fr]">
       <div className="relative z-10 flex flex-col justify-center gap-2 p-6 sm:p-10">
         {eyebrow}
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>

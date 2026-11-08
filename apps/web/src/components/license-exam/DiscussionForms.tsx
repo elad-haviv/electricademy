@@ -5,7 +5,7 @@ import { Button } from "@electricademy/ui";
 import { addExamComment } from "@/lib/examDiscussionActions";
 
 const inputClass =
-  "w-full rounded-xl bg-white px-3 py-2 ring-1 ring-slate-300 outline-none focus:ring-2 focus:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700";
+  "w-full rounded-xl bg-white px-3 py-2 ring-1 ring-control outline-none focus:ring-2 focus:ring-brand-600 dark:bg-slate-950 dark:ring-control-dark dark:focus:ring-brand-300";
 
 export function CommentForm({ n, parentId, onDone }: { n: number; parentId?: number; onDone?: () => void }) {
   const [state, action, pending] = useActionState(addExamComment, undefined);
@@ -33,7 +33,7 @@ export function CommentForm({ n, parentId, onDone }: { n: number; parentId?: num
       {!parentId && (
         <label className="flex flex-wrap items-center gap-2 text-sm">
           <span>לדעתי התשובה הנכונה היא</span>
-          <select name="suggestedAnswer" defaultValue="" className="rounded-lg bg-white px-2 py-1 ring-1 ring-slate-300 dark:bg-slate-950 dark:ring-slate-700">
+          <select name="suggestedAnswer" defaultValue="" className="rounded-lg bg-white px-2 py-1 ring-1 ring-control dark:bg-slate-950 dark:ring-control-dark">
             <option value="">(לא לציין)</option>
             {[1, 2, 3, 4].map((a) => (
               <option key={a} value={a}>
@@ -44,7 +44,7 @@ export function CommentForm({ n, parentId, onDone }: { n: number; parentId?: num
         </label>
       )}
       {state?.error && (
-        <p role="alert" className="text-sm font-medium text-rose-600">
+        <p role="alert" className="text-sm font-medium text-rose-700 dark:text-rose-300">
           {state.error}
         </p>
       )}

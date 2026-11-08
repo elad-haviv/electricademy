@@ -64,7 +64,7 @@ export function PracticeSession({
   if (!questions) {
     return (
       <Card className="space-y-5">
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="מקור השאלות">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="מקור השאלות">
           {(
             [
               ["topics", "לפי נושא"],
@@ -73,8 +73,8 @@ export function PracticeSession({
           ).map(([id, label]) => (
             <button
               key={id}
-              role="tab"
-              aria-selected={source === id}
+              type="button"
+              aria-pressed={source === id}
               onClick={() => setSource(id)}
               className={cn("rounded-full px-3 py-1 text-sm font-semibold ring-1", source === id ? "bg-brand-600 text-white ring-brand-600" : "ring-slate-200 dark:ring-slate-700")}
             >
@@ -90,7 +90,7 @@ export function PracticeSession({
               <select
                 value={level}
                 onChange={(e) => setLevel(e.target.value as ExamLevel)}
-                className="w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-slate-200 sm:w-64 dark:bg-slate-900 dark:ring-slate-700"
+                className="w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-control sm:w-64 dark:bg-slate-900 dark:ring-control-dark"
               >
                 {(Object.keys(EXAM_LEVELS) as ExamLevel[]).map((l) => (
                   <option key={l} value={l}>
@@ -155,7 +155,7 @@ export function PracticeSession({
           </Button>
           <span className="text-sm text-slate-600 tabular-nums dark:text-slate-400">{available} שאלות זמינות</span>
         </div>
-        {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
+        {error && <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">{error}</p>}
       </Card>
     );
   }
@@ -191,8 +191,13 @@ export function PracticeSession({
     return c === picked ? "selected" : "dim";
   };
 
+  const verdict = picked === null ? "" : q.key ? (picked === q.key.answer ? "נכון!" : `לא נכון. התשובה הנכונה: ${q.key.answer}`) : "לשאלה הזו אין מפתח תשובות";
   return (
     <div className="space-y-3">
+      {/* announces the result of a pick; the explanation below is read on demand */}
+      <p className="sr-only" aria-live="polite">
+        {verdict}
+      </p>
       <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800" aria-hidden>
         <div className="h-full bg-brand-600 transition-all" style={{ width: `${(index / questions.length) * 100}%` }} />
       </div>

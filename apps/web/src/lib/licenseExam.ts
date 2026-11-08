@@ -89,12 +89,13 @@ export function toClient(q: ExamQuestion, withKey = false): ClientQuestion {
     stem: paragraphs(q.stem).map(plainText),
     stemHtml: paragraphs(q.stem).map(richHtml),
     stemRendered: Boolean(q.stemRendered),
-    figures: q.figures.map((f, i) => figure(f, q.stemRendered ? q.stem.join(" ") : `איור ${i + 1} לשאלה ${q.n}`)),
+    figures: q.figures.map((f, i) => figure(f, q.stemRendered ? "" : `איור ${i + 1} לשאלה ${q.n}`)),
     options: q.options.map((o, i) => ({
       text: plainText(o.text),
       html: richHtml(o.text),
       rendered: Boolean(o.rendered),
-      figures: o.figures.map((f) => figure(f, o.rendered ? o.text : `איור לתשובה ${i + 1}`)),
+      // an option shown as a picture of text: its text is in an sr-only span, so the picture is decorative unless that text is missing
+      figures: o.figures.map((f) => figure(f, o.rendered && o.text.trim() ? "" : o.rendered ? `תשובה ${i + 1}, מוצגת כתמונה` : `איור לתשובה ${i + 1}`)),
     })),
     ...(key ? { key: clientKey(key) } : {}),
   };

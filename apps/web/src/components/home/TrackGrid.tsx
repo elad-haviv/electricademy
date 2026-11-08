@@ -42,13 +42,12 @@ export function TrackGrid({ tracks }: { tracks: TrackCardData[] }) {
             מלימודי יסוד חינמיים ועד התמחות במערכות הספק. אפשר להתחיל בכל נקודה ולהתקדם הלאה.
           </p>
         </div>
-        <div role="tablist" aria-label="סינון מסלולים" className="inline-flex self-start rounded-xl border border-slate-300/80 bg-slate-200/80 p-1.5 md:self-auto dark:border-slate-700 dark:bg-slate-800">
+        <div role="group" aria-label="סינון מסלולים" className="inline-flex self-start rounded-xl border border-slate-300/80 bg-slate-200/80 p-1.5 md:self-auto dark:border-slate-700 dark:bg-slate-800">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
-              role="tab"
-              aria-selected={filter === tab.id}
+              aria-pressed={filter === tab.id}
               onClick={() => setFilter(tab.id)}
               className={`rounded-lg px-4 py-2 text-sm font-extrabold transition-all ${
                 filter === tab.id
@@ -86,7 +85,7 @@ export function TrackGrid({ tracks }: { tracks: TrackCardData[] }) {
             </div>
             <div className="flex flex-1 flex-col p-6 pt-9">
               <p className="mb-1 text-xs font-bold text-slate-500 dark:text-slate-400">{t.audience}</p>
-              <h3 className="text-xl font-black transition-colors group-hover:text-amber-600 dark:group-hover:text-spark-300">{t.title}</h3>
+              <h3 className="text-xl font-black transition-colors group-hover:text-amber-700 dark:group-hover:text-spark-300">{t.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{t.description}</p>
               <ul className="mt-4 mb-5 space-y-2 border-t border-slate-100 pt-4 dark:border-slate-800">
                 {t.topics.map((topic) => (
@@ -101,7 +100,7 @@ export function TrackGrid({ tracks }: { tracks: TrackCardData[] }) {
                   {t.moduleCount === 1 ? "פרק אחד" : `${t.moduleCount} פרקים`} ·{" "}
                   <span className="text-sky-700 dark:text-sky-400">{t.lessonCount === 1 ? "שיעור אחד" : `${t.lessonCount} שיעורים`}</span>
                 </span>
-                <span className="flex items-center gap-1 font-extrabold group-hover:text-amber-600 dark:group-hover:text-spark-300">
+                <span className="flex items-center gap-1 font-extrabold group-hover:text-amber-700 dark:group-hover:text-spark-300">
                   לסילבוס
                   <ChevronLeft className="size-4 transition-transform group-hover:-translate-x-1" aria-hidden />
                 </span>
