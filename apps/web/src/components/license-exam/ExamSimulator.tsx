@@ -10,6 +10,8 @@ import { BookmarkButton } from "./BookmarkButton";
 import { LimitNotice, type Notice } from "./LimitNotice";
 import { DiscussionLink, KeyNote, OptionList, QuestionStem, type OptionState } from "./Question";
 import { useExamStorage, type ExamHistoryEntry } from "./storage";
+import { CookieSettingsButton } from "@/components/consent/ConsentManager";
+import { useConsent } from "@/lib/consent/store";
 
 /** The licensing exam lasts 3.5 hours; the pass mark is 80%. */
 export const EXAM_MINUTES = 210;
@@ -794,10 +796,17 @@ function Results({
 }
 
 function History({ entries }: { entries: ExamHistoryEntry[] }) {
+  const { choices } = useConsent();
   if (entries.length === 0) return null;
   return (
     <Card>
       <h2 className="mb-3 font-bold">הבחינות האחרונות שלכם</h2>
+      {!choices.functional && (
+        <p className="mb-3 text-xs text-slate-600 dark:text-slate-400">
+          ההיסטוריה נשמרת רק עד שתסגרו את הדף. כדי לשמור אותה בדפדפן, אשרו עוגיות פונקציונליות ב
+          <CookieSettingsButton className="cursor-pointer font-semibold text-brand-700 underline underline-offset-2 dark:text-brand-300" />.
+        </p>
+      )}
       <ul className="divide-y divide-slate-100 text-sm dark:divide-slate-800">
         {entries.slice(0, 8).map((e) => {
           const pct = e.keyed ? Math.round((e.correct / e.keyed) * 100) : null;

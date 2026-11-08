@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
 import { BrandEmblem } from "./home/EngineeringIcons";
+import { LegalLinks } from "./consent/LegalLinks";
 
 const COLUMNS = [
   {
@@ -73,9 +74,12 @@ export function SiteFooter() {
               לבעלי רישיון מתאים ובתוקף, בהתאם ל<strong className="text-spark-400">חוק החשמל, התשי״ד-1954</strong> ולתקנותיו.
             </span>
           </p>
-          <p className="font-semibold whitespace-nowrap text-slate-500">
-            © {new Date().getFullYear()} Electricademy · From Zero to Hero
-          </p>
+          <div className="flex flex-col items-start gap-1 sm:items-end">
+            <LegalLinks variant="footer" />
+            <p className="font-semibold whitespace-nowrap text-slate-500">
+              © {new Date().getFullYear()} Electricademy · From Zero to Hero
+            </p>
+          </div>
         </div>
       </div>
     </footer>
