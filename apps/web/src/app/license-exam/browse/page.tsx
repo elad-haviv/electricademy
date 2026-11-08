@@ -12,6 +12,7 @@ import {
   type ExamTopic,
 } from "@electricademy/content";
 import { BankQuestionCard } from "@/components/license-exam/BankQuestionCard";
+import { aiEnabled } from "@/lib/askAi";
 import { LimitNotice } from "@/components/license-exam/LimitNotice";
 import { guardExamContent } from "@/lib/contentGuard";
 import { getCommentCounts } from "@/lib/examDiscussion";
@@ -57,6 +58,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   // each page of questions counts against the daily budget (lib/contentGuard.ts); answers are revealed on demand
   const guard = slice.length ? await guardExamContent(user.id, { view: slice.map((q) => q.n) }) : ({ ok: true } as const);
   const shown = guard.ok ? slice.map((q) => toClient(q)) : [];
+  const ai = aiEnabled();
   const comments = await getCommentCounts(shown.map((q) => q.n));
 
   const href = (p: Partial<Params>) => {
@@ -123,7 +125,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
 
       <div className="space-y-4">
         {shown.map((q) => (
-          <BankQuestionCard key={q.n} q={q} comments={comments[q.n]} />
+          <BankQuestionCard key={q.n} q={q} comments={comments[q.n]} aiEnabled={ai} />
         ))}
         {!guard.ok && <LimitNotice notice={guard} />}
         {guard.ok && shown.length === 0 && <p className="text-slate-600 dark:text-slate-400">לא נמצאו שאלות. נסו חיפוש אחר.</p>}

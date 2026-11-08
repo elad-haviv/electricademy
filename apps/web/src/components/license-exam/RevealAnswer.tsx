@@ -4,13 +4,14 @@ import { useState, useTransition } from "react";
 import type { ClientKey, ClientQuestion } from "@/lib/licenseExam";
 import { revealAnswer } from "@/lib/licenseExamActions";
 import { LimitNotice, type Notice } from "./LimitNotice";
+import { AskAi } from "./AskAi";
 import { KeyNote, OptionList } from "./Question";
 
 /**
  * "Show the answer" for one bank question (browse, question page). The answer is fetched only when asked
  * for, through the rate-limited revealAnswer action; once shown it can be folded away and back for free.
  */
-export function RevealAnswer({ n, q }: { n: number; q?: ClientQuestion }) {
+export function RevealAnswer({ n, q, aiEnabled = false }: { n: number; q?: ClientQuestion; aiEnabled?: boolean }) {
   const [key, setKey] = useState<ClientKey | null | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -57,7 +58,12 @@ export function RevealAnswer({ n, q }: { n: number; q?: ClientQuestion }) {
       )}
       <LimitNotice notice={notice} />
       <div id={`answer-${n}`} hidden={!open}>
-        {key !== undefined && <KeyNote k={key} />}
+        {key !== undefined && (
+          <div className="space-y-3">
+            <KeyNote k={key} />
+            {aiEnabled && <AskAi n={n} />}
+          </div>
+        )}
       </div>
     </div>
   );

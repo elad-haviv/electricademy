@@ -6,7 +6,7 @@ import { OptionList, QuestionMeta, QuestionStem } from "./Question";
 import { RevealAnswer } from "./RevealAnswer";
 
 /** A question as it appears in the bank (browse / single page): options static, answer on demand. */
-export function BankQuestionCard({ q, link = true, comments }: { q: ClientQuestion; link?: boolean; comments?: number }) {
+export function BankQuestionCard({ q, link = true, comments, aiEnabled = false }: { q: ClientQuestion; link?: boolean; comments?: number; aiEnabled?: boolean }) {
   return (
     <Card id={`q${q.n}`} className="scroll-mt-24 space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -23,7 +23,7 @@ export function BankQuestionCard({ q, link = true, comments }: { q: ClientQuesti
       <QuestionStem q={q} />
       {q.keyed ? (
         // the options live inside RevealAnswer, so the correct one lights up once the answer is shown
-        <RevealAnswer n={q.n} q={q} />
+        <RevealAnswer n={q.n} q={q} aiEnabled={aiEnabled} />
       ) : (
         <>
           <OptionList q={q} stateOf={() => "idle"} />

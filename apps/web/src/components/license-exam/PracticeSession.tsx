@@ -7,6 +7,7 @@ import type { ClientKey, ClientQuestion } from "@/lib/licenseExam";
 import { drawPractice, revealAnswer } from "@/lib/licenseExamActions";
 import { BookmarkButton } from "./BookmarkButton";
 import { LimitNotice, type Notice } from "./LimitNotice";
+import { AskAi } from "./AskAi";
 import { DiscussionLink, KeyNote, OptionList, QuestionMeta, QuestionStem, type OptionState } from "./Question";
 import { useExamStorage } from "./storage";
 
@@ -25,10 +26,13 @@ export function PracticeSession({
   topicCounts,
   initialTopic,
   initialSource,
+  aiEnabled = false,
 }: {
   topicCounts: Record<ExamLevel, Record<ExamTopic, number>>;
   initialTopic?: ExamTopic;
   initialSource?: "topics" | "bookmarks";
+  /** Show "התייעצות עם AI" (lib/askAi.ts is configured). */
+  aiEnabled?: boolean;
 }) {
   const store = useExamStorage();
   // defaults to the licence level the learner chose last time (stored in this browser)
@@ -289,6 +293,7 @@ export function PracticeSession({
             ) : (
               (key !== undefined || !q.keyed) && <KeyNote k={key} picked={picked} />
             )}
+            {aiEnabled && <AskAi key={q.n} n={q.n} />}
             <DiscussionLink n={q.n} />
           </>
         )}
