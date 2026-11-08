@@ -192,3 +192,26 @@
 .law-figure-source {
   @apply text-slate-400 dark:text-slate-500;
 }
+
+/* License-exam question text: inline math and pipe tables (lib/richText.ts) */
+.rich-math {
+  unicode-bidi: isolate;
+}
+.rich-table {
+  @apply my-2 overflow-x-auto;
+}
+.rich-table table {
+  @apply border-collapse text-sm;
+}
+.rich-table th,
+.rich-table td {
+  @apply border border-slate-300 px-2.5 py-1.5 text-start dark:border-slate-700;
+}
+.rich-table th {
+  @apply bg-slate-100 font-semibold dark:bg-slate-800;
+}
+
+/* Exam focus mode: ExamSimulator sets body[data-exam-focus] while an exam runs */
+body[data-exam-focus] [data-site-chrome] {
+  display: none !important;
+}

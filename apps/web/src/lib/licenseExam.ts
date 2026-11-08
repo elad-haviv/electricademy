@@ -14,6 +14,7 @@ import {
   type ExamTopic,
   type QuestionScope,
 } from "@electricademy/content";
+import { plainText, richHtml } from "./richText";
 import { getSessionUser } from "./session";
 
 export const EXAM_SIZE = 50;
@@ -31,9 +32,11 @@ export interface ClientQuestion {
   topic: ExamTopic;
   /** Paragraphs rebuilt from the PDF's line breaks. */
   stem: string[];
+  /** The stem paragraphs as HTML (math via KaTeX, tables); see lib/richText.ts. */
+  stemHtml: string[];
   stemRendered: boolean;
   figures: ClientFigure[];
-  options: { text: string; figures: ClientFigure[]; rendered: boolean }[];
+  options: { text: string; html: string; figures: ClientFigure[]; rendered: boolean }[];
   /** Present only where the caller asked for the key and one exists. */
   key?: ClientKey;
 }
@@ -52,6 +55,13 @@ export function paragraphs(lines: string[]): string[] {
   const out: string[] = [];
   let cur = "";
   for (const line of lines) {
+    if (line.includes("\n") || line.trim().startsWith("|")) {
+      // a table or a multi-line entry from an override stands alone
+      if (cur) out.push(cur);
+      out.push(line);
+      cur = "";
+      continue;
+    }
     const startsItem = /^[•\-–]\s|^\d+[.)]\s/.test(line);
     if (cur && startsItem) {
       out.push(cur);
@@ -76,11 +86,13 @@ export function toClient(q: ExamQuestion, withKey = false): ClientQuestion {
     serial: q.serial,
     level: q.level,
     topic: q.topic,
-    stem: paragraphs(q.stem),
+    stem: paragraphs(q.stem).map(plainText),
+    stemHtml: paragraphs(q.stem).map(richHtml),
     stemRendered: Boolean(q.stemRendered),
     figures: q.figures.map((f, i) => figure(f, q.stemRendered ? q.stem.join(" ") : `איור ${i + 1} לשאלה ${q.n}`)),
     options: q.options.map((o, i) => ({
-      text: o.text,
+      text: plainText(o.text),
+      html: richHtml(o.text),
       rendered: Boolean(o.rendered),
       figures: o.figures.map((f) => figure(f, o.rendered ? o.text : `איור לתשובה ${i + 1}`)),
     })),
@@ -114,6 +126,7 @@ export interface ShowcaseSample {
   n: number;
   topic: string;
   level: string;
+  /** HTML (math via KaTeX). */
   question: string;
   options: string[];
   /** 0-based. */
@@ -138,8 +151,8 @@ export function showcaseSamples(): { samples: ShowcaseSample[]; total: number; v
         n,
         topic: EXAM_TOPICS[q.topic].title,
         level: SCOPE_LABELS[q.level],
-        question: q.stem.join(" "),
-        options: q.options.map((o) => o.text),
+        question: q.stem.map(richHtml).join(" "),
+        options: q.options.map((o) => richHtml(o.text)),
         correct: k.answer - 1,
         formula: k.calculation ?? null,
         explanation: k.explanation ?? "",

@@ -7,22 +7,20 @@ import { EXAM_LEVELS, EXAM_TOPICS, type ExamLevel, type ExamTopic } from "@elect
 import type { ClientQuestion } from "@/lib/licenseExam";
 import { drawExam, gradeExam, type ExamGrade } from "@/lib/licenseExamActions";
 import { BookmarkButton } from "./BookmarkButton";
-import { DiscussionLink, KeyNote, OptionList, QuestionMeta, QuestionStem, type OptionState } from "./Question";
-import { useExamStorage } from "./storage";
+import { DiscussionLink, KeyNote, OptionList, QuestionStem, type OptionState } from "./Question";
+import { useExamStorage, type ExamHistoryEntry } from "./storage";
+
+/** The licensing exam lasts 3.5 hours; the pass mark is 80%. */
+export const EXAM_MINUTES = 210;
+export const PASS_MARK = 80;
 
 const TIME_LIMITS = [
+  { minutes: EXAM_MINUTES, label: "3.5 שעות (כמו בבחינה)" },
   { minutes: 0, label: "ללא הגבלת זמן" },
-  { minutes: 60, label: "שעה" },
-  { minutes: 90, label: "שעה וחצי" },
-  { minutes: 120, label: "שעתיים" },
-  { minutes: 180, label: "שלוש שעות" },
 ];
 
-type Phase =
-  | { name: "setup" }
-  | { name: "running" }
-  | { name: "done"; grade: ExamGrade; seconds: number };
-
+type Phase = { name: "setup" } | { name: "running" } | { name: "done"; grade: ExamGrade; seconds: number };
+type Filter = "all" | "unanswered" | "flagged";
 type ReviewFilter = "all" | "flagged" | "unanswered" | "wrong" | "right" | "unkeyed";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -34,7 +32,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
   // defaults to the licence level the learner chose last time (stored in this browser)
   const [chosenLevel, setLevel] = useState<ExamLevel | null>(null);
   const level = chosenLevel ?? store.level ?? "technician";
-  const [minutes, setMinutes] = useState(0);
+  const [minutes, setMinutes] = useState(EXAM_MINUTES);
   const [questions, setQuestions] = useState<ClientQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [flags, setFlags] = useState<Set<number>>(new Set());
@@ -42,9 +40,16 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
   const [startedAt, setStartedAt] = useState(0);
   const [now, setNow] = useState(0);
   const [confirming, setConfirming] = useState(false);
+  const [exiting, setExiting] = useState(false);
+  const [sheet, setSheet] = useState<Filter | null>(null);
+  const [panelFilter, setPanelFilter] = useState<Filter>("all");
+  const [announce, setAnnounce] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const topRef = useRef<HTMLDivElement>(null);
+  const submitted = useRef(false);
+  const warned = useRef(new Set<number>());
 
   const start = () => {
     setError(null);
@@ -59,7 +64,9 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
         setStartedAt(Date.now());
         setNow(Date.now());
         submitted.current = false;
+        warned.current = new Set();
         setPhase({ name: "running" });
+        window.scrollTo({ top: 0 });
       } catch {
         setError("לא הצלחנו להכין בחינה. נסו שוב.");
       }
@@ -68,20 +75,18 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
 
   const elapsed = Math.max(0, Math.floor((now - startedAt) / 1000));
   const remaining = minutes ? Math.max(0, minutes * 60 - elapsed) : null;
+  const answeredCount = Object.keys(answers).length;
+  const unansweredCount = questions.length - answeredCount;
 
-  const submitted = useRef(false);
   const submit = useCallback(() => {
     if (submitted.current) return;
     submitted.current = true;
     setConfirming(false);
+    setSheet(null);
     const seconds = Math.floor((Date.now() - startedAt) / 1000);
     startTransition(async () => {
       try {
-        const grade = await gradeExam({
-          level,
-          answers: Object.fromEntries(Object.entries(answers).map(([n, c]) => [n, c])),
-          numbers: questions.map((q) => q.n),
-        });
+        const grade = await gradeExam({ level, answers, numbers: questions.map((q) => q.n) });
         store.addHistory({
           at: new Date().toISOString(),
           level,
@@ -100,52 +105,88 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
     });
   }, [answers, level, questions, startedAt, store]);
 
-  // clock, and auto-submit when time runs out
+  // clock: warnings at 30, 5 and 1 minutes left, and auto-submit at 0
   const submitRef = useRef(submit);
+  const unansweredRef = useRef(unansweredCount);
   useEffect(() => {
     submitRef.current = submit;
-  }, [submit]);
+    unansweredRef.current = unansweredCount;
+  }, [submit, unansweredCount]);
   useEffect(() => {
     if (phase.name !== "running") return;
     const deadline = minutes ? startedAt + minutes * 60_000 : null;
     const id = window.setInterval(() => {
       const t = Date.now();
       setNow(t);
-      if (deadline && t >= deadline) submitRef.current();
+      if (!deadline) return;
+      const left = Math.ceil((deadline - t) / 1000);
+      for (const mark of [1800, 300, 60]) {
+        if (left <= mark && !warned.current.has(mark)) {
+          warned.current.add(mark);
+          const msg = mark === 1800 ? "נותרו 30 דקות" : mark === 300 ? `נותרו 5 דקות · ${unansweredRef.current} ללא תשובה` : "נותרה דקה אחת";
+          setAnnounce(msg);
+          if (mark === 1800) setToast(msg);
+        }
+      }
+      if (left <= 0) {
+        setAnnounce("הזמן נגמר, הבחינה מוגשת");
+        submitRef.current();
+      }
     }, 1000);
     return () => window.clearInterval(id);
   }, [phase.name, minutes, startedAt]);
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 6000);
+    return () => window.clearTimeout(id);
+  }, [toast]);
 
-  // leaving mid-exam loses it
+  // focus mode: hide the site's header, tab bar and footer during the exam; warn before leaving
   useEffect(() => {
     if (phase.name !== "running") return;
+    document.body.dataset.examFocus = "true";
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
     window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
+    return () => {
+      delete document.body.dataset.examFocus;
+      window.removeEventListener("beforeunload", warn);
+    };
   }, [phase.name]);
 
   const go = useCallback(
     (i: number) => {
       setCurrent(Math.min(Math.max(i, 0), questions.length - 1));
-      topRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      setSheet(null);
+      topRef.current?.scrollIntoView({ block: "start" });
     },
     [questions.length],
   );
 
-  // keyboard: 1-4 answer, ← next, → previous (right-to-left page)
+  const toggleFlag = useCallback((n: number) => {
+    setFlags((f) => {
+      const next = new Set(f);
+      if (next.has(n)) next.delete(n);
+      else next.add(n);
+      return next;
+    });
+  }, []);
+
+  // keyboard: 1-4 answer, ← next, → previous (right-to-left page), F flag
   useEffect(() => {
-    if (phase.name !== "running" || confirming) return;
+    if (phase.name !== "running" || confirming || sheet || exiting) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLElement && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
       const q = questions[current];
       if (!q) return;
       if (/^[1-4]$/.test(e.key)) setAnswers((a) => ({ ...a, [q.n]: Number(e.key) }));
       else if (e.key === "ArrowLeft") go(current + 1);
       else if (e.key === "ArrowRight") go(current - 1);
+      else if (e.key.toLowerCase() === "f" || e.key === "כ") toggleFlag(q.n);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [phase.name, confirming, questions, current, go]);
+  }, [phase.name, confirming, sheet, exiting, questions, current, go, toggleFlag]);
 
   if (phase.name === "setup") {
     return (
@@ -170,11 +211,11 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
             </div>
           </fieldset>
           <label className="block">
-            <span className="mb-1 block font-bold">הגבלת זמן</span>
+            <span className="mb-1 block font-bold">זמן</span>
             <select
               value={minutes}
               onChange={(e) => setMinutes(Number(e.target.value))}
-              className="w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-slate-200 sm:w-64 dark:bg-slate-900 dark:ring-slate-700"
+              className="w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-slate-200 sm:w-72 dark:bg-slate-900 dark:ring-slate-700"
             >
               {TIME_LIMITS.map((t) => (
                 <option key={t.minutes} value={t.minutes}>
@@ -182,16 +223,21 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
                 </option>
               ))}
             </select>
-            <span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">משך הבחינה האמיתית מופיע בנוהל הבחינה של משרד העבודה.</span>
           </label>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button onClick={start} disabled={pending}>
-              {pending ? "מכינים בחינה…" : `התחלת בחינה (${examSize} שאלות)`}
-            </Button>
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              שאלות אקראיות מהמאגר הרשמי{bankVersion && ` (גרסה ${bankVersion})`}, לפי סוג הרישיון.
-            </span>
-          </div>
+          <ul className="grid gap-2 text-sm sm:grid-cols-3">
+            <li className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+              <strong>{examSize} שאלות</strong> אמריקאיות, באקראי מהמאגר הרשמי{bankVersion && ` (גרסה ${bankVersion})`}
+            </li>
+            <li className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+              <strong>3.5 שעות</strong>, כמו בבחינה האמיתית
+            </li>
+            <li className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+              <strong>ציון עובר: {PASS_MARK}</strong>. שאלה בלי תשובה נספרת כשגויה
+            </li>
+          </ul>
+          <Button onClick={start} disabled={pending}>
+            {pending ? "מכינים בחינה…" : `התחלת בחינה`}
+          </Button>
           {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
         </Card>
         <History entries={store.history} />
@@ -214,108 +260,367 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
   }
 
   const q = questions[current]!;
-  const answeredCount = Object.keys(answers).length;
   const stateOf = (c: number): OptionState => (answers[q.n] === c ? "selected" : "idle");
+  const timerTone = remaining === null ? "" : remaining <= 300 ? "text-rose-600 dark:text-rose-400" : remaining <= 1800 ? "text-amber-600 dark:text-amber-400" : "";
+  const isLast = current === questions.length - 1;
+  const overviewProps = { questions, answers, flags, current, onJump: go };
 
   return (
-    <div className="space-y-4" ref={topRef}>
-      <div className="sticky top-16 z-20 flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-white/90 p-3 ring-1 ring-slate-200 backdrop-blur dark:bg-slate-900/90 dark:ring-slate-800">
-        <span className="text-sm font-semibold">
-          {EXAM_LEVELS[level].title} · נענו {answeredCount} מתוך {questions.length}
-        </span>
-        <span
-          className={cn("font-mono text-sm font-bold tabular-nums", remaining !== null && remaining < 300 && "text-rose-600")}
-          aria-live={remaining !== null && remaining < 60 ? "polite" : "off"}
-          dir="ltr"
-        >
-          ⏱ {remaining !== null ? clock(remaining) : clock(elapsed)}
-        </span>
-        <Button variant="secondary" onClick={() => setConfirming(true)} disabled={pending}>
-          הגשת הבחינה
-        </Button>
-      </div>
+    <div ref={topRef} className="scroll-mt-4 pb-24 lg:pb-0">
+      <p className="sr-only" aria-live="assertive">
+        {announce}
+      </p>
 
-      <Card className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <QuestionMeta q={q} number={current + 1} />
+      {/* top bar */}
+      <div className="sticky top-0 z-30 -mx-4 mb-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur lg:mx-0 lg:rounded-2xl lg:border dark:border-slate-800 dark:bg-slate-950/95">
+        <div className="flex h-14 items-center gap-3">
           <button
             type="button"
-            onClick={() =>
-              setFlags((f) => {
-                const next = new Set(f);
-                if (next.has(q.n)) next.delete(q.n);
-                else next.add(q.n);
-                return next;
-              })
-            }
-            aria-pressed={flags.has(q.n)}
-            className={cn(
-              "rounded-lg px-2 py-1 text-xs font-semibold ring-1",
-              flags.has(q.n) ? "bg-amber-100 text-amber-900 ring-amber-300" : "text-slate-600 ring-slate-200 dark:text-slate-300 dark:ring-slate-700",
-            )}
+            onClick={() => setExiting(true)}
+            aria-label="יציאה מהבחינה"
+            className="grid size-10 place-items-center rounded-lg text-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
           >
-            🚩 {flags.has(q.n) ? "מסומנת לבדיקה" : "סימון לבדיקה"}
+            ✕
           </button>
+          <span className="flex-1 font-bold">
+            שאלה {current + 1} מתוך {questions.length}
+            <span className="ms-2 hidden text-sm font-normal text-slate-500 sm:inline dark:text-slate-400">· {EXAM_LEVELS[level].title}</span>
+          </span>
+          <span className={cn("font-mono text-base font-bold tabular-nums lg:hidden", timerTone)} dir="ltr">
+            {remaining !== null ? clock(remaining) : clock(elapsed)}
+          </span>
         </div>
-        <QuestionStem q={q} />
-        <OptionList q={q} stateOf={stateOf} onPick={(c) => setAnswers((a) => ({ ...a, [q.n]: c }))} />
-        <div className="flex justify-between gap-2 pt-2">
+        <div
+          className="mb-2 h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"
+          role="progressbar"
+          aria-label="שאלות שנענו"
+          aria-valuemin={0}
+          aria-valuemax={questions.length}
+          aria-valuenow={answeredCount}
+        >
+          <div className="h-full bg-blue-600 transition-all dark:bg-blue-400" style={{ width: `${(answeredCount / questions.length) * 100}%` }} />
+        </div>
+      </div>
+
+      {remaining !== null && remaining <= 300 && remaining > 0 && (
+        <div role="status" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-rose-50 p-3 text-sm font-semibold text-rose-800 ring-1 ring-rose-200 dark:bg-rose-950/50 dark:text-rose-200 dark:ring-rose-900">
+          <span>
+            נותרו {Math.ceil(remaining / 60)} דקות · {unansweredCount} ללא תשובה
+          </span>
+          {unansweredCount > 0 && (
+            <button type="button" className="underline" onClick={() => setSheet("unanswered")}>
+              הצגת השאלות ללא תשובה
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start lg:gap-6">
+        <div className="space-y-4">
+          <Card className="space-y-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-1">
+                <Badge tone="brand">{EXAM_TOPICS[q.topic].title}</Badge>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  מאגר: שאלה {q.n}
+                  {q.serial && ` · קוד ${q.serial}`}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => toggleFlag(q.n)}
+                aria-pressed={flags.has(q.n)}
+                className={cn(
+                  "shrink-0 rounded-lg px-3 py-1.5 text-sm font-semibold ring-1",
+                  flags.has(q.n)
+                    ? "bg-amber-100 text-amber-900 ring-amber-400 dark:bg-amber-950 dark:text-amber-200 dark:ring-amber-600"
+                    : "text-slate-600 ring-slate-300 dark:text-slate-300 dark:ring-slate-700",
+                )}
+              >
+                🚩 {flags.has(q.n) ? "מסומנת" : "סימון"}
+              </button>
+            </div>
+            <QuestionStem q={q} />
+            <OptionList q={q} stateOf={stateOf} onPick={(c) => setAnswers((a) => ({ ...a, [q.n]: c }))} />
+          </Card>
+
+          {/* desktop prev / next */}
+          <div className="hidden justify-between gap-2 lg:flex">
+            <Button variant="secondary" onClick={() => go(current - 1)} disabled={current === 0}>
+              → הקודמת
+            </Button>
+            {isLast ? <Button onClick={() => setConfirming(true)}>סיום והגשה</Button> : <Button onClick={() => go(current + 1)}>הבאה ←</Button>}
+          </div>
+          {error && (
+            <p role="alert" className="text-sm text-rose-600">
+              {error}
+            </p>
+          )}
+        </div>
+
+        {/* desktop side panel */}
+        <aside className="sticky top-4 hidden space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-200 lg:block dark:bg-slate-900 dark:ring-slate-800">
+          <div className="text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-400">{remaining !== null ? "זמן שנותר" : "זמן שעבר"}</p>
+            <p className={cn("font-mono text-3xl font-extrabold tabular-nums", timerTone)} dir="ltr">
+              {remaining !== null ? clock(remaining) : clock(elapsed)}
+            </p>
+            <p className="mt-1 text-sm text-slate-600 tabular-nums dark:text-slate-400">
+              נענו {answeredCount}/{questions.length}
+            </p>
+          </div>
+          <Overview {...overviewProps} filter={panelFilter} onFilter={setPanelFilter} size="sm" />
+          <p className="text-xs text-slate-500 dark:text-slate-400">מקלדת: 1–4 תשובה · חיצים מעבר · F סימון</p>
+          <Button className="w-full" variant="secondary" onClick={() => setConfirming(true)} disabled={pending}>
+            הגשת הבחינה
+          </Button>
+        </aside>
+      </div>
+
+      {/* mobile bottom action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden dark:border-slate-800 dark:bg-slate-950/95">
+        <div className="mx-auto grid h-16 max-w-3xl grid-cols-3 items-center gap-2 px-3">
           <Button variant="secondary" onClick={() => go(current - 1)} disabled={current === 0}>
             → הקודמת
           </Button>
-          {current < questions.length - 1 ? (
-            <Button onClick={() => go(current + 1)}>הבאה ←</Button>
-          ) : (
-            <Button onClick={() => setConfirming(true)}>סיום והגשה</Button>
-          )}
+          <Button variant="ghost" className="px-2 whitespace-nowrap" onClick={() => setSheet("all")} aria-haspopup="dialog">
+            סקירה <span className="tabular-nums">{answeredCount}/{questions.length}</span>
+          </Button>
+          {isLast ? <Button onClick={() => setConfirming(true)}>סיום והגשה</Button> : <Button onClick={() => go(current + 1)}>הבאה ←</Button>}
         </div>
-      </Card>
+      </div>
 
-      <nav aria-label="מעבר בין שאלות" className="grid grid-cols-10 gap-1.5 sm:grid-cols-[repeat(25,minmax(0,1fr))]">
-        {questions.map((item, i) => (
-          <button
-            key={item.n}
-            type="button"
-            onClick={() => go(i)}
-            aria-current={i === current ? "step" : undefined}
-            aria-label={`שאלה ${i + 1}${answers[item.n] ? ", נענתה" : ""}${flags.has(item.n) ? ", מסומנת" : ""}`}
-            className={cn(
-              "relative aspect-square rounded-md text-xs font-semibold ring-1 tabular-nums",
-              answers[item.n] ? "bg-brand-600 text-white ring-brand-600" : "bg-white ring-slate-200 dark:bg-slate-900 dark:ring-slate-700",
-              i === current && "ring-2 ring-spark-400",
-            )}
-          >
-            {i + 1}
-            {flags.has(item.n) && <span aria-hidden className="absolute -top-1 -left-1 size-2.5 rounded-full bg-amber-400" />}
-          </button>
-        ))}
-      </nav>
-      <p className="text-xs text-slate-500 dark:text-slate-400">מקלדת: 1–4 לבחירת תשובה, חיצים למעבר בין שאלות.</p>
-
-      {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
-
-      {confirming && (
-        <div role="dialog" aria-modal="true" aria-labelledby="confirm-title" className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4">
-          <Card className="max-w-sm space-y-3">
-            <h2 id="confirm-title" className="text-lg font-bold">
-              להגיש את הבחינה?
-            </h2>
-            <p className="text-sm">
-              נענו {answeredCount} מתוך {questions.length} שאלות
-              {questions.length - answeredCount > 0 && `; ${questions.length - answeredCount} עדיין ללא תשובה`}
-              {flags.size > 0 && `, ו־${flags.size} מסומנות לבדיקה`}.
-            </p>
-            <div className="flex gap-2">
-              <Button onClick={submit} disabled={pending} autoFocus>
-                {pending ? "מגישים…" : "הגשה"}
-              </Button>
-              <Button variant="secondary" onClick={() => setConfirming(false)}>
-                חזרה לבחינה
+      {/* mobile overview sheet */}
+      {sheet && (
+        <div role="dialog" aria-modal="true" aria-labelledby="overview-title" className="fixed inset-0 z-50 lg:hidden">
+          <button type="button" aria-label="סגירה" className="absolute inset-0 bg-slate-950/50" onClick={() => setSheet(null)} />
+          <div className="absolute inset-x-0 bottom-0 flex h-[85vh] flex-col rounded-t-3xl bg-white pb-[env(safe-area-inset-bottom)] dark:bg-slate-900">
+            <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-slate-300 dark:bg-slate-700" aria-hidden />
+            <div className="flex items-center justify-between px-5 pt-3 pb-2">
+              <h2 id="overview-title" className="text-lg font-bold">
+                סקירת שאלות
+              </h2>
+              <span className={cn("font-mono font-bold tabular-nums", timerTone)} dir="ltr">
+                {remaining !== null ? clock(remaining) : clock(elapsed)}
+              </span>
+              <button type="button" onClick={() => setSheet(null)} aria-label="סגירה" className="grid size-10 place-items-center rounded-lg text-xl">
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5">
+              <Overview {...overviewProps} filter={sheet} onFilter={setSheet} size="lg" />
+            </div>
+            <div className="border-t border-slate-200 p-4 dark:border-slate-800">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  setSheet(null);
+                  setConfirming(true);
+                }}
+              >
+                הגשת הבחינה
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
+
+      {toast && (
+        <div role="status" className="fixed inset-x-4 top-20 z-40 mx-auto max-w-sm rounded-xl bg-amber-100 p-3 text-center text-sm font-semibold text-amber-900 shadow-lg ring-1 ring-amber-300 dark:bg-amber-950 dark:text-amber-100 dark:ring-amber-800">
+          ⏳ {toast}
+        </div>
+      )}
+
+      {confirming && (
+        <Dialog title="להגיש את הבחינה?" onClose={() => setConfirming(false)}>
+          {remaining !== null && (
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              נותר זמן: <span dir="ltr" className="font-mono">{clock(remaining)}</span>
+            </p>
+          )}
+          <ul className="divide-y divide-slate-200 rounded-xl ring-1 ring-slate-200 dark:divide-slate-800 dark:ring-slate-800">
+            <li className="flex justify-between p-3">
+              <span>נענו</span>
+              <strong className="tabular-nums">{answeredCount}</strong>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex w-full justify-between p-3 text-start"
+                onClick={() => {
+                  setConfirming(false);
+                  setSheet("unanswered");
+                  setPanelFilter("unanswered");
+                }}
+              >
+                <span>ללא תשובה ›</span>
+                <strong className="tabular-nums">{unansweredCount}</strong>
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex w-full justify-between p-3 text-start"
+                onClick={() => {
+                  setConfirming(false);
+                  setSheet("flagged");
+                  setPanelFilter("flagged");
+                }}
+              >
+                <span>מסומנות ›</span>
+                <strong className="tabular-nums">{flags.size}</strong>
+              </button>
+            </li>
+          </ul>
+          {unansweredCount > 0 && (
+            <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-100 dark:ring-amber-900">
+              שאלה בלי תשובה נספרת כשגויה, עדיף לנחש.
+            </p>
+          )}
+          <div className="flex gap-2">
+            <Button variant={unansweredCount ? "primary" : "secondary"} onClick={() => setConfirming(false)} autoFocus={unansweredCount > 0}>
+              חזרה לבחינה
+            </Button>
+            <Button variant={unansweredCount ? "secondary" : "primary"} onClick={submit} disabled={pending} autoFocus={unansweredCount === 0}>
+              {pending ? "מגישים…" : "הגשה סופית"}
+            </Button>
+          </div>
+        </Dialog>
+      )}
+
+      {exiting && (
+        <Dialog title="לצאת מהבחינה?" onClose={() => setExiting(false)}>
+          <p className="text-sm">הבחינה לא תישמר והתשובות יאבדו.</p>
+          <div className="flex gap-2">
+            <Button onClick={() => setExiting(false)} autoFocus>
+              חזרה לבחינה
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setExiting(false);
+                setPhase({ name: "setup" });
+              }}
+            >
+              יציאה
+            </Button>
+          </div>
+        </Dialog>
+      )}
+    </div>
+  );
+}
+
+function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div role="dialog" aria-modal="true" aria-labelledby="dialog-title" className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+      <button type="button" aria-label="סגירה" className="absolute inset-0 bg-slate-950/50" onClick={onClose} />
+      <div className="relative w-full max-w-sm space-y-4 rounded-t-3xl bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:rounded-2xl dark:bg-slate-900">
+        <h2 id="dialog-title" className="text-lg font-bold">
+          {title}
+        </h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/** Question chips with filters. State shows by fill (answered), a flag badge, and a ring (current). */
+function Overview({
+  questions,
+  answers,
+  flags,
+  current,
+  onJump,
+  filter,
+  onFilter,
+  size,
+}: {
+  questions: ClientQuestion[];
+  answers: Record<number, number>;
+  flags: Set<number>;
+  current: number;
+  onJump: (i: number) => void;
+  filter: Filter;
+  onFilter: (f: Filter) => void;
+  size: "sm" | "lg";
+}) {
+  const unanswered = questions.filter((q) => !answers[q.n]).length;
+  const tabs: { id: Filter; label: string; count: number }[] = [
+    { id: "all", label: "הכול", count: questions.length },
+    { id: "unanswered", label: "ללא תשובה", count: unanswered },
+    { id: "flagged", label: "מסומנות", count: flags.size },
+  ];
+  const shown = questions
+    .map((q, i) => ({ q, i }))
+    .filter(({ q }) => (filter === "unanswered" ? !answers[q.n] : filter === "flagged" ? flags.has(q.n) : true));
+  return (
+    <div className="space-y-3">
+      <div className="flex gap-1.5" role="tablist" aria-label="סינון שאלות">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            aria-selected={filter === t.id}
+            onClick={() => onFilter(t.id)}
+            className={cn(
+              "flex-1 rounded-full px-2 py-1.5 text-xs font-semibold whitespace-nowrap ring-1",
+              filter === t.id ? "bg-slate-900 text-white ring-slate-900 dark:bg-white dark:text-slate-900 dark:ring-white" : "ring-slate-300 dark:ring-slate-700",
+            )}
+          >
+            {t.label} <span className="tabular-nums">({t.count})</span>
+          </button>
+        ))}
+      </div>
+      {shown.length === 0 ? (
+        <p className="py-6 text-center text-sm text-slate-600 dark:text-slate-400">{filter === "unanswered" ? "כל השאלות נענו ✓" : "אין שאלות מסומנות"}</p>
+      ) : (
+        <div className="grid grid-cols-5 gap-2">
+          {shown.map(({ q, i }) => {
+            const answered = Boolean(answers[q.n]);
+            const flagged = flags.has(q.n);
+            return (
+              <button
+                key={q.n}
+                type="button"
+                onClick={() => onJump(i)}
+                aria-current={i === current ? "step" : undefined}
+                aria-label={`שאלה ${i + 1}${answered ? ", נענתה" : ", ללא תשובה"}${flagged ? ", מסומנת" : ""}`}
+                className={cn(
+                  "relative grid place-items-center rounded-lg text-sm font-bold tabular-nums",
+                  size === "lg" ? "h-12" : "h-10",
+                  answered
+                    ? "bg-blue-600 text-white dark:bg-blue-400 dark:text-slate-950"
+                    : "border border-slate-500 bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100",
+                  flagged && "outline-2 outline-amber-700 dark:outline-amber-400",
+                  i === current && "ring-2 ring-slate-900 ring-offset-2 ring-offset-white dark:ring-white dark:ring-offset-slate-900",
+                )}
+              >
+                {i + 1}
+                {flagged && (
+                  <span aria-hidden className="absolute -top-2 -right-1.5 text-xs">
+                    🚩
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+      <p className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+        <span className="flex items-center gap-1">
+          <span aria-hidden className="size-3 rounded bg-blue-600 dark:bg-blue-400" /> נענתה
+        </span>
+        <span className="flex items-center gap-1">
+          <span aria-hidden className="size-3 rounded border border-slate-500" /> ללא תשובה
+        </span>
+        <span>🚩 מסומנת</span>
+      </p>
     </div>
   );
 }
@@ -337,32 +642,35 @@ function Results({
   level: ExamLevel;
   onRestart: () => void;
 }) {
-  const [filter, setFilter] = useState<ReviewFilter>("all");
   const withKeys = useMemo(() => questions.map((q) => (grade.keys[q.n] ? { ...q, key: grade.keys[q.n] } : q)), [questions, grade.keys]);
-  const answered = Object.keys(answers).length;
+  const wrongCount = withKeys.filter((q) => q.key && answers[q.n] !== q.key.answer).length;
+  const [filter, setFilter] = useState<ReviewFilter>(wrongCount ? "wrong" : "all");
   const pct = grade.keyed ? Math.round((grade.correct / grade.keyed) * 100) : null;
+  const complete = grade.keyed === questions.length;
+  const passed = pct !== null && pct >= PASS_MARK;
+  const needed = Math.ceil((PASS_MARK / 100) * grade.keyed) - grade.correct;
 
-  const byTopic = useMemo(() => {
-    const m = new Map<ExamTopic, { total: number; answered: number; correct: number; keyed: number }>();
+  const weakest = useMemo(() => {
+    const m = new Map<ExamTopic, { keyed: number; correct: number }>();
     for (const q of withKeys) {
-      const t = m.get(q.topic) ?? { total: 0, answered: 0, correct: 0, keyed: 0 };
-      t.total++;
-      if (answers[q.n]) t.answered++;
-      if (q.key) {
-        t.keyed++;
-        if (answers[q.n] === q.key.answer) t.correct++;
-      }
+      if (!q.key) continue;
+      const t = m.get(q.topic) ?? { keyed: 0, correct: 0 };
+      t.keyed++;
+      if (answers[q.n] === q.key.answer) t.correct++;
       m.set(q.topic, t);
     }
-    return [...m.entries()].sort((a, b) => b[1].total - a[1].total);
+    return [...m.entries()]
+      .filter(([, t]) => t.correct < t.keyed)
+      .sort((a, b) => a[1].correct / a[1].keyed - b[1].correct / b[1].keyed || b[1].keyed - a[1].keyed)
+      .slice(0, 3);
   }, [withKeys, answers]);
 
   const FILTERS: { id: ReviewFilter; label: string; test: (q: ClientQuestion) => boolean }[] = [
+    { id: "wrong", label: "שגויות", test: (q) => !!q.key && answers[q.n] !== q.key.answer },
     { id: "all", label: "הכול", test: () => true },
-    { id: "flagged", label: "מסומנות", test: (q) => flags.has(q.n) },
-    { id: "unanswered", label: "ללא תשובה", test: (q) => !answers[q.n] },
-    { id: "wrong", label: "שגויות", test: (q) => !!q.key && !!answers[q.n] && answers[q.n] !== q.key.answer },
     { id: "right", label: "נכונות", test: (q) => !!q.key && answers[q.n] === q.key.answer },
+    { id: "unanswered", label: "ללא תשובה", test: (q) => !answers[q.n] },
+    { id: "flagged", label: "מסומנות", test: (q) => flags.has(q.n) },
     { id: "unkeyed", label: "ללא מפתח", test: (q) => !q.key },
   ];
   const active = FILTERS.find((f) => f.id === filter)!;
@@ -370,23 +678,38 @@ function Results({
 
   return (
     <div className="space-y-6">
-      <Card className="space-y-4">
-        <h2 className="text-xl font-bold">סיכום הבחינה · {EXAM_LEVELS[level].title}</h2>
-        <dl className="grid gap-3 sm:grid-cols-3">
-          <Stat label="נענו" value={`${answered} / ${questions.length}`} />
-          <Stat label="זמן" value={clock(seconds)} />
-          <Stat label="ציון (על שאלות עם מפתח)" value={pct === null ? "—" : `${pct}%`} hint={grade.keyed ? `${grade.correct} נכונות מתוך ${grade.keyed}` : undefined} />
-        </dl>
-        {grade.keyed < questions.length && (
-          <p className="rounded-xl bg-amber-50 p-3 text-sm ring-1 ring-amber-200 dark:bg-amber-950/40 dark:ring-amber-900">
-            למאגר הרשמי אין מפתח תשובות. {grade.keyed ? `${questions.length - grade.keyed} מהשאלות בבחינה` : "השאלות בבחינה"} עוד בלי תשובה מאומתת
-            אצלנו, ולכן לא נכנסו לציון. עברו עליהן למטה ובדקו מול התקנות.
-          </p>
+      <Card className="space-y-4 text-center">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          {EXAM_LEVELS[level].title} · {clock(seconds)}
+        </p>
+        {pct === null ? (
+          <p className="text-2xl font-extrabold">הבחינה הוגשה</p>
+        ) : (
+          <>
+            {complete ? (
+              <p className={cn("text-4xl font-black", passed ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>
+                {passed ? "עברת ✓" : "לא עברת"}
+              </p>
+            ) : (
+              <p className="text-lg font-bold">ציון חלקי (על {grade.keyed} שאלות עם מפתח)</p>
+            )}
+            <p className="text-5xl font-black tabular-nums" dir="ltr">
+              {pct}%
+            </p>
+            <p className="text-slate-600 dark:text-slate-400">
+              {grade.correct}/{grade.keyed} נכונות · ציון עובר {PASS_MARK}
+            </p>
+            <div className="relative mx-auto h-3 max-w-md rounded-full bg-slate-200 dark:bg-slate-800" aria-hidden>
+              <div className={cn("h-full rounded-full", passed ? "bg-emerald-500" : "bg-rose-500")} style={{ width: `${pct}%` }} />
+              <div className="absolute inset-y-[-4px] w-0.5 bg-slate-900 dark:bg-white" style={{ insetInlineStart: `${PASS_MARK}%` }} />
+            </div>
+            {!passed && needed > 0 && <p className="font-semibold">חסרו {needed} תשובות נכונות למעבר</p>}
+          </>
         )}
         <p className="text-xs text-slate-500 dark:text-slate-400">
-          {grade.saved ? "הבחינה נשמרה בחשבון שלכם." : "הבחינה נשמרה בדפדפן הזה. התחברו כדי לשמור אותה גם בחשבון."}
+          {grade.saved ? "הבחינה נשמרה בחשבון שלכם." : "הבחינה נשמרה בדפדפן הזה."} התשובות במפתח נוסחו בעזרת בינה מלאכותית ועוד לא נבדקו כולן.
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           <Button onClick={onRestart}>בחינה חדשה</Button>
           <Link href="/license-exam/practice" className={buttonClass("secondary")}>
             תרגול לפי נושא
@@ -394,41 +717,40 @@ function Results({
         </div>
       </Card>
 
-      <Card>
-        <h3 className="mb-3 font-bold">לפי נושא</h3>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {byTopic.map(([topic, t]) => (
-            <li key={topic} className="flex items-center justify-between gap-2 text-sm">
-              <Link href={`/license-exam/browse?topic=${topic}`} className="hover:underline">
-                {EXAM_TOPICS[topic].title}
-              </Link>
-              <span className="text-slate-600 tabular-nums dark:text-slate-400">
-                {t.answered}/{t.total} נענו{t.keyed > 0 && ` · ${t.correct}/${t.keyed} נכונות`}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </Card>
+      {weakest.length > 0 && (
+        <Card>
+          <h3 className="mb-3 font-bold">הנושאים לחיזוק</h3>
+          <ul className="space-y-2">
+            {weakest.map(([topic, t]) => (
+              <li key={topic} className="flex items-center justify-between gap-2 text-sm">
+                <span>
+                  {EXAM_TOPICS[topic].title}{" "}
+                  <span className="text-slate-500 tabular-nums">
+                    ({t.correct}/{t.keyed})
+                  </span>
+                </span>
+                <Link href={`/license-exam/practice?topic=${topic}`} className="font-semibold text-brand-700 hover:underline dark:text-brand-300">
+                  תרגול ←
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       <section className="space-y-3">
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="סינון שאלות">
-          {FILTERS.map((f) => {
-            const count = withKeys.filter(f.test).length;
-            return (
-              <button
-                key={f.id}
-                role="tab"
-                aria-selected={filter === f.id}
-                onClick={() => setFilter(f.id)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-sm font-semibold ring-1",
-                  filter === f.id ? "bg-brand-600 text-white ring-brand-600" : "ring-slate-200 dark:ring-slate-700",
-                )}
-              >
-                {f.label} <span className="tabular-nums opacity-75">({count})</span>
-              </button>
-            );
-          })}
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              role="tab"
+              aria-selected={filter === f.id}
+              onClick={() => setFilter(f.id)}
+              className={cn("rounded-full px-3 py-1 text-sm font-semibold ring-1", filter === f.id ? "bg-brand-600 text-white ring-brand-600" : "ring-slate-200 dark:ring-slate-700")}
+            >
+              {f.label} <span className="tabular-nums opacity-75">({withKeys.filter(f.test).length})</span>
+            </button>
+          ))}
         </div>
         {shown.length === 0 && <p className="text-sm text-slate-600 dark:text-slate-400">אין שאלות בסינון הזה.</p>}
         {shown.map(({ q, i }) => {
@@ -440,7 +762,10 @@ function Results({
           return (
             <Card key={q.n} className="space-y-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <QuestionMeta q={q} number={i + 1} />
+                <div className="space-y-1">
+                  <p className="text-sm font-bold">שאלה {i + 1}</p>
+                  <Badge tone="brand">{EXAM_TOPICS[q.topic].title}</Badge>
+                </div>
                 <div className="flex gap-2">
                   {flags.has(q.n) && <Badge tone="pro">🚩 סימנתם</Badge>}
                   {!picked && <Badge>לא נענתה</Badge>}
@@ -459,35 +784,26 @@ function Results({
   );
 }
 
-function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="rounded-xl bg-slate-50 p-3 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-      <dt className="text-xs text-slate-600 dark:text-slate-400">{label}</dt>
-      <dd className="text-2xl font-extrabold tabular-nums" dir="ltr">
-        {value}
-      </dd>
-      {hint && <dd className="text-xs text-slate-600 dark:text-slate-400">{hint}</dd>}
-    </div>
-  );
-}
-
-function History({ entries }: { entries: { at: string; level: ExamLevel; total: number; answered: number; keyed: number; correct: number; seconds: number }[] }) {
+function History({ entries }: { entries: ExamHistoryEntry[] }) {
   if (entries.length === 0) return null;
   return (
     <Card>
       <h2 className="mb-3 font-bold">הבחינות האחרונות שלכם</h2>
       <ul className="divide-y divide-slate-100 text-sm dark:divide-slate-800">
-        {entries.slice(0, 8).map((e) => (
-          <li key={e.at} className="flex flex-wrap justify-between gap-2 py-2">
-            <span>
-              {new Date(e.at).toLocaleDateString("he-IL")} · {EXAM_LEVELS[e.level].short}
-            </span>
-            <span className="text-slate-600 tabular-nums dark:text-slate-400">
-              נענו {e.answered}/{e.total}
-              {e.keyed > 0 && ` · ${Math.round((e.correct / e.keyed) * 100)}% (${e.correct}/${e.keyed})`} · {clock(e.seconds)}
-            </span>
-          </li>
-        ))}
+        {entries.slice(0, 8).map((e) => {
+          const pct = e.keyed ? Math.round((e.correct / e.keyed) * 100) : null;
+          return (
+            <li key={e.at} className="flex flex-wrap items-center justify-between gap-2 py-2">
+              <span>
+                {new Date(e.at).toLocaleDateString("he-IL")} · {EXAM_LEVELS[e.level].short}
+              </span>
+              <span className="flex items-center gap-2 text-slate-600 tabular-nums dark:text-slate-400">
+                {pct !== null && <span className={cn("font-bold", pct >= PASS_MARK ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400")}>{pct}%</span>}
+                נענו {e.answered}/{e.total} · {clock(e.seconds)}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </Card>
   );

@@ -1,0 +1,1 @@
+{ "_readme": "Hand-checked rewrites of bank questions (text + $LaTeX$ instead of pictures of text). Keyed by question number; ignored if the serial no longer matches. Built from the extraction review; see packages/content/scripts/license-exam/README.md.", "overrides": {} }

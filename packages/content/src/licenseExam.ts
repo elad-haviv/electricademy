@@ -41,7 +41,11 @@ export function loadExamBank(): ExamBank {
   const dir = path.join(contentRoot(), "license-exam");
   const raw = readJson<{ meta: BankMeta; questions: BankQuestion[] }>(path.join(dir, "bank.json"));
   if (!raw) throw new Error("content/license-exam/bank.json is missing");
-  const questions = raw.questions.map((q) => ({ ...q, topic: classifyQuestion(q) }));
+  const edits = readJson<{ overrides: Record<string, QuestionOverride> }>(path.join(dir, "overrides.json"))?.overrides ?? {};
+  const questions = raw.questions.map((q) => {
+    const edited = applyOverride(q, edits[String(q.n)]);
+    return { ...edited, topic: classifyQuestion(edited) };
+  });
   const byNumber = new Map(questions.map((q) => [q.n, q]));
   const key = readJson<{ answers: Record<string, AnswerKeyEntry> }>(path.join(dir, "answers.json"));
   const answers = new Map<number, AnswerKeyEntry>();
@@ -52,6 +56,31 @@ export function loadExamBank(): ExamBank {
   }
   cached = { meta: raw.meta, questions, byNumber, answers };
   return cached;
+}
+
+/**
+ * A hand-checked rewrite of one question (content/license-exam/overrides.json): text and LaTeX instead of
+ * cropped pictures of text, extraction glitches fixed. Figures are kept by file name.
+ */
+export interface QuestionOverride {
+  serial: string | null;
+  stem: string[];
+  figures: string[];
+  options: { text: string; figures?: string[] }[];
+}
+
+/** Applies an override when it still matches the question (same serial and option count). */
+export function applyOverride(q: BankQuestion, o: QuestionOverride | undefined): BankQuestion {
+  if (!o || o.serial !== q.serial || o.options.length !== q.options.length) return q;
+  const all = new Map([...q.figures, ...q.options.flatMap((x) => x.figures)].map((f) => [f.src, f]));
+  const pick = (names: string[] | undefined) => (names ?? []).flatMap((src) => (all.has(src) ? [all.get(src)!] : []));
+  return {
+    ...q,
+    stem: o.stem,
+    figures: pick(o.figures),
+    stemRendered: false,
+    options: o.options.map((x) => ({ text: x.text, figures: pick(x.figures) })),
+  };
 }
 
 export function questionsForLevel(bank: ExamBank, level: ExamLevel): ExamQuestion[] {

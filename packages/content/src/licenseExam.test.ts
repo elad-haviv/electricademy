@@ -49,6 +49,19 @@ describe("license-exam bank", () => {
   });
 });
 
+describe("license-exam overrides", () => {
+  it("apply only where they still match the bank", () => {
+    const raw = JSON.parse(fs.readFileSync(path.join(contentRoot(), "license-exam", "overrides.json"), "utf8")) as {
+      overrides: Record<string, { serial: string | null; options: unknown[] }>;
+    };
+    for (const [n, o] of Object.entries(raw.overrides)) {
+      const q = bank.byNumber.get(Number(n));
+      expect(q?.serial, `override ${n}`).toBe(o.serial);
+      expect(q?.options.length, `override ${n}`).toBe(o.options.length);
+    }
+  });
+});
+
 describe("license-exam helpers", () => {
   it("classifies by keywords", () => {
     expect(classifyQuestion({ stem: ["מה שיטת ההגנה בפני חישמול בהזנת גנרטור? איפוס TN-C-S"], options: [] })).toBe("earthing");

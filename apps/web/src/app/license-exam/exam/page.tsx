@@ -12,11 +12,13 @@ export default async function ExamPage() {
   await requireExamUser("/license-exam/exam");
   const { meta, perLevel } = bankSummary();
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <nav aria-label="פירורי לחם" className="text-sm text-brand-700 dark:text-brand-300">
-        <Link href="/license-exam">סימולטור בחינות רישוי</Link> / סימולציית בחינה
-      </nav>
-      <h1 className="text-3xl font-extrabold tracking-tight">סימולציית בחינה</h1>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div data-site-chrome className="space-y-6">
+        <nav aria-label="פירורי לחם" className="text-sm text-brand-700 dark:text-brand-300">
+          <Link href="/license-exam">סימולטור בחינות רישוי</Link> / סימולציית בחינה
+        </nav>
+        <h1 className="text-3xl font-extrabold tracking-tight">סימולציית בחינה</h1>
+      </div>
       <ExamSimulator poolSizes={perLevel} examSize={EXAM_SIZE} bankVersion={meta.version} />
     </div>
   );

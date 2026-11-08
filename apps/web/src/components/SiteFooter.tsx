@@ -35,7 +35,7 @@ const COLUMNS = [
 
 export function SiteFooter() {
   return (
-    <footer className="hidden border-t border-slate-800 bg-slate-900 pt-14 pb-10 text-slate-300 md:block">
+    <footer data-site-chrome className="hidden border-t border-slate-800 bg-slate-900 pt-14 pb-10 text-slate-300 md:block">
       <div className="mx-auto max-w-6xl px-4">
         <div className="grid gap-8 border-b border-slate-800 pb-10 md:grid-cols-2 lg:grid-cols-5">
           <div className="space-y-3 lg:col-span-2">

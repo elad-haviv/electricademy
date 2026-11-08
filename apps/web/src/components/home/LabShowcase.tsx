@@ -378,7 +378,7 @@ function LicensingPanel({ samples, total, version }: LicensingTeaser) {
           <span className="text-amber-400">שאלה מהמאגר הרשמי{version && ` · גרסה ${version}`}</span>
           <span className="rounded-md border border-sky-800/70 bg-sky-950/60 px-2.5 py-0.5 text-sky-400">{q.topic}</span>
         </div>
-        <p className="text-base leading-relaxed font-bold text-slate-100 sm:text-lg">{q.question}</p>
+        <p className="text-base leading-relaxed font-bold text-slate-100 sm:text-lg" dangerouslySetInnerHTML={{ __html: q.question }} />
 
         <div className="space-y-2.5">
           {q.options.map((opt, i) => {
@@ -399,7 +399,7 @@ function LicensingPanel({ samples, total, version }: LicensingTeaser) {
               >
                 <span className="flex items-center gap-3">
                   <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-slate-600 bg-slate-800 text-xs">{i + 1}</span>
-                  <span>{opt}</span>
+                  <span dangerouslySetInnerHTML={{ __html: opt }} />
                 </span>
                 {chosen !== null && isCorrect && <Check className="size-5 shrink-0 text-emerald-400" aria-label="תשובה נכונה" />}
                 {chosen === i && !isCorrect && <X className="size-5 shrink-0 text-rose-400" aria-label="תשובה שגויה" />}

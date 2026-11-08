@@ -50,11 +50,7 @@ export function QuestionStem({ q }: { q: ClientQuestion }) {
       {q.stemRendered ? (
         <p className="sr-only">{q.stem.join(" ")}</p>
       ) : (
-        q.stem.map((p, i) => (
-          <p key={i} className="leading-relaxed font-medium">
-            {p}
-          </p>
-        ))
+        q.stemHtml.map((html, i) => <div key={i} className="leading-relaxed font-medium" dangerouslySetInnerHTML={{ __html: html }} />)
       )}
       {q.figures.length > 0 && (
         <div className="flex flex-wrap gap-3">
@@ -76,7 +72,11 @@ export function OptionContent({ option, index }: { option: ClientQuestion["optio
         {OPTION_LABELS[index]}
       </span>
       <span className="min-w-0 space-y-2">
-        {option.rendered ? <span className="sr-only">{option.text}</span> : option.text && <span className="block">{option.text}</span>}
+        {option.rendered ? (
+          <span className="sr-only">{option.text}</span>
+        ) : (
+          option.html && <span className="block" dangerouslySetInnerHTML={{ __html: option.html }} />
+        )}
         {option.figures.map((f) => (
           <Figure key={f.src} figure={f} className="block" />
         ))}

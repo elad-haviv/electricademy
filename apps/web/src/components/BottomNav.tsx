@@ -11,6 +11,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="ניווט תחתון"
+      data-site-chrome
       className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-slate-800 dark:bg-slate-950/95"
     >
       <ul className="grid grid-cols-6">
