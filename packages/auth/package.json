@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./sim-token": "./src/simToken.ts"
+    "./sim-token": "./src/simToken.ts",
+    "./content-guard": "./src/contentGuard.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -5,7 +5,7 @@ import { classifyQuestion, EXAM_LEVELS, loadExamBank, questionsForLevel, sample,
 import { contentRoot } from "./files";
 
 const bank = loadExamBank();
-const imageDir = path.join(contentRoot(), "..", "apps", "web", "public", "images", "license-exam");
+const imageDir = path.join(contentRoot(), "license-exam", "figures");
 
 describe("license-exam bank", () => {
   it("has sequential question numbers and a version", () => {

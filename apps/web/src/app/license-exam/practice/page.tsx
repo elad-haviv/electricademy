@@ -7,6 +7,8 @@ import { requireExamUser, topicCountsByLevel } from "@/lib/licenseExam";
 export const metadata: Metadata = {
   title: "תרגול שאלות רישוי לפי נושא",
   description: "תרגול שאלות מהמאגר הרשמי לבחינות הרישוי בחשמל, לפי נושא או מתוך השאלות ששמרתם.",
+  // members-only bank content: keep it out of search engines (robots.ts also disallows the path)
+  robots: { index: false, follow: false },
 };
 
 export default async function PracticePage({ searchParams }: { searchParams: Promise<{ topic?: string; source?: string }> }) {

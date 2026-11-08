@@ -3,7 +3,7 @@ Extracts the licensing-exam question bank (Ministry of Labor, "מאגר שאלו
 לטכנאים, הנדסאים ומהנדסים") from its PDF into content/license-exam/bank.json plus figure crops.
 
 Usage (see README.md):
-  python -I extract.py <bank.pdf> <content/license-exam> <apps/web/public/images/license-exam>
+  python -I extract.py <bank.pdf> <content/license-exam> <content/license-exam/figures>
 
 The PDF is exported from Word with every glyph placed in *visual* order, so Hebrew lines with
 Latin/number runs ("S=630kVA, Uk=6%.") come out scrambled from ordinary text extractors. Each line

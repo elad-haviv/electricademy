@@ -14,13 +14,18 @@ import {
   type ExamTopic,
   type QuestionScope,
 } from "@electricademy/content";
+import { figureExpiry, signFigure } from "@electricademy/auth/content-guard";
 import { plainText, richHtml } from "./richText";
 import { getSessionUser } from "./session";
 
 export const EXAM_SIZE = 50;
-export const IMAGE_BASE = "/images/license-exam/";
+/** Figures are served by app/api/license-exam/figure (from content/license-exam/figures), never from public/. */
+export const FIGURE_ROUTE = "/api/license-exam/figure/";
 
-/** What the browser gets: no answer unless asked for (exam mode grades on the server). */
+/**
+ * What the browser gets: never the answer. Answers come one at a time from revealAnswer (practice, browse,
+ * question page) or all at once from gradeExam after an exam is submitted.
+ */
 export interface ClientFigure extends BankFigure {
   alt: string;
 }
@@ -37,8 +42,10 @@ export interface ClientQuestion {
   stemRendered: boolean;
   figures: ClientFigure[];
   options: { text: string; html: string; figures: ClientFigure[]; rendered: boolean }[];
-  /** Present only where the caller asked for the key and one exists. */
+  /** Filled in on the client once the answer has been revealed. */
   key?: ClientKey;
+  /** Whether the bank has an answer for this question (the answer itself is not sent). */
+  keyed: boolean;
 }
 
 /** The answer key entry as shown to learners (the serial is only used for matching). */
@@ -77,10 +84,19 @@ export function paragraphs(lines: string[]): string[] {
   return out;
 }
 
-const figure = (f: BankFigure, alt: string): ClientFigure => ({ ...f, src: IMAGE_BASE + f.src, alt });
+/**
+ * A figure URL signed for a day or two: only pages that already passed the sign-in and the limits hand
+ * them out. The home-page demo questions' figures are public and need no signature.
+ */
+export function figureUrl(file: string): string {
+  if (isDemoFigure(file)) return FIGURE_ROUTE + file;
+  const exp = figureExpiry();
+  return `${FIGURE_ROUTE}${file}?e=${exp}&s=${signFigure(file, exp, process.env.AUTH_SECRET ?? "")}`;
+}
 
-export function toClient(q: ExamQuestion, withKey = false): ClientQuestion {
-  const key = withKey ? loadExamBank().answers.get(q.n) : undefined;
+const figure = (f: BankFigure, alt: string): ClientFigure => ({ ...f, src: figureUrl(f.src), alt });
+
+export function toClient(q: ExamQuestion): ClientQuestion {
   return {
     n: q.n,
     serial: q.serial,
@@ -96,8 +112,14 @@ export function toClient(q: ExamQuestion, withKey = false): ClientQuestion {
       rendered: Boolean(o.rendered),
       figures: o.figures.map((f) => figure(f, o.rendered ? o.text : `איור לתשובה ${i + 1}`)),
     })),
-    ...(key ? { key: clientKey(key) } : {}),
+    keyed: loadExamBank().answers.has(q.n),
   };
+}
+
+/** The answer key entry of question n, for the reveal action (callers check the limits first). */
+export function answerFor(n: number): ClientKey | null {
+  const k = loadExamBank().answers.get(n);
+  return k ? clientKey(k) : null;
 }
 
 export function bankSummary() {
@@ -128,6 +150,8 @@ export interface ShowcaseSample {
   level: string;
   /** HTML (math via KaTeX). */
   question: string;
+  /** The stem's figures (public on purpose: see isDemoFigure). */
+  figures: ClientFigure[];
   options: string[];
   /** 0-based. */
   correct: number;
@@ -136,15 +160,21 @@ export interface ShowcaseSample {
   source: { label: string; href: string | null } | null;
 }
 
-/** Hand-picked: text-only, high-confidence answers across topics (a calculation, regulations, live work). */
+/** Hand-picked: high-confidence answers across topics (a calculation, regulations, live work). Options must be text. */
 const SHOWCASE = [247, 3, 368];
+
+/** The demo questions are public on purpose, their figures included; every other figure needs a signed URL. */
+export function isDemoFigure(file: string): boolean {
+  const bank = loadExamBank();
+  return SHOWCASE.some((n) => bank.byNumber.get(n)?.figures.some((f) => f.src === file));
+}
 
 export function showcaseSamples(): { samples: ShowcaseSample[]; total: number; version: string | null } {
   const bank = loadExamBank();
   const samples = SHOWCASE.flatMap((n) => {
     const q = bank.byNumber.get(n);
     const k = bank.answers.get(n);
-    if (!q || !k || q.figures.length || q.options.some((o) => !o.text || o.figures.length)) return [];
+    if (!q || !k || q.stemRendered || q.options.some((o) => !o.text || o.rendered || o.figures.length)) return [];
     const ref = k.references?.[0];
     return [
       {
@@ -152,6 +182,7 @@ export function showcaseSamples(): { samples: ShowcaseSample[]; total: number; v
         topic: EXAM_TOPICS[q.topic].title,
         level: SCOPE_LABELS[q.level],
         question: q.stem.map(richHtml).join(" "),
+        figures: q.figures.map((f, i) => figure(f, `איור ${i + 1} לשאלה`)),
         options: q.options.map((o) => richHtml(o.text)),
         correct: k.answer - 1,
         formula: k.calculation ?? null,

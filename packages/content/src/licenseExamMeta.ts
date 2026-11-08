@@ -7,6 +7,13 @@
  * This module has no Node imports, so client components can use it via
  * "@electricademy/content/license-exam"; the loader lives in ./licenseExam.ts.
  */
+/**
+ * Hard caps on one practice draw, whatever the daily budget says (see "Content protection" in
+ * docs/ARCHITECTURE.md). Saved questions get a larger set, still far from the whole bank.
+ */
+export const PRACTICE_MAX = 50;
+export const BOOKMARK_PRACTICE_MAX = 100;
+
 /** Which licence exam a question can appear in, per the two tables at the end of the bank. */
 export type QuestionScope = "all" | "practical-engineer" | "engineer";
 
@@ -28,7 +35,7 @@ export const SCOPE_LABELS: Record<QuestionScope, string> = {
 export const isExamLevel = (v: unknown): v is ExamLevel => typeof v === "string" && v in EXAM_LEVELS;
 
 export interface BankFigure {
-  /** File name under /images/license-exam/. */
+  /** File name under content/license-exam/figures/ (served by /api/license-exam/figure/<file>). */
   src: string;
   w: number;
   h: number;

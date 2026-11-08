@@ -7,6 +7,7 @@ import { EXAM_LEVELS, EXAM_TOPICS, type ExamLevel, type ExamTopic } from "@elect
 import type { ClientQuestion } from "@/lib/licenseExam";
 import { drawExam, gradeExam, type ExamGrade } from "@/lib/licenseExamActions";
 import { BookmarkButton } from "./BookmarkButton";
+import { LimitNotice, type Notice } from "./LimitNotice";
 import { DiscussionLink, KeyNote, OptionList, QuestionStem, type OptionState } from "./Question";
 import { useExamStorage, type ExamHistoryEntry } from "./storage";
 
@@ -45,7 +46,9 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
   const [panelFilter, setPanelFilter] = useState<Filter>("all");
   const [announce, setAnnounce] = useState("");
   const [toast, setToast] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Notice | null>(null);
+  // signed by the server with the drawn questions; gradeExam needs it
+  const [ticket, setTicket] = useState("");
   const [pending, startTransition] = useTransition();
   const topRef = useRef<HTMLDivElement>(null);
   const submitted = useRef(false);
@@ -56,8 +59,13 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
     store.setLevel(level);
     startTransition(async () => {
       try {
-        const qs = await drawExam(level);
-        setQuestions(qs);
+        const drawn = await drawExam(level);
+        if (!drawn.ok) {
+          setError(drawn);
+          return;
+        }
+        setQuestions(drawn.questions);
+        setTicket(drawn.ticket);
         setAnswers({});
         setFlags(new Set());
         setCurrent(0);
@@ -68,7 +76,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
         setPhase({ name: "running" });
         window.scrollTo({ top: 0 });
       } catch {
-        setError("לא הצלחנו להכין בחינה. נסו שוב.");
+        setError({ message: "לא הצלחנו להכין בחינה. נסו שוב." });
       }
     });
   };
@@ -86,7 +94,12 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
     const seconds = Math.floor((Date.now() - startedAt) / 1000);
     startTransition(async () => {
       try {
-        const grade = await gradeExam({ level, answers, numbers: questions.map((q) => q.n) });
+        const grade = await gradeExam({ ticket, answers });
+        if (!grade.ok) {
+          submitted.current = false;
+          setError(grade);
+          return;
+        }
         store.addHistory({
           at: new Date().toISOString(),
           level,
@@ -100,10 +113,10 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
         window.scrollTo({ top: 0 });
       } catch {
         submitted.current = false;
-        setError("ההגשה נכשלה. בדקו את החיבור ונסו שוב; התשובות נשמרו בדף.");
+        setError({ message: "ההגשה נכשלה. בדקו את החיבור ונסו שוב; התשובות נשמרו בדף." });
       }
     });
-  }, [answers, level, questions, startedAt, store]);
+  }, [answers, level, questions, startedAt, store, ticket]);
 
   // clock: warnings at 30, 5 and 1 minutes left, and auto-submit at 0
   const submitRef = useRef(submit);
@@ -238,7 +251,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
           <Button onClick={start} disabled={pending}>
             {pending ? "מכינים בחינה…" : `התחלת בחינה`}
           </Button>
-          {error && <p role="alert" className="text-sm text-rose-600">{error}</p>}
+          <LimitNotice notice={error} />
         </Card>
         <History entries={store.history} />
       </div>
@@ -351,11 +364,7 @@ export function ExamSimulator({ poolSizes, examSize, bankVersion }: { poolSizes:
             </Button>
             {isLast ? <Button onClick={() => setConfirming(true)}>סיום והגשה</Button> : <Button onClick={() => go(current + 1)}>הבאה ←</Button>}
           </div>
-          {error && (
-            <p role="alert" className="text-sm text-rose-600">
-              {error}
-            </p>
-          )}
+          <LimitNotice notice={error} />
         </div>
 
         {/* desktop side panel */}
@@ -774,7 +783,7 @@ function Results({
               </div>
               <QuestionStem q={q} />
               <OptionList q={q} stateOf={stateOf} />
-              <KeyNote q={q} picked={picked} />
+              <KeyNote k={q.key} picked={picked} />
               <DiscussionLink n={q.n} />
             </Card>
           );
