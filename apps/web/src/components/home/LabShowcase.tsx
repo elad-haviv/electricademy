@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Award, Calculator, Check, ChevronLeft, Play, Sliders, Sparkles, X } from "lucide-react";
 import { STANDARD_SECTIONS_MM2, voltageDrop, type ConductorMaterial } from "@electricademy/calc";
+import type { ShowcaseSample } from "@/lib/licenseExam";
 
 type Tab = "simulators" | "calculators" | "licensing";
 
@@ -55,47 +56,19 @@ const SIMULATORS = [
   },
 ] as const;
 
-const QUESTIONS = [
-  {
-    category: "הגנה בפני חשמול: לולאת תקלה",
-    level: "חשמלאי מוסמך / ראשי",
-    question:
-      "במעגל סופי 230V במתקן בשיטת איפוס (TN-C-S) נמדדה עכבת לולאת התקלה Zs = 1.85 Ω. מה הזרם הנקוב הגבוה ביותר של מא״ז באופיין C (ניתוק מגנטי מובטח ב־10×In) שיבטיח ניתוק מהיר?",
-    options: ["10 A", "16 A", "20 A", "25 A"],
-    correct: 0,
-    formula: "Ia ≤ U0 / Zs = 230 / 1.85 ≈ 124 A  ⇒  In ≤ 124 / 10 ≈ 12.4 A",
-    explanation:
-      "זרם התקלה הצפוי הוא 230 / 1.85 ≈ 124 A. מא״ז באופיין C מנתק מגנטית בוודאות ב־10×In, ולכן In ≤ 12.4 A. הדרגה התקנית הגבוהה ביותר שעומדת בתנאי היא 10 A.",
-  },
-  {
-    category: "מערכות הספק: זרמי קצר",
-    level: "הנדסאי / מהנדס",
-    question:
-      "שנאי חלוקה 1000 kVA, ‏22/0.4 kV, עם מתח קצר uk = 6%. בהזנחת עכבת הרשת, מהו זרם הקצר התלת־פאזי הסימטרי בפסי הצבירה של המתח הנמוך?",
-    options: ["כ־14.4 kA", "כ־24.1 kA", "כ־36.1 kA", "כ־8.7 kA"],
-    correct: 1,
-    formula: "In = S / (√3·U) = 1443 A  ⇒  Ik3 = In / uk = 1443 / 0.06 ≈ 24.1 kA",
-    explanation:
-      "הזרם הנקוב בצד המתח הנמוך הוא 1,000,000 / (√3 × 400) ≈ 1443 A. בהזנחת עכבת הרשת, זרם הקצר הוא הזרם הנקוב חלקי מתח הקצר היחסי: 1443 / 0.06 ≈ 24.1 kA.",
-  },
-  {
-    category: "איכות חשמל: שיפור מקדם הספק",
-    level: "חשמלאי ראשי / הנדסאי",
-    question: "מפעל צורך P = 200 kW במקדם הספק cos φ1 = 0.75. מהו הספק סוללת הקבלים הדרוש כדי להגיע ל־cos φ2 = 0.92?",
-    options: ["כ־45 kVAr", "כ־91 kVAr", "כ־136 kVAr", "כ־176 kVAr"],
-    correct: 1,
-    formula: "Qc = P·(tan φ1 − tan φ2) = 200 × (0.882 − 0.426) ≈ 91 kVAr",
-    explanation: "עבור cos φ1 = 0.75 מתקבל tan φ1 ≈ 0.882, ועבור cos φ2 = 0.92 מתקבל tan φ2 ≈ 0.426. ההפרש כפול ההספק הפעיל נותן כ־91 kVAr.",
-  },
-] as const;
-
 const TABS: { id: Tab; kicker: string; title: string; Icon: typeof Sliders }[] = [
   { id: "simulators", kicker: "01 · ללמוד בידיים", title: "מעבדת סימולטורים", Icon: Sliders },
   { id: "calculators", kicker: "02 · כלים הנדסיים", title: "מחשבונים לשטח ולתכנון", Icon: Calculator },
-  { id: "licensing", kicker: "03 · הכנה לוועדה", title: "שאלות רישוי לדוגמה", Icon: Award },
+  { id: "licensing", kicker: "03 · הכנה לוועדה", title: "סימולטור בחינות רישוי", Icon: Award },
 ];
 
-export function LabShowcase() {
+export interface LicensingTeaser {
+  samples: ShowcaseSample[];
+  total: number;
+  version: string | null;
+}
+
+export function LabShowcase({ licensing }: { licensing: LicensingTeaser }) {
   const [tab, setTab] = useState<Tab>("simulators");
 
   return (
@@ -109,7 +82,7 @@ export function LabShowcase() {
           נסו עכשיו, ישר מהדף
         </span>
         <h2 className="text-3xl font-black tracking-tight text-white sm:text-4xl">לא רק הרצאות: מעבדה הנדסית בדפדפן</h2>
-        <p className="mt-2 text-slate-400">סימולטורים לתחנות משנה והארקות, מחשבונים לעבודה בשטח ושאלות תרגול לבחינות הרישוי.</p>
+        <p className="mt-2 text-slate-400">סימולטורים לתחנות משנה והארקות, מחשבונים לעבודה בשטח וסימולטור לבחינות הרישוי על המאגר הרשמי.</p>
       </div>
 
       <div role="tablist" aria-label="מעבדה" className="mb-6 grid gap-3 md:grid-cols-3">
@@ -138,7 +111,7 @@ export function LabShowcase() {
       <div role="tabpanel">
         {tab === "simulators" && <SimulatorsPanel />}
         {tab === "calculators" && <CalculatorPanel />}
-        {tab === "licensing" && <LicensingPanel />}
+        {tab === "licensing" && <LicensingPanel {...licensing} />}
       </div>
     </section>
   );
@@ -385,113 +358,165 @@ function Slider({
   );
 }
 
-function LicensingPanel() {
+function LicensingPanel({ samples, total, version }: LicensingTeaser) {
   const [idx, setIdx] = useState(0);
   const [chosen, setChosen] = useState<number | null>(null);
-  const q = QUESTIONS[idx] ?? QUESTIONS[0];
+  const q = samples[idx] ?? samples[0];
   const go = (i: number) => {
     setIdx(i);
     setChosen(null);
   };
 
+  const ctas = (
+    <div className="grid gap-2 sm:grid-cols-3">
+      <Link
+        href="/license-exam/exam"
+        className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-extrabold text-slate-950 transition-colors hover:bg-amber-400"
+      >
+        <Play className="size-4" aria-hidden />
+        סימולציית בחינה · 50 שאלות
+      </Link>
+      <Link href="/license-exam/practice" className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-center text-sm font-extrabold text-slate-100 hover:bg-slate-800">
+        תרגול לפי נושא
+      </Link>
+      <Link href="/license-exam/browse" className="rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-center text-sm font-extrabold text-slate-100 hover:bg-slate-800">
+        עיון ב־{total.toLocaleString("he-IL")} שאלות המאגר
+      </Link>
+    </div>
+  );
+
   return (
-    <div className="rounded-2xl border border-slate-800 bg-[#090E1A] p-6 lg:p-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-6">
+    <div className="space-y-6 rounded-2xl border border-slate-800 bg-[#090E1A] p-6 lg:p-8">
+      <div className="space-y-4 border-b border-slate-800 pb-6">
         <div>
-          <span className="text-xs font-extrabold text-amber-400">{q.category}</span>
-          <h3 className="mt-1 text-xl font-black text-white sm:text-2xl">תרגול בסגנון בחינות הרישוי</h3>
+          <span className="text-xs font-extrabold text-amber-400">
+            המאגר הרשמי של משרד העבודה{version && ` · גרסה ${version}`}
+          </span>
+          <h3 className="mt-1 text-xl font-black text-white sm:text-2xl">מתכוננים לבחינת הרישוי על השאלות האמיתיות</h3>
+          <p className="mt-1 text-sm text-slate-400">בחינה מתוזמנת לפי סוג הרישיון (טכנאי, הנדסאי או מהנדס), תרגול לפי נושא, הסבר לכל שאלה ודיון עם חשמלאים אחרים.</p>
         </div>
-        <div className="flex items-center gap-2">
-          {QUESTIONS.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => go(i)}
-              aria-pressed={idx === i}
-              className={`rounded-xl border px-3.5 py-1.5 text-xs font-extrabold transition-all ${
-                idx === i ? "border-amber-400 bg-amber-500 text-slate-950" : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
-              }`}
-            >
-              שאלה {i + 1}
-            </button>
-          ))}
-        </div>
+        {ctas}
       </div>
 
-      <div className="mt-6 grid items-start gap-8 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-7">
-          <span className="inline-flex rounded-md border border-sky-800/70 bg-sky-950/60 px-3 py-1 text-xs font-bold text-sky-400">רמה: {q.level}</span>
-          <p className="text-base leading-relaxed font-bold text-slate-100 sm:text-lg">{q.question}</p>
-          <div className="space-y-2.5 pt-2">
-            {q.options.map((opt, i) => {
-              const isCorrect = i === q.correct;
-              let style = "border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500";
-              if (chosen !== null) {
-                if (isCorrect) style = "border-emerald-500 bg-emerald-950/80 text-emerald-200";
-                else if (i === chosen) style = "border-rose-500 bg-rose-950/80 text-rose-200";
-                else style = "border-slate-800 bg-slate-900/50 text-slate-500";
-              }
-              return (
+      {q && (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm font-extrabold text-slate-300">נסו כאן שאלה מהמאגר:</span>
+            <div className="flex flex-wrap items-center gap-2">
+              {samples.map((_, i) => (
                 <button
-                  key={opt}
+                  key={i}
                   type="button"
-                  disabled={chosen !== null}
-                  onClick={() => setChosen(i)}
-                  className={`flex w-full items-center justify-between rounded-xl border-2 p-4 text-start text-sm font-bold transition-all ${style}`}
+                  onClick={() => go(i)}
+                  aria-pressed={idx === i}
+                  className={`rounded-xl border px-3.5 py-1.5 text-xs font-extrabold transition-all ${
+                    idx === i ? "border-amber-400 bg-amber-500 text-slate-950" : "border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800"
+                  }`}
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="flex size-7 items-center justify-center rounded-lg border border-slate-600 bg-slate-800 text-xs">{"אבגד"[i]}</span>
-                    <bdi>{opt}</bdi>
-                  </span>
-                  {chosen !== null && isCorrect && <Check className="size-5 shrink-0 text-emerald-400" aria-label="תשובה נכונה" />}
-                  {chosen === i && !isCorrect && <X className="size-5 shrink-0 text-rose-400" aria-label="תשובה שגויה" />}
+                  שאלה {i + 1}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 lg:col-span-5" aria-live="polite">
-          {chosen === null ? (
-            <div className="relative isolate px-5 py-10 text-center">
-              <Image src="/images/license-exam.webp" alt="" fill sizes="(min-width: 1024px) 30vw, 100vw" className="-z-20 object-cover opacity-35" />
-              <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/40" />
-              <Award className="mx-auto size-10 text-amber-400" aria-hidden />
-              <p className="mt-3 text-base font-extrabold text-white">בחרו תשובה כדי לראות את הפתרון המלא</p>
-              <p className="mx-auto mt-2 max-w-xs text-xs text-slate-300">כל שאלה מגיעה עם נוסחה, הסבר צעד אחר צעד וקישור לשיעור המתאים.</p>
-            </div>
-          ) : (
-            <div className="space-y-4 p-5">
-              <span
-                className={`inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${
-                  chosen === q.correct ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300" : "border-rose-500/40 bg-rose-500/20 text-rose-300"
-                }`}
-              >
-                {chosen === q.correct ? "תשובה נכונה, כל הכבוד!" : "לא הפעם. הנה הפתרון המלא"}
-              </span>
-              <p dir="ltr" className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-start font-mono text-xs font-bold text-amber-400 sm:text-sm">
-                {q.formula}
-              </p>
-              <div>
-                <p className="mb-1 text-xs font-extrabold text-slate-300">הסבר</p>
-                <p className="text-xs leading-relaxed text-slate-300 sm:text-sm">{q.explanation}</p>
+          <div className="grid items-start gap-8 lg:grid-cols-12">
+            <div className="space-y-4 lg:col-span-7">
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex rounded-md border border-sky-800/70 bg-sky-950/60 px-3 py-1 text-xs font-bold text-sky-400">{q.topic}</span>
+                <span className="inline-flex rounded-md border border-slate-700 bg-slate-900 px-3 py-1 text-xs font-bold text-slate-400">
+                  מאגר: שאלה {q.n} · {q.level}
+                </span>
               </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => go((idx + 1) % QUESTIONS.length)}
-                  className="flex-1 rounded-xl bg-amber-500 py-2.5 text-xs font-extrabold text-slate-950 transition-colors hover:bg-amber-400"
-                >
-                  לשאלה הבאה
-                </button>
-                <Link href="/license-exam" className="flex-1 rounded-xl border border-slate-700 py-2.5 text-center text-xs font-extrabold text-slate-200 hover:bg-slate-800">
-                  לסימולטור המלא
-                </Link>
+              <p className="text-base leading-relaxed font-bold text-slate-100 sm:text-lg">{q.question}</p>
+              <div className="space-y-2.5 pt-2">
+                {q.options.map((opt, i) => {
+                  const isCorrect = i === q.correct;
+                  let style = "border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500";
+                  if (chosen !== null) {
+                    if (isCorrect) style = "border-emerald-500 bg-emerald-950/80 text-emerald-200";
+                    else if (i === chosen) style = "border-rose-500 bg-rose-950/80 text-rose-200";
+                    else style = "border-slate-800 bg-slate-900/50 text-slate-500";
+                  }
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      disabled={chosen !== null}
+                      onClick={() => setChosen(i)}
+                      className={`flex w-full items-center justify-between rounded-xl border-2 p-4 text-start text-sm font-bold transition-all ${style}`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="flex size-7 shrink-0 items-center justify-center rounded-lg border border-slate-600 bg-slate-800 text-xs">{i + 1}</span>
+                        <span>{opt}</span>
+                      </span>
+                      {chosen !== null && isCorrect && <Check className="size-5 shrink-0 text-emerald-400" aria-label="תשובה נכונה" />}
+                      {chosen === i && !isCorrect && <X className="size-5 shrink-0 text-rose-400" aria-label="תשובה שגויה" />}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-        </div>
-      </div>
+
+            <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 lg:col-span-5" aria-live="polite">
+              {chosen === null ? (
+                <div className="relative isolate px-5 py-10 text-center">
+                  <Image src="/images/license-exam.webp" alt="" fill sizes="(min-width: 1024px) 30vw, 100vw" className="-z-20 object-cover opacity-35" />
+                  <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/40" />
+                  <Award className="mx-auto size-10 text-amber-400" aria-hidden />
+                  <p className="mt-3 text-base font-extrabold text-white">בחרו תשובה כדי לראות את הפתרון</p>
+                  <p className="mx-auto mt-2 max-w-xs text-xs text-slate-300">לכל שאלה במאגר: הסבר, הפניה לסעיף בתקנות או חישוב מפורט, ודיון עם הקהילה.</p>
+                </div>
+              ) : (
+                <div className="space-y-4 p-5">
+                  <span
+                    className={`inline-flex rounded-full border px-3 py-1 text-xs font-extrabold ${
+                      chosen === q.correct ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-300" : "border-rose-500/40 bg-rose-500/20 text-rose-300"
+                    }`}
+                  >
+                    {chosen === q.correct ? "תשובה נכונה, כל הכבוד!" : `לא הפעם. התשובה הנכונה: ${q.correct + 1}`}
+                  </span>
+                  {q.formula && (
+                    <p dir="ltr" className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 text-start font-mono text-xs font-bold text-amber-400 sm:text-sm">
+                      {q.formula}
+                    </p>
+                  )}
+                  <div>
+                    <p className="mb-1 text-xs font-extrabold text-slate-300">הסבר</p>
+                    <p className="text-xs leading-relaxed text-slate-300 sm:text-sm">{q.explanation}</p>
+                  </div>
+                  {q.source && (
+                    <p className="text-xs text-slate-400">
+                      מקור:{" "}
+                      {q.source.href ? (
+                        <Link href={q.source.href} className="font-bold text-sky-400 underline">
+                          {q.source.label}
+                        </Link>
+                      ) : (
+                        q.source.label
+                      )}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => go((idx + 1) % samples.length)}
+                      className="flex-1 rounded-xl bg-amber-500 py-2.5 text-xs font-extrabold text-slate-950 transition-colors hover:bg-amber-400"
+                    >
+                      לשאלה הבאה
+                    </button>
+                    <Link
+                      href={`/license-exam/q/${q.n}#discussion`}
+                      className="flex-1 rounded-xl border border-slate-700 py-2.5 text-center text-xs font-extrabold text-slate-200 hover:bg-slate-800"
+                    >
+                      לדיון על השאלה
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

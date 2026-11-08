@@ -13,7 +13,7 @@ export function BottomNav() {
       aria-label="ניווט תחתון"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden dark:border-slate-800 dark:bg-slate-950/95"
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -29,7 +29,7 @@ export function BottomNav() {
                 <span aria-hidden className="text-lg leading-6">
                   {item.icon}
                 </span>
-                {item.label}
+                {item.short}
               </Link>
             </li>
           );

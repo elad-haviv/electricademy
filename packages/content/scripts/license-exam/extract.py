@@ -152,9 +152,9 @@ def rebuild_line(chars):
     return best
 
 
-UNIT_FIRST = re.compile(r"(?<![A-Za-z0-9])(Ω|k?[AV]|mA|kW|kVA)(\d+\.\d+)(?![A-Za-z0-9])")
+UNIT_FIRST = re.compile(r"(?<![A-Za-z0-9])(Ω|k?[AV]|mA|kW|kVA|kVAr|MVA|W)(\d+\.\d+)(?![A-Za-z0-9])")
 # multi-letter units are safe to swap for whole numbers too ("kV33"); "A1" / "IP44" are not units
-UNIT_FIRST_INT = re.compile(r"(?<![A-Za-z0-9])(kV|kVA|kW|kA|mA|MVA|kVAr|Hz)(\d+)(?![A-Za-z0-9.])")
+UNIT_FIRST_INT = re.compile(r"(?<![A-Za-z0-9])(kV|kVA|kW|kA|mA|MVA|kVAr|Hz|W)(\d+)(?![A-Za-z0-9.])")
 
 
 def norm(s: str) -> str:

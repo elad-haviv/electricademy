@@ -2,8 +2,10 @@ import "server-only";
 import {
   EXAM_LEVELS,
   EXAM_TOPICS,
+  lawSectionHref,
   loadExamBank,
   questionsForLevel,
+  SCOPE_LABELS,
   type AnswerKeyEntry,
   type BankFigure,
   type ExamLevel,
@@ -103,4 +105,45 @@ export function topicCountsByLevel(): Record<ExamLevel, Record<ExamTopic, number
     out[level] = counts;
   }
   return out;
+}
+
+/** A bank question with its keyed answer, for the home-page teaser. */
+export interface ShowcaseSample {
+  n: number;
+  topic: string;
+  level: string;
+  question: string;
+  options: string[];
+  /** 0-based. */
+  correct: number;
+  formula: string | null;
+  explanation: string;
+  source: { label: string; href: string | null } | null;
+}
+
+/** Hand-picked: text-only, high-confidence answers across topics (a calculation, regulations, live work). */
+const SHOWCASE = [247, 3, 623, 368, 892];
+
+export function showcaseSamples(): { samples: ShowcaseSample[]; total: number; version: string | null } {
+  const bank = loadExamBank();
+  const samples = SHOWCASE.flatMap((n) => {
+    const q = bank.byNumber.get(n);
+    const k = bank.answers.get(n);
+    if (!q || !k || q.figures.length || q.options.some((o) => !o.text || o.figures.length)) return [];
+    const ref = k.references?.[0];
+    return [
+      {
+        n,
+        topic: EXAM_TOPICS[q.topic].title,
+        level: SCOPE_LABELS[q.level],
+        question: q.stem.join(" "),
+        options: q.options.map((o) => o.text),
+        correct: k.answer - 1,
+        formula: k.calculation ?? null,
+        explanation: k.explanation ?? "",
+        source: ref ? { label: `${ref.title}${ref.section ? `, סעיף ${ref.section}` : ""}`, href: lawSectionHref(ref) } : null,
+      },
+    ];
+  });
+  return { samples, total: bank.meta.count, version: bank.meta.version };
 }

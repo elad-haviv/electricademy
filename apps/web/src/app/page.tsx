@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/labels";
 import { BlueGridWidget } from "@/components/home/BlueGridWidget";
 import { LabShowcase } from "@/components/home/LabShowcase";
 import { TrackGrid, type TrackCardData } from "@/components/home/TrackGrid";
+import { showcaseSamples } from "@/lib/licenseExam";
 
 const TRACK_CARDS: TrackCardData[] = TRACKS.map((t) => ({
   slug: t.slug,
@@ -80,7 +81,7 @@ export default function HomePage() {
         <TrackGrid tracks={TRACK_CARDS} />
       </section>
 
-      <LabShowcase />
+      <LabShowcase licensing={showcaseSamples()} />
 
       <section className="grid gap-8 lg:grid-cols-12">
         <div className="space-y-5 lg:col-span-7">
