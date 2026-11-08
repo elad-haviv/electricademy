@@ -5,6 +5,10 @@ import { EXAM_LEVELS, EXAM_TOPICS, type ExamLevel, type ExamTopic } from "@elect
 import { PageBanner } from "@/components/PageBanner";
 import { LawCallout } from "@/components/law/LawCallout";
 import { bankSummary, EXAM_SIZE } from "@/lib/licenseExam";
+import { getSessionUser } from "@/lib/session";
+
+// Shows a sign-up call to action to guests.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "סימולטור בחינות רישוי חשמלאים",
@@ -37,8 +41,9 @@ const MODES = [
   },
 ];
 
-export default function LicenseExamPage() {
+export default async function LicenseExamPage() {
   const { meta, perLevel, perTopic, keyed } = bankSummary();
+  const user = await getSessionUser().catch(() => null);
   const published = meta.published ? new Date(meta.published).toLocaleDateString("he-IL", { month: "long", year: "numeric" }) : null;
   return (
     <div className="mx-auto max-w-4xl space-y-8">
@@ -53,9 +58,13 @@ export default function LicenseExamPage() {
           </span>
         }
       >
-        <Link href="/license-exam/exam" className={buttonClass("primary", "mt-3 self-start bg-spark-400 text-slate-900 hover:bg-spark-300")}>
-          להתחיל בחינה
+        <Link
+          href={user ? "/license-exam/exam" : `/login?callbackUrl=${encodeURIComponent("/license-exam/exam")}`}
+          className={buttonClass("primary", "mt-3 self-start bg-spark-400 text-slate-900 hover:bg-spark-300")}
+        >
+          {user ? "להתחיל בחינה" : "הרשמה חינמית והתחלה"}
         </Link>
+        {!user && <p className="text-sm text-brand-100">הסימולטור פתוח למשתמשים רשומים. ההרשמה חינמית.</p>}
       </PageBanner>
 
       <div className="grid gap-4 sm:grid-cols-3">

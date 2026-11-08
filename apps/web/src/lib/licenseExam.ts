@@ -1,4 +1,5 @@
 import "server-only";
+import { redirect } from "next/navigation";
 import {
   EXAM_LEVELS,
   EXAM_TOPICS,
@@ -13,6 +14,7 @@ import {
   type ExamTopic,
   type QuestionScope,
 } from "@electricademy/content";
+import { getSessionUser } from "./session";
 
 export const EXAM_SIZE = 50;
 export const IMAGE_BASE = "/images/license-exam/";
@@ -146,4 +148,11 @@ export function showcaseSamples(): { samples: ShowcaseSample[]; total: number; v
     ];
   });
   return { samples, total: bank.meta.count, version: bank.meta.version };
+}
+
+/** The simulator is for signed-in users: guests go to the login page and come back to `returnTo`. */
+export async function requireExamUser(returnTo: string) {
+  const user = await getSessionUser().catch(() => null);
+  if (!user) redirect(`/login?callbackUrl=${encodeURIComponent(returnTo)}`);
+  return user;
 }

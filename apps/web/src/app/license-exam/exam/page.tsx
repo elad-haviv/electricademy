@@ -1,14 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ExamSimulator } from "@/components/license-exam/ExamSimulator";
-import { bankSummary, EXAM_SIZE } from "@/lib/licenseExam";
+import { bankSummary, EXAM_SIZE, requireExamUser } from "@/lib/licenseExam";
 
 export const metadata: Metadata = {
   title: "סימולציית בחינת רישוי",
   description: "50 שאלות אקראיות מהמאגר הרשמי של משרד העבודה, לפי סוג הרישיון: טכנאי, הנדסאי או מהנדס.",
 };
 
-export default function ExamPage() {
+export default async function ExamPage() {
+  await requireExamUser("/license-exam/exam");
   const { meta, perLevel } = bankSummary();
   return (
     <div className="mx-auto max-w-4xl space-y-6">

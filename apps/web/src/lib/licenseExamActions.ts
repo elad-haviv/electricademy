@@ -10,7 +10,14 @@ const levelSchema = z.enum(Object.keys(EXAM_LEVELS) as [ExamLevel, ...ExamLevel[
 const topicSchema = z.enum(Object.keys(EXAM_TOPICS) as [ExamTopic, ...ExamTopic[]]);
 
 /** A fresh simulated exam: EXAM_SIZE random questions from the licence's pool, without answers. */
+async function signedIn() {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Sign in to use the license-exam simulator");
+  return user;
+}
+
 export async function drawExam(level: ExamLevel): Promise<ClientQuestion[]> {
+  await signedIn();
   const bank = loadExamBank();
   return sample(questionsForLevel(bank, levelSchema.parse(level)), EXAM_SIZE).map((q) => toClient(q));
 }
@@ -24,6 +31,7 @@ const practiceSchema = z.object({
 
 /** Practice questions (with the answer key where we have one), by topic or by question number. */
 export async function drawPractice(input: z.input<typeof practiceSchema>): Promise<ClientQuestion[]> {
+  await signedIn();
   const { level, topics, count, numbers } = practiceSchema.parse(input);
   const bank = loadExamBank();
   let pool = numbers ? numbers.map((n) => bank.byNumber.get(n)).filter((q) => q !== undefined) : questionsForLevel(bank, level);
@@ -47,6 +55,7 @@ export interface ExamGrade {
 
 /** Scores the exam against the answer key and, for signed-in users, records the attempt. */
 export async function gradeExam(input: z.input<typeof gradeSchema>): Promise<ExamGrade> {
+  const user = await signedIn();
   const { level, answers, numbers } = gradeSchema.parse(input);
   const bank = loadExamBank();
   const keys: Record<number, ClientKey> = {};
@@ -58,7 +67,6 @@ export async function gradeExam(input: z.input<typeof gradeSchema>): Promise<Exa
     if (answers[String(n)] === k.answer) correct++;
   }
   const keyed = Object.keys(keys).length;
-  const user = await getSessionUser();
   const saved = user
     ? await getDb()
         .insert(quizAttempts)

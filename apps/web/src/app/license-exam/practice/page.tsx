@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { EXAM_TOPICS, type ExamTopic } from "@electricademy/content";
 import { PracticeSession } from "@/components/license-exam/PracticeSession";
-import { topicCountsByLevel } from "@/lib/licenseExam";
+import { requireExamUser, topicCountsByLevel } from "@/lib/licenseExam";
 
 export const metadata: Metadata = {
   title: "תרגול שאלות רישוי לפי נושא",
@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 export default async function PracticePage({ searchParams }: { searchParams: Promise<{ topic?: string; source?: string }> }) {
   const { topic, source } = await searchParams;
+  await requireExamUser(`/license-exam/practice${source === "bookmarks" ? "?source=bookmarks" : topic ? `?topic=${topic}` : ""}`);
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <nav aria-label="פירורי לחם" className="text-sm text-brand-700 dark:text-brand-300">

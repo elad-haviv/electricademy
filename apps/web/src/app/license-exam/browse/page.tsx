@@ -13,7 +13,7 @@ import {
 } from "@electricademy/content";
 import { BankQuestionCard } from "@/components/license-exam/BankQuestionCard";
 import { getCommentCounts } from "@/lib/examDiscussion";
-import { toClient } from "@/lib/licenseExam";
+import { requireExamUser, toClient } from "@/lib/licenseExam";
 
 export const metadata: Metadata = {
   title: "מאגר שאלות לבחינות רישוי בחשמל",
@@ -29,6 +29,7 @@ type Params = { level?: string; topic?: string; q?: string; page?: string };
 
 export default async function BrowsePage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
+  await requireExamUser(`/license-exam/browse?${new URLSearchParams(params as Record<string, string>)}`);
   const bank = loadExamBank();
   const level = isExamLevel(params.level) ? params.level : undefined;
   const topic = params.topic && params.topic in EXAM_TOPICS ? (params.topic as ExamTopic) : undefined;
