@@ -196,6 +196,7 @@
 /* License-exam question text: inline math and pipe tables (lib/richText.ts) */
 .rich-math {
   unicode-bidi: isolate;
+  white-space: nowrap; /* a formula never breaks across lines */
 }
 .rich-table {
   @apply my-2 overflow-x-auto;

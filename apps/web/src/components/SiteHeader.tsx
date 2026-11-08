@@ -11,16 +11,16 @@ export async function SiteHeader() {
     <header data-site-chrome className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
         <Logo />
-        <nav className="hidden flex-1 items-center gap-1 md:flex" aria-label="ניווט ראשי">
+        <nav className="hidden flex-1 items-center gap-0.5 md:flex" aria-label="ניווט ראשי">
           {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className={buttonClass("ghost")}>
+            <Link key={item.href} href={item.href} className={buttonClass("ghost", "px-3 whitespace-nowrap")}>
               {item.label}
             </Link>
           ))}
-          <Link href="/law" className={buttonClass("ghost")}>
+          <Link href="/law" className={buttonClass("ghost", "hidden px-3 whitespace-nowrap lg:inline-flex")}>
             חוק ותקנות
           </Link>
-          <Link href="/products" className={buttonClass("ghost", "hidden lg:inline-flex")}>
+          <Link href="/products" className={buttonClass("ghost", "hidden px-3 whitespace-nowrap xl:inline-flex")}>
             מוצרים
           </Link>
         </nav>
