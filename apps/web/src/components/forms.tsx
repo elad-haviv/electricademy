@@ -6,11 +6,11 @@ import { createPost, createThread, joinWaitlist, toggleLessonComplete, type Form
 import { COMMUNITY_TAGS } from "@/lib/labels";
 
 const inputClass =
-  "w-full rounded-xl bg-white px-3 py-2 ring-1 ring-slate-300 outline-none focus:ring-2 focus:ring-brand-500 dark:bg-slate-950 dark:ring-slate-700";
+  "w-full rounded-xl bg-white px-3 py-2 ring-1 ring-control outline-none focus:ring-2 focus:ring-brand-600 dark:bg-slate-950 dark:ring-control-dark dark:focus:ring-brand-300";
 
 function FormError({ state }: { state: FormState }) {
   return state?.error ? (
-    <p role="alert" className="text-sm font-medium text-rose-600">
+    <p role="alert" className="text-sm font-medium text-rose-700 dark:text-rose-300">
       {state.error}
     </p>
   ) : null;

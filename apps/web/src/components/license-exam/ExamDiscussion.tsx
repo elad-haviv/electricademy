@@ -25,7 +25,7 @@ export async function ExamDiscussion({ n, userId }: { n: number; userId: string 
   return (
     <Card id="discussion" className="scroll-mt-24 space-y-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-lg font-bold">דיון על השאלה {comments.length > 0 && <span className="text-slate-500">({comments.filter((c) => !c.deleted).length})</span>}</h2>
+        <h2 className="text-lg font-bold">דיון על השאלה {comments.length > 0 && <span className="text-slate-500 dark:text-slate-400">({comments.filter((c) => !c.deleted).length})</span>}</h2>
         <p className="text-xs text-slate-500 dark:text-slate-400">חשבתם שהתשובה שגויה? כתבו למה, רצוי עם סעיף בתקנות.</p>
       </div>
 
@@ -84,7 +84,7 @@ export async function ExamDiscussion({ n, userId }: { n: number; userId: string 
 }
 
 function Comment({ c, userId, n }: { c: ExamCommentView; userId: string | null; n: number }) {
-  if (c.deleted) return <p className="text-sm text-slate-400 italic">התגובה נמחקה.</p>;
+  if (c.deleted) return <p className="text-sm text-slate-500 italic dark:text-slate-400">התגובה נמחקה.</p>;
   return (
     <article className="space-y-1">
       <header className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -98,7 +98,7 @@ function Comment({ c, userId, n }: { c: ExamCommentView; userId: string | null; 
         {userId === c.authorId && (
           <form action={deleteExamComment}>
             <input type="hidden" name="id" value={c.id} />
-            <button className="text-xs font-semibold text-rose-600 hover:underline">מחיקה</button>
+            <button className="text-xs font-semibold text-rose-700 hover:underline dark:text-rose-300">מחיקה</button>
           </form>
         )}
       </div>

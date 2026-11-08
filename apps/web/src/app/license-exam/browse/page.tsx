@@ -67,7 +67,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     return `/license-exam/browse${s ? `?${s}` : ""}`;
   };
 
-  const field = "w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700";
+  const field = "w-full rounded-xl bg-white px-3 py-2.5 ring-1 ring-control dark:bg-slate-900 dark:ring-control-dark";
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <nav aria-label="פירורי לחם" className="text-sm text-brand-700 dark:text-brand-300">

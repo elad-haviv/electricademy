@@ -5,13 +5,13 @@ import { CookieSettingsButton } from "./ConsentManager";
 const item = "inline-flex min-h-11 items-center px-2 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-brand-500";
 
 /**
- * Privacy / cookie links + the "הגדרות עוגיות" button that reopens the consent dialog.
- * `variant="mobile"` is the small strip at the end of every page on phones, where SiteFooter is hidden.
+ * Accessibility statement, privacy and cookie links + the "הגדרות עוגיות" button that reopens the consent dialog.
+ * SiteFooter shows them on every page: in its slim mobile row and in the desktop footer.
  */
 export function LegalLinks({ variant }: { variant: "mobile" | "footer" }) {
   return (
     <nav
-      aria-label="פרטיות ועוגיות"
+      aria-label="נגישות ופרטיות"
       data-site-chrome
       className={cn(
         "flex flex-wrap items-center justify-center gap-x-1 text-xs font-semibold",
@@ -20,6 +20,10 @@ export function LegalLinks({ variant }: { variant: "mobile" | "footer" }) {
           : "text-slate-400",
       )}
     >
+      <Link href="/accessibility" className={item}>
+        הצהרת נגישות
+      </Link>
+      <span aria-hidden>·</span>
       <Link href="/privacy" className={item}>
         מדיניות פרטיות
       </Link>

@@ -15,7 +15,7 @@ export default async function ProductsPage() {
   const rows = await getDb().select().from(products).orderBy(asc(products.sortOrder));
   return (
     <>
-      <SectionHeading title="המוצרים שלנו" subtitle="כלים מקצועיים מבית Electricademy." />
+      <SectionHeading level={1} title="המוצרים שלנו" subtitle="כלים מקצועיים מבית Electricademy." />
       <div className="grid gap-4 md:grid-cols-2">
         {rows.map((p) => (
           <Card key={p.slug} id={p.slug} className="flex scroll-mt-24 flex-col">

@@ -24,7 +24,7 @@ export function BottomNav() {
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium",
-                  active ? "text-brand-600 dark:text-brand-400" : "text-slate-500 dark:text-slate-400",
+                  active ? "font-bold text-brand-700 dark:text-brand-300" : "text-slate-600 dark:text-slate-400",
                 )}
               >
                 <span aria-hidden className="text-lg leading-6">

@@ -164,7 +164,7 @@ export function CableSizingCalculator() {
                 onChange={changeIlMethod}
                 insulation={insulation}
               />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 ערכי Iz לפי טבלה {insulation}.{ilInfo.table} בתוספת השנייה · האיורים מתוך קובץ התקנות 7349
               </p>
             </>
@@ -176,7 +176,7 @@ export function CableSizingCalculator() {
                 options={INSTALLATION_METHODS.map((m) => ({ value: m.method, label: m.label }))}
                 onChange={changeIecMethod}
               />
-              <p className="mt-1 text-xs text-slate-500">{iecInfo.description}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{iecInfo.description}</p>
             </>
           )}
         </div>
@@ -223,7 +223,7 @@ export function CableSizingCalculator() {
         ) : (
           <div>
             <SelectField label="חומר המוליך" value="copper" options={[{ value: "copper", label: "נחושת" }]} onChange={() => {}} />
-            <p className="mt-1 text-xs text-slate-500">אלומיניום זמין כרגע לפי חוק החשמל בלבד.</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">אלומיניום זמין כרגע לפי חוק החשמל בלבד.</p>
           </div>
         )}
 
@@ -328,9 +328,9 @@ export function CableSizingCalculator() {
           </dl>
           {result.protection && (
             <>
-              <h3 className="mt-4 text-sm font-semibold">
+              <h2 className="mt-4 text-sm font-semibold">
                 תיאום המבטח {source === "il" ? "(תקנה 6)" : "(IEC 60364-4-43)"}
-              </h3>
+              </h2>
               <dl className="mt-1 grid max-w-md gap-y-1 text-sm">
                 <Row
                   label="Ib ≤ In ≤ I'z"
@@ -342,13 +342,13 @@ export function CableSizingCalculator() {
                 />
               </dl>
               {result.protection.type === "adjustable" && (
-                <p className="mt-1 text-xs text-slate-500">ערך הכיוונון מעוגל כלפי מעלה לאמפר שלם.</p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">ערך הכיוונון מעוגל כלפי מעלה לאמפר שלם.</p>
               )}
             </>
           )}
         </ResultBox>
       )}
-      <p className="mt-3 text-xs text-slate-500">
+      <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
         {source === "il" ? (
           <>
             לפי תקנות החשמל (העמסה והגנה על מוליכים מבודדים וכבלים במתח נמוך), התשע״ד–2014: ערכי Iz מהתוספת השנייה

@@ -72,7 +72,7 @@ export function LabShowcase({ licensing }: { licensing: LicensingTeaser }) {
   const [tab, setTab] = useState<Tab>("simulators");
 
   return (
-    <section id="lab" className="relative isolate scroll-mt-20 overflow-hidden rounded-3xl bg-slate-900 px-4 py-12 text-slate-100 sm:px-8 lg:px-10 lg:py-16">
+    <section id="lab" className="on-dark relative isolate scroll-mt-20 overflow-hidden rounded-3xl bg-slate-900 px-4 py-12 text-slate-100 sm:px-8 lg:px-10 lg:py-16">
       <Image src="/images/simulators.webp" alt="" fill sizes="100vw" className="-z-20 object-cover object-left opacity-25" />
       <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-l from-slate-900 via-slate-900/95 to-slate-900/70" />
 
@@ -85,13 +85,12 @@ export function LabShowcase({ licensing }: { licensing: LicensingTeaser }) {
         <p className="mt-2 text-slate-400">סימולטורים לתחנות משנה והארקות, מחשבונים לעבודה בשטח וסימולטור לבחינות הרישוי על המאגר הרשמי.</p>
       </div>
 
-      <div role="tablist" aria-label="מעבדה" className="mb-6 grid gap-3 md:grid-cols-3">
+      <div role="group" aria-label="בחירת מעבדה" className="mb-6 grid gap-3 md:grid-cols-3">
         {TABS.map(({ id, kicker, title, Icon }) => (
           <button
             key={id}
             type="button"
-            role="tab"
-            aria-selected={tab === id}
+            aria-pressed={tab === id}
             onClick={() => setTab(id)}
             className={`flex items-center justify-between rounded-2xl border p-4 text-start transition-all ${
               tab === id
@@ -108,7 +107,7 @@ export function LabShowcase({ licensing }: { licensing: LicensingTeaser }) {
         ))}
       </div>
 
-      <div role="tabpanel">
+      <div>
         {tab === "simulators" && <SimulatorsPanel />}
         {tab === "calculators" && <CalculatorPanel />}
         {tab === "licensing" && <LicensingPanel {...licensing} />}
@@ -315,7 +314,7 @@ function CalculatorPanel() {
               </div>
             </div>
           </div>
-          <p className="text-[11px] text-slate-500">חישוב לימודי: מוליך ב־70°C ותגובה 0.08 Ω/km. מפל המתח מחושב לפני השיפור.</p>
+          <p className="text-[11px] text-slate-400">חישוב לימודי: מוליך ב־70°C ותגובה 0.08 Ω/km. מפל המתח מחושב לפני השיפור.</p>
         </div>
       </div>
     </div>

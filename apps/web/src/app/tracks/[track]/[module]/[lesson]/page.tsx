@@ -50,7 +50,7 @@ export default async function LessonPage({ params }: { params: Params }) {
 
   return (
     <article className="mx-auto max-w-3xl">
-      <nav aria-label="פירורי לחם" className="text-sm text-slate-500">
+      <nav aria-label="פירורי לחם" className="text-sm text-slate-500 dark:text-slate-400">
         <Link href={`/tracks/${track.slug}`} className="text-brand-700 dark:text-brand-300">
           {track.title}
         </Link>{" "}

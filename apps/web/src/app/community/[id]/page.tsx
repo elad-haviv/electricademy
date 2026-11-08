@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { asc, eq } from "drizzle-orm";
 import { Badge, buttonClass, Card } from "@electricademy/ui";
 import { getDb, posts, threads, users } from "@electricademy/db";
@@ -9,6 +10,19 @@ import { getSessionUser } from "@/lib/session";
 
 // Reads the database / session on every request.
 export const dynamic = "force-dynamic";
+
+/** Each thread gets its own page title (WCAG 2.4.2). */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const id = Number((await params).id);
+  if (!Number.isInteger(id) || id <= 0) return {};
+  const [row] = await getDb()
+    .select({ title: threads.title })
+    .from(threads)
+    .where(eq(threads.id, id))
+    .limit(1)
+    .catch(() => []);
+  return row ? { title: `${row.title} · קהילה` } : {};
+}
 
 export default async function ThreadPage({ params }: { params: Promise<{ id: string }> }) {
   const id = Number((await params).id);
@@ -39,7 +53,7 @@ export default async function ThreadPage({ params }: { params: Promise<{ id: str
         → חזרה לקהילה
       </Link>
       <Card>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <Badge>{COMMUNITY_TAGS[t.tag] ?? t.tag}</Badge>
           {thread.author ?? "משתמש"} · {formatDate(t.createdAt)}
           {t.lessonPath && (
@@ -57,7 +71,7 @@ export default async function ThreadPage({ params }: { params: Promise<{ id: str
         {replies.map(({ post, author }) => (
           <li key={post.id}>
             <Card>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {author ?? "משתמש"} · {formatDate(post.createdAt)}
               </p>
               <p className="mt-2 leading-7 whitespace-pre-wrap">{post.body}</p>

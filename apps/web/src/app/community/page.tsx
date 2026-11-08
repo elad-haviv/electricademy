@@ -37,7 +37,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
         subtitle="שואלים, עונים ולומדים יחד, מתלמידי בגרות ועד מהנדסי מערכות הספק."
         image="/images/community.webp"
       >
-        <Link href="/community/new" className={buttonClass("primary", "mt-3 self-start bg-spark-400 text-slate-900 hover:bg-spark-300")}>
+        <Link href="/community/new" className={buttonClass("spark", "mt-3 self-start")}>
           + דיון חדש
         </Link>
       </PageBanner>
@@ -58,16 +58,16 @@ export default async function CommunityPage({ searchParams }: { searchParams: Pr
               <Link href={`/community/${t.id}`} className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <div className="flex-1">
                   <p className="font-semibold">{t.title}</p>
-                  <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                  <p className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                     <Badge>{COMMUNITY_TAGS[t.tag] ?? t.tag}</Badge>
                     {t.author ?? "משתמש"} · {formatDate(t.createdAt)}
                   </p>
                 </div>
-                <span className="text-sm text-slate-500">💬 {t.replies}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">💬 {t.replies}</span>
               </Link>
             </li>
           ))}
-          {rows.length === 0 && <li className="p-8 text-center text-slate-500">אין עדיין דיונים בנושא הזה. פתחו את הראשון!</li>}
+          {rows.length === 0 && <li className="p-8 text-center text-slate-500 dark:text-slate-400">אין עדיין דיונים בנושא הזה. פתחו את הראשון!</li>}
         </ul>
       </Card>
     </>

@@ -11,6 +11,7 @@ export default function ArticlesPage() {
   return (
     <>
       <SectionHeading
+        level={1}
         title="מאמרים וחדשות"
         subtitle="מערכות הספק, תקנות, מתקנים וחידושים בעולם החשמל."
         action={
@@ -23,7 +24,7 @@ export default function ArticlesPage() {
         {articles.map((a) => (
           <Link key={a.slug} href={`/articles/${a.slug}`}>
             <Card className="h-full transition hover:ring-brand-400">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                 <Badge tone="brand">{ARTICLE_CATEGORIES[a.category] ?? a.category}</Badge>
                 {formatDate(a.date)}
               </div>

@@ -21,12 +21,12 @@ export default function TracksPage() {
                 </span>
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-slate-400">שלב {i + 1}</span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">שלב {i + 1}</span>
                     <h2 className="text-lg font-bold">{t.title}</h2>
                     {t.tier === "pro" ? <Badge tone="pro">Pro</Badge> : <Badge tone="success">חינם</Badge>}
                   </div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">{t.description}</p>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {t.modules.length} מודולים · {t.modules.reduce((n, m) => n + m.lessons.length, 0)} שיעורים · {t.audience}
                   </p>
                 </div>

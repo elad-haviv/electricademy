@@ -17,7 +17,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
   const yearly = PRICING.find((p) => p.sku === "pro_yearly")!;
   return (
     <>
-      <SectionHeading title="מחירים" subtitle="מתחילים בחינם. משדרגים כשרוצים להעמיק." />
+      <SectionHeading level={1} title="מחירים" subtitle="מתחילים בחינם. משדרגים כשרוצים להעמיק." />
       {checkout === "unavailable" && (
         <p role="status" className="mb-6 rounded-xl bg-amber-50 p-4 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           הסליקה עדיין לא פעילה. אנחנו בשלב ההשקה, ונעדכן כשמנויי Pro ייפתחו.
@@ -40,9 +40,9 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           </div>
           <p className="mt-1 text-3xl font-extrabold">
             ₪{monthly.priceIls}
-            <span className="text-base font-medium text-slate-500"> / חודש</span>
+            <span className="text-base font-medium text-slate-500 dark:text-slate-400"> / חודש</span>
           </p>
-          <p className="text-sm text-slate-500">או ₪{yearly.priceIls} לשנה</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">או ₪{yearly.priceIls} לשנה</p>
           <ul className="mt-4 space-y-2 text-sm">
             {PRO.map((f) => (
               <li key={f}>✓ {f}</li>
@@ -60,7 +60,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           </div>
         </Card>
       </div>
-      <p className="mt-6 text-sm text-slate-500">
+      <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
         מוצרים כמו סימולטור בחינות הרישוי ו־Blue Grid נמכרים בנפרד. המחירים להמחשה ויעודכנו לקראת ההשקה.
       </p>
     </>

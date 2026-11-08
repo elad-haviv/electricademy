@@ -32,6 +32,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   return (
     <div className="space-y-8">
       <SectionHeading
+        level={1}
         title={`שלום, ${user.name ?? "חבר/ה"} 👋`}
         subtitle="כאן רואים את ההתקדמות שלכם בכל המסלולים."
         action={
@@ -53,7 +54,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 <h2 className="font-bold">
                   {t.icon} {t.title}
                 </h2>
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-slate-500 dark:text-slate-400">
                   {completed}/{paths.length}
                 </span>
               </div>
@@ -99,7 +100,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                   <Card key={sim.slug} className="flex flex-col gap-2">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="font-bold">{sim.name}</h3>
-                      <span className="text-xs text-slate-500">כניסה אחרונה: {formatDate(lab.lastAt.toISOString())}</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">כניסה אחרונה: {formatDate(lab.lastAt.toISOString())}</span>
                     </div>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       {lab.visits === 1 ? "כניסה אחת" : `${lab.visits} כניסות`} ·{" "}

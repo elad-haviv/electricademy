@@ -11,7 +11,10 @@ const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 function tex(src: string, display: boolean): string {
   try {
     const html = katex.renderToString(src, { displayMode: display, throwOnError: true, strict: "ignore" });
-    return display ? `<div class="rich-math" dir="ltr">${html}</div>` : `<span class="rich-math" dir="ltr">${html}</span>`;
+    // a display formula may scroll sideways on a phone: make it reachable by keyboard (WCAG 2.1.1)
+    return display
+      ? `<div class="rich-math" dir="ltr">${html.replace('<span class="katex-display">', '<span class="katex-display" tabindex="0">')}</div>`
+      : `<span class="rich-math" dir="ltr">${html}</span>`;
   } catch {
     return escapeHtml(display ? `$$${src}$$` : `$${src}$`);
   }
@@ -39,7 +42,8 @@ function tableHtml(lines: string[]): string {
   const head = hasRule ? `<thead><tr>${cells(lines[0]!).map((c) => `<th>${inlineHtml(c)}</th>`).join("")}</tr></thead>` : "";
   const rows = hasRule ? lines.slice(2) : lines;
   const body = rows.map((r) => `<tr>${cells(r).map((c) => `<td>${inlineHtml(c)}</td>`).join("")}</tr>`).join("");
-  return `<div class="rich-table"><table>${head}<tbody>${body}</tbody></table></div>`;
+  // tables scroll sideways on narrow screens: focusable and named so keyboard users can scroll them
+  return `<div class="rich-table" tabindex="0" role="group" aria-label="טבלה"><table>${head}<tbody>${body}</tbody></table></div>`;
 }
 
 /** One stem paragraph or option: a pipe table, or text with math. */

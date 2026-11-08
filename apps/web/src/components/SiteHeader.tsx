@@ -9,7 +9,7 @@ export async function SiteHeader() {
   const session = await auth().catch(() => null);
   return (
     <header data-site-chrome className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur dark:border-slate-800 dark:bg-slate-950/85">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-6">
         <Logo />
         <nav className="hidden flex-1 items-center gap-0.5 md:flex" aria-label="ניווט ראשי">
           {NAV_ITEMS.map((item) => (
