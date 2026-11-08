@@ -32,6 +32,8 @@ BLUE = 0x0070C0  # "שאלה N" heading
 SERIAL_GREENS = {0x92D050, 0x00B050}  # serial number under the heading
 TOP, BOTTOM = 55, 800  # the running header and the page number live outside this band
 DPI = 200
+# hand-picked regions for drawings the automatic cropper splits up or misses (see crops.json)
+CROPS = json.loads((Path(__file__).with_name("crops.json")).read_text())["crops"]
 SEGMENT_GAP = 25  # points; wider horizontal gaps split a line into segments (figure-option grids)
 
 HEBREW = re.compile(r"[֐-׿]")
@@ -520,6 +522,9 @@ def main():
         }
         if q["stem_rendered"]:
             item["stemRendered"] = True  # the figure is the whole stem (formulas); text is for search
+        for k, c in enumerate(CROPS.get(str(q["n"]), [])):
+            fig = {"page": c["page"] - 1, "rect": pymupdf.Rect(c["rect"])}
+            item["figures"].append(render(doc, fig, img_dir / f"q{q['n']:04d}-c{k + 1}.webp"))
         if q["problems"]:
             item["problems"] = q["problems"]
         out.append(item)

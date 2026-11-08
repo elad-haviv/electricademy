@@ -34,3 +34,13 @@ verified with the Unicode bidi algorithm, so it matches what the PDF shows.
 Entries whose `serial` no longer matches the question (the bank was renumbered) are ignored, and the
 tests list them. Questions without a key are still usable: the exam simulator scores only keyed
 questions and shows the rest for self-review.
+
+## Overrides and hand-picked crops
+
+- `content/license-exam/overrides.json`: a hand-checked rewrite of a question (its stem and options as text with
+  `$LaTeX$`, pipe tables, extraction glitches fixed) and the figures to keep, by file name. The app applies an override
+  only while the question's serial and option count still match, so a renumbered bank falls back to the extraction.
+  `pnpm --filter @electricademy/content test` checks they still match.
+- `crops.json` (next to this README): page regions for drawings the automatic cropper splits into fragments or
+  misses (graphs drawn as many tiles, vector diagrams). `extract.py` renders each to `q<NNNN>-c<k>.webp` and appends
+  it to the question's figures; the override then lists it.

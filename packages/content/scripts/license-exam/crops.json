@@ -1,0 +1,170 @@
+{
+ "_readme": "Hand-picked figure regions (PDF page, rect in points) for drawings the automatic cropper splits into fragments or misses. extract.py renders each to q<NNNN>-c<k>.webp and appends it to the question's stem figures; overrides.json then chooses which figures to show.",
+ "crops": {
+  "151": [
+   {
+    "page": 52,
+    "rect": [
+     55,
+     131,
+     540,
+     365
+    ]
+   }
+  ],
+  "280": [
+   {
+    "page": 100,
+    "rect": [
+     92,
+     178,
+     420,
+     428
+    ]
+   }
+  ],
+  "281": [
+   {
+    "page": 101,
+    "rect": [
+     68,
+     188,
+     518,
+     452
+    ]
+   }
+  ],
+  "301": [
+   {
+    "page": 114,
+    "rect": [
+     245,
+     262,
+     350,
+     432
+    ]
+   }
+  ],
+  "480": [
+   {
+    "page": 173,
+    "rect": [
+     48,
+     183,
+     546,
+     432
+    ]
+   }
+  ],
+  "481": [
+   {
+    "page": 173,
+    "rect": [
+     50,
+     612,
+     229,
+     765
+    ]
+   }
+  ],
+  "483": [
+   {
+    "page": 174,
+    "rect": [
+     72,
+     398,
+     528,
+     612
+    ]
+   }
+  ],
+  "484": [
+   {
+    "page": 175,
+    "rect": [
+     72,
+     178,
+     522,
+     398
+    ]
+   }
+  ],
+  "522": [
+   {
+    "page": 194,
+    "rect": [
+     82,
+     152,
+     462,
+     528
+    ]
+   }
+  ],
+  "866": [
+   {
+    "page": 367,
+    "rect": [
+     45,
+     106,
+     190,
+     254
+    ]
+   }
+  ],
+  "910": [
+   {
+    "page": 386,
+    "rect": [
+     100,
+     168,
+     452,
+     418
+    ]
+   }
+  ],
+  "911": [
+   {
+    "page": 387,
+    "rect": [
+     97,
+     170,
+     422,
+     418
+    ]
+   }
+  ],
+  "1017": [
+   {
+    "page": 419,
+    "rect": [
+     112,
+     138,
+     478,
+     378
+    ]
+   }
+  ],
+  "1060": [
+   {
+    "page": 433,
+    "rect": [
+     138,
+     118,
+     445,
+     333
+    ]
+   }
+  ],
+  "1071": [
+   {
+    "page": 437,
+    "rect": [
+     178,
+     588,
+     418,
+     668
+    ]
+   }
+  ]
+ }
+}
