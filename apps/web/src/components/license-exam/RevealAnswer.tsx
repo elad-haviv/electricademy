@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { ClientKey } from "@/lib/licenseExam";
+import type { ClientKey, ClientQuestion } from "@/lib/licenseExam";
 import { revealAnswer } from "@/lib/licenseExamActions";
 import { LimitNotice, type Notice } from "./LimitNotice";
-import { KeyNote } from "./Question";
+import { KeyNote, OptionList } from "./Question";
 
 /**
  * "Show the answer" for one bank question (browse, question page). The answer is fetched only when asked
  * for, through the rate-limited revealAnswer action; once shown it can be folded away and back for free.
  */
-export function RevealAnswer({ n }: { n: number }) {
+export function RevealAnswer({ n, q }: { n: number; q?: ClientQuestion }) {
   const [key, setKey] = useState<ClientKey | null | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
@@ -36,8 +36,10 @@ export function RevealAnswer({ n }: { n: number }) {
   };
 
   const label = pending ? "טוענים את התשובה…" : open ? "הסתרת התשובה" : "הצגת התשובה";
+  const shown = open && key ? key.answer : null;
   return (
     <div className="space-y-2">
+      {q && <OptionList q={q} stateOf={(c) => (shown === null ? "idle" : c === shown ? "correct" : "idle")} />}
       {notice?.retry !== "day" && (
         <button
           type="button"

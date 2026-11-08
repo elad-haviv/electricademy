@@ -6,7 +6,7 @@ export interface Notice {
   retry?: "minute" | "day";
 }
 
-const TITLES = { minute: "רגע קצר", day: "להיום סיימנו" } as const;
+const TITLES = { minute: "רגע קצר", day: "המכסה היומית נוצלה" } as const;
 
 /**
  * A refused request, said kindly: a content limit (calm, informative, no blame) or an ordinary error.

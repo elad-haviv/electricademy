@@ -239,6 +239,7 @@ export function KeyNote({ k, picked }: { k: ClientKey | null | undefined; picked
 
       {k.status !== "verified" && (
         <p className="text-xs text-slate-500 dark:text-slate-400">
+          {k.confidence && k.confidence !== "high" && "מפתח התשובות הרשמי לא פורסם, וזו התשובה הסבירה ביותר לפי התקנות. "}
           התשובה וההסבר נוסחו בעזרת בינה מלאכותית ועוד לא נבדקו על ידי חשמלאי מוסמך. מצאתם טעות? כתבו בדיון על השאלה.
         </p>
       )}

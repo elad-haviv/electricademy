@@ -16,7 +16,7 @@ import { acceptAll, closeConsentSettings, openConsentSettings, rejectAll, saveCo
 /** Same classes for accept and reject: neither is visually preferred. */
 const choiceButton =
   "inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold transition " +
-  "bg-slate-900 text-white hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 " +
+  "bg-slate-100 text-slate-900 ring-1 ring-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:text-white dark:ring-slate-500 dark:hover:bg-slate-700 " +
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500";
 
 const linkButton =
@@ -102,18 +102,18 @@ function Banner({ onDecided }: { onDecided: (msg: string) => void }) {
         <h2 id="consent-title" className="text-sm font-extrabold sm:text-base">
           עוגיות ואחסון בדפדפן
         </h2>
-        <p id="consent-desc" className="mt-0.5 text-[13px] leading-snug text-slate-700 sm:text-sm dark:text-slate-300">
-          בלי הסכמה נשמר רק מה שהכרחי. אם תאשרו, נשמור גם היסטוריית מבחנים ונטען מעבדות מוטמעות שמודדות שימוש.
+        <p id="consent-desc" className="mt-0.5 text-sm leading-snug text-slate-700 dark:text-slate-300">
+          בלי אישור נשמור בדפדפן רק מה שהאתר צריך כדי לעבוד. באישור נשמור גם את היסטוריית המבחנים שלכם ונטען סימולטורים חיצוניים שאוספים נתוני שימוש.
         </p>
-        <p className="mt-1 flex flex-wrap items-center gap-x-1 text-[13px] sm:text-sm">
+        <p className="mt-1 flex flex-wrap items-center gap-x-1 text-sm">
           <button type="button" className={linkButton} onClick={openConsentSettings} aria-haspopup="dialog">
-            הגדרות
+            בחירה לפי סוג
           </button>
           <span aria-hidden className="text-slate-400">
             ·
           </span>
           <Link href="/cookies" className={linkButton}>
-            מדיניות העוגיות
+            מדיניות עוגיות
           </Link>
         </p>
       </div>
@@ -205,7 +205,7 @@ function SettingsDialog({ initial, onDone }: { initial: ConsentChoices; onDone: 
           ))}
         </ul>
 
-        <div className="sticky bottom-0 -mx-5 mt-5 grid grid-cols-2 gap-2 border-t border-slate-200 bg-white px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:grid-cols-3 sm:border-0 sm:p-0 dark:border-slate-700 dark:bg-slate-900">
+        <div className="sticky bottom-0 -mx-5 mt-5 grid grid-cols-2 gap-2 border-t border-slate-200 bg-white shadow-[0_-8px_16px_-8px_rgb(0_0_0/0.15)] sm:shadow-none px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:grid-cols-3 sm:border-0 sm:p-0 dark:border-slate-700 dark:bg-slate-900">
           <button type="button" className={cn(choiceButton, "col-span-2 sm:col-span-1")} onClick={() => finish(() => saveConsent(draft, "custom"), "הבחירה שלכם נשמרה.")}>
             שמירת הבחירה
           </button>
@@ -244,14 +244,16 @@ function CategoryToggle({ category, checked, onChange }: { category: OptionalCat
             aria-hidden
             className={cn(
               "pointer-events-none flex h-7 w-12 items-center rounded-full p-0.5 transition-colors",
-              "bg-slate-500 peer-checked:bg-brand-600 dark:bg-slate-500 dark:peer-checked:bg-brand-500",
+              // off: light track with an outline (3:1 against the card, WCAG 1.4.11); on: filled brand
+              "bg-slate-200 ring-2 ring-inset ring-slate-500 peer-checked:bg-brand-600 peer-checked:ring-brand-600",
+              "dark:bg-slate-800 dark:ring-slate-400 dark:peer-checked:bg-brand-500 dark:peer-checked:ring-brand-500",
               // knob: starts at the inline start (right in RTL) and moves to the end when on
               "[&>span]:transition-transform peer-checked:[&>span]:-translate-x-5",
             )}
           >
-            <span className="size-6 rounded-full bg-white shadow" />
+            <span className="size-6 rounded-full bg-white shadow ring-1 ring-slate-400" />
           </span>
-          <span aria-hidden className="ms-2 w-7 text-xs font-bold text-slate-700 dark:text-slate-300">
+          <span aria-hidden className="ms-2 w-9 text-sm font-bold text-slate-700 dark:text-slate-300">
             {checked ? "פעיל" : "כבוי"}
           </span>
         </span>

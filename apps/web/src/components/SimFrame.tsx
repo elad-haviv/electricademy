@@ -202,11 +202,12 @@ function EmbedPlaceholder({ slug, name, url, loaded }: { slug: string; name: str
           המעבדה נטענת מאתר נפרד
         </h2>
         <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-          <bdi>{name}</bdi> פועלת מהכתובת <bdi dir="ltr" className="whitespace-nowrap">{host}</bdi>. כדי להציג אותה כאן נדרשת הסכמה ל
+          {/* the name mixes Latin and Hebrew ("HV-EDU: …"): keep it right-to-left, isolate only the host */}
+          <bdi dir="rtl">{name}</bdi> פועלת מהכתובת <bdi dir="ltr" className="whitespace-nowrap">{host}</bdi>. כדי להציג אותה כאן צריך לאשר{" "}
           {requires.map((c, i) => (
             <span key={c}>
-              {i > 0 && (i === requires.length - 1 ? " ול" : ", ")}
-              <strong>עוגיות {CATEGORY_INFO[c].title}</strong>
+              {i > 0 && (i === requires.length - 1 ? " ו" : ", ")}
+              <strong>{CATEGORY_INFO[c].title}</strong>
             </span>
           ))}
           , כי:
@@ -224,7 +225,7 @@ function EmbedPlaceholder({ slug, name, url, loaded }: { slug: string; name: str
             onClick={() => grantConsent(requires)}
             className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-700 px-4 py-2 text-sm font-bold text-white hover:bg-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
           >
-            אישור וטעינת המעבדה
+            אישור {requires.map((c) => CATEGORY_INFO[c].title).join(" ו")} וטעינה
           </button>
           <a
             href={url}

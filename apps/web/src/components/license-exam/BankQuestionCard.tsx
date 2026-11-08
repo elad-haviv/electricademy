@@ -21,11 +21,14 @@ export function BankQuestionCard({ q, link = true, comments }: { q: ClientQuesti
         </div>
       </div>
       <QuestionStem q={q} />
-      <OptionList q={q} stateOf={() => "idle"} />
       {q.keyed ? (
-        <RevealAnswer n={q.n} />
+        // the options live inside RevealAnswer, so the correct one lights up once the answer is shown
+        <RevealAnswer n={q.n} q={q} />
       ) : (
-        <p className="text-xs text-slate-500 dark:text-slate-400">עוד אין לנו תשובה מאומתת לשאלה הזו.</p>
+        <>
+          <OptionList q={q} stateOf={() => "idle"} />
+          <p className="text-xs text-slate-600 dark:text-slate-400">עוד אין לנו תשובה מאומתת לשאלה הזו.</p>
+        </>
       )}
     </Card>
   );
