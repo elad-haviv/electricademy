@@ -200,14 +200,17 @@ export function KeyNote({
         {k.confidence && <Badge tone={CONFIDENCE[k.confidence].tone}>{CONFIDENCE[k.confidence].label}</Badge>}
       </div>
 
-      {k.explanation && <p className="leading-relaxed">{k.explanation}</p>}
+      {k.html.explanation && <p className="leading-relaxed" dangerouslySetInnerHTML={{ __html: k.html.explanation }} />}
 
-      {k.calculation && (
+      {k.html.calculation && k.html.calculation.length > 0 && (
         <div>
           <p className="mb-1 font-semibold">חישוב</p>
-          <pre className="font-sans whitespace-pre-wrap rounded-lg bg-white p-3 leading-relaxed ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800" dir="auto">
-            {k.calculation}
-          </pre>
+          <div className="space-y-1.5 overflow-x-auto rounded-lg bg-white p-3 leading-relaxed ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+            {/* one step per line; a line that is only a formula reads left to right */}
+            {k.html.calculation.map((line, i) => (
+              <div key={i} dir="auto" dangerouslySetInnerHTML={{ __html: line }} />
+            ))}
+          </div>
         </div>
       )}
 
@@ -243,12 +246,16 @@ export function KeyNote({
       {k.interpretation && (
         <div>
           <p className="mb-1 font-semibold">ועדת הפרשנות</p>
-          <p>{k.interpretation}</p>
+          <p dangerouslySetInnerHTML={{ __html: k.html.interpretation ?? "" }} />
         </div>
       )}
 
       {k.source && <p className="text-slate-500 dark:text-slate-400">מקור: {k.source}</p>}
-      {k.note && <p className="text-amber-800 dark:text-amber-300">הערה: {k.note}</p>}
+      {k.html.note && (
+        <p className="text-amber-800 dark:text-amber-300">
+          הערה: <span dangerouslySetInnerHTML={{ __html: k.html.note }} />
+        </p>
+      )}
 
       {k.status !== "verified" && (
         <p className="text-xs text-slate-500 dark:text-slate-400">

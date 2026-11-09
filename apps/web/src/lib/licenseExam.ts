@@ -7,7 +7,6 @@ import {
   loadExamBank,
   questionsForLevel,
   SCOPE_LABELS,
-  type AnswerKeyEntry,
   type BankFigure,
   type ExamLevel,
   type ExamQuestion,
@@ -49,13 +48,9 @@ export interface ClientQuestion {
 }
 
 /** The answer key entry as shown to learners (the serial is only used for matching). */
-export type ClientKey = Omit<AnswerKeyEntry, "serial">;
-
-export function clientKey(entry: AnswerKeyEntry): ClientKey {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { serial, ...rest } = entry;
-  return rest;
-}
+export { clientKey, type ClientKey } from "./clientKey";
+import type { ClientKey } from "./clientKey";
+import { clientKey } from "./clientKey";
 
 /** Joins the PDF's visual lines into paragraphs: a line that ends a sentence closes its paragraph. */
 export function paragraphs(lines: string[]): string[] {
@@ -156,7 +151,9 @@ export interface ShowcaseSample {
   options: string[];
   /** 0-based. */
   correct: number;
-  formula: string | null;
+  /** HTML, one entry per calculation step. */
+  formula: string[] | null;
+  /** HTML. */
   explanation: string;
   source: { label: string; href: string | null } | null;
 }
@@ -186,8 +183,8 @@ export function showcaseSamples(): { samples: ShowcaseSample[]; total: number; v
         figures: q.figures.map((f, i) => figure(f, `איור ${i + 1} לשאלה`)),
         options: q.options.map((o) => richHtml(o.text)),
         correct: k.answer - 1,
-        formula: k.calculation ?? null,
-        explanation: k.explanation ?? "",
+        formula: clientKey(k).html.calculation ?? null,
+        explanation: clientKey(k).html.explanation ?? "",
         source: ref ? { label: `${ref.title}${ref.section ? `, סעיף ${ref.section}` : ""}`, href: lawSectionHref(ref) } : null,
       },
     ];

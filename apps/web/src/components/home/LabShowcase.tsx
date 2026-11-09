@@ -433,11 +433,13 @@ function LicensingPanel({ samples, total, version }: LicensingTeaser) {
               {chosen === q.correct ? "✓ תשובה נכונה!" : `✗ לא נכון. התשובה הנכונה היא ${q.correct + 1}.`}
             </p>
             {q.formula && (
-              <p dir="ltr" className="rounded-xl border border-slate-800 bg-slate-950 p-3 text-start font-mono text-xs font-bold text-amber-400 sm:text-sm">
-                {q.formula}
-              </p>
+              <div className="space-y-1 overflow-x-auto rounded-xl border border-slate-800 bg-slate-950 p-3 text-sm text-amber-300">
+                {q.formula.map((line, i) => (
+                  <div key={i} dir="auto" dangerouslySetInnerHTML={{ __html: line }} />
+                ))}
+              </div>
             )}
-            <p className="text-sm leading-relaxed text-slate-200">{q.explanation}</p>
+            <p className="text-sm leading-relaxed text-slate-200" dangerouslySetInnerHTML={{ __html: q.explanation }} />
             {q.source && (
               <p className="text-xs text-slate-400">
                 מקור:{" "}
