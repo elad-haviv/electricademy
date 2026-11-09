@@ -13,11 +13,11 @@ interface Message {
 const SUGGESTIONS = ["למה זו התשובה הנכונה?", "הסבר לי את החישוב צעד אחר צעד", "מה לא נכון בשאר האפשרויות?", "באיזו תקנה זה כתוב?"];
 
 /**
- * "התייעצות עם AI" for one bank question (practice, browse, question page). Talks to POST
+ * "התייעצות עם AI" for one bank question (practice, browse, question page), opened from the ✨ next to the
+ * answer (AskAiSparkle in KeyNote). Talks to POST
  * /api/license-exam/ask, which streams plain text. The conversation lives only in this component.
  */
-export function AskAi({ n }: { n: number }) {
-  const [open, setOpen] = useState(false);
+export function AskAi({ n, onClose }: { n: number; onClose: () => void }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -27,8 +27,11 @@ export function AskAi({ n }: { n: number }) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
-  // stop a reply in flight when the learner leaves the question
-  useEffect(() => () => abortRef.current?.abort(), []);
+  // opened from the ✨ next to the answer: go straight to the input; stop a reply in flight on close
+  useEffect(() => {
+    inputRef.current?.focus();
+    return () => abortRef.current?.abort();
+  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: "nearest" });
@@ -81,22 +84,6 @@ export function AskAi({ n }: { n: number }) {
     }
   };
 
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => {
-          setOpen(true);
-          setTimeout(() => inputRef.current?.focus(), 0);
-        }}
-        className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-brand-700 ring-1 ring-brand-200 hover:bg-brand-50 dark:text-brand-300 dark:ring-brand-800 dark:hover:bg-brand-950/40"
-      >
-        <Bot className="size-4" aria-hidden />
-        התייעצות עם AI על השאלה
-      </button>
-    );
-  }
-
   return (
     <section aria-label="התייעצות עם AI" className="space-y-3 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200 dark:bg-slate-900/60 dark:ring-slate-800">
       <div className="flex items-start justify-between gap-2">
@@ -114,7 +101,7 @@ export function AskAi({ n }: { n: number }) {
           type="button"
           onClick={() => {
             abortRef.current?.abort();
-            setOpen(false);
+            onClose();
           }}
           aria-label="סגירת ההתייעצות"
           className="grid size-11 shrink-0 place-items-center rounded-lg text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800"

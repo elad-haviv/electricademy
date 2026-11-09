@@ -41,6 +41,8 @@ export function PracticeSession({
   const [topics, setTopics] = useState<ExamTopic[]>(initialTopic ? [initialTopic] : []);
   const [count, setCount] = useState(20);
   const [source, setSource] = useState<"topics" | "bookmarks">(initialSource ?? "topics");
+  /** The question whose AI chat is open (opened from the ✨ next to the answer). */
+  const [aiFor, setAiFor] = useState<number | null>(null);
   const [questions, setQuestions] = useState<ClientQuestion[] | null>(null);
   const [index, setIndex] = useState(0);
   const [picks, setPicks] = useState<Record<number, number>>({});
@@ -291,9 +293,15 @@ export function PracticeSession({
                 )}
               </div>
             ) : (
-              (key !== undefined || !q.keyed) && <KeyNote k={key} picked={picked} />
+              (key !== undefined || !q.keyed) && (
+                <KeyNote
+                  k={key}
+                  picked={picked}
+                  ai={aiEnabled ? { onAsk: () => setAiFor((cur) => (cur === q.n ? null : q.n)), open: aiFor === q.n } : undefined}
+                />
+              )
             )}
-            {aiEnabled && <AskAi key={q.n} n={q.n} />}
+            {aiEnabled && aiFor === q.n && <AskAi key={q.n} n={q.n} onClose={() => setAiFor(null)} />}
             <DiscussionLink n={q.n} />
           </>
         )}

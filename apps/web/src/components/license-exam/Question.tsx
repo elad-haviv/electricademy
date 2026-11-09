@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AskAiSparkle } from "./AskAiSparkle";
 import { Badge, cn } from "@electricademy/ui";
 import {
   ANSWER_BASIS_LABELS,
@@ -161,7 +162,16 @@ const CONFIDENCE: Record<AnswerConfidence, { label: string; tone: "success" | "b
 };
 
 /** Shown under a question once its answer may be revealed. */
-export function KeyNote({ k, picked }: { k: ClientKey | null | undefined; picked?: number | null }) {
+export function KeyNote({
+  k,
+  picked,
+  ai,
+}: {
+  k: ClientKey | null | undefined;
+  picked?: number | null;
+  /** Shows the ✨ that opens the AI tutor (client components only). */
+  ai?: { onAsk: () => void; open: boolean };
+}) {
   if (!k) {
     return (
       <p className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:ring-slate-800">
@@ -178,8 +188,11 @@ export function KeyNote({ k, picked }: { k: ClientKey | null | undefined; picked
             <span aria-hidden>{right ? "✅" : "❌"}</span> {right ? "נכון!" : "לא נכון."}
           </strong>
         )}
-        <span>
-          התשובה: <strong>{OPTION_LABELS[k.answer - 1]}</strong>
+        <span className="inline-flex items-center gap-0.5">
+          <span>
+            התשובה: <strong>{OPTION_LABELS[k.answer - 1]}</strong>
+          </span>
+          {ai && <AskAiSparkle onClick={ai.onAsk} active={ai.open} />}
         </span>
         {k.basis?.map((b) => (
           <Badge key={b}>{ANSWER_BASIS_LABELS[b]}</Badge>

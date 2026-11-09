@@ -15,6 +15,7 @@ export function RevealAnswer({ n, q, aiEnabled = false }: { n: number; q?: Clien
   const [key, setKey] = useState<ClientKey | null | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const toggle = () => {
@@ -60,8 +61,8 @@ export function RevealAnswer({ n, q, aiEnabled = false }: { n: number; q?: Clien
       <div id={`answer-${n}`} hidden={!open}>
         {key !== undefined && (
           <div className="space-y-3">
-            <KeyNote k={key} />
-            {aiEnabled && <AskAi n={n} />}
+            <KeyNote k={key} ai={aiEnabled ? { onAsk: () => setAiOpen((o) => !o), open: aiOpen } : undefined} />
+            {aiEnabled && aiOpen && <AskAi n={n} onClose={() => setAiOpen(false)} />}
           </div>
         )}
       </div>
