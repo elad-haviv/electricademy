@@ -12,6 +12,7 @@ import { plainText } from "./richText";
  *   OPENROUTER_API_KEY   the API key
  *   OPENROUTER_MODEL     the model id, e.g. "anthropic/claude-sonnet-4.5"
  *   AI_LIMIT_USER_PER_DAY  messages per user per day (default 30)
+ *   OPENROUTER_REASONING_EFFORT  for reasoning models: none | minimal | low | medium | high (default low)
  *   OPENROUTER_BASE_URL  only to point tests at a mock (default https://openrouter.ai/api/v1)
  */
 export function aiConfig() {
@@ -23,6 +24,7 @@ export function aiConfig() {
     model,
     baseUrl: (process.env.OPENROUTER_BASE_URL?.trim() || "https://openrouter.ai/api/v1").replace(/\/$/, ""),
     perDay: Math.max(1, Number(process.env.AI_LIMIT_USER_PER_DAY) || 30),
+    effort: process.env.OPENROUTER_REASONING_EFFORT?.trim() || "low",
   };
 }
 
@@ -95,7 +97,16 @@ export async function streamAnswer(ctx: QuestionContext, conversation: AskMessag
       "HTTP-Referer": process.env.AUTH_URL || "https://electricademy.haviv.pro",
       "X-Title": "Electricademy",
     },
-    body: JSON.stringify({ model: cfg.model, messages: buildAskMessages(ctx, conversation), stream: true, temperature: 0.2, max_tokens: 1200 }),
+    body: JSON.stringify({
+      model: cfg.model,
+      messages: buildAskMessages(ctx, conversation),
+      stream: true,
+      temperature: 0.2, // ignored by models that don't take it
+      // reasoning models count their thinking in max_tokens: keep it light, leave room for the reply,
+      // and don't stream the thinking itself (only `content` is read below)
+      reasoning: { effort: cfg.effort, exclude: true },
+      max_tokens: 4000,
+    }),
   });
   if (!res.ok || !res.body) {
     const detail = await res.text().catch(() => "");
