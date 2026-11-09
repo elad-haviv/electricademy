@@ -205,7 +205,7 @@ export function KeyNote({
       {k.html.calculation && k.html.calculation.length > 0 && (
         <div>
           <p className="mb-1 font-semibold">חישוב</p>
-          <div className="space-y-1.5 overflow-x-auto rounded-lg bg-white p-3 leading-relaxed ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
+          <div className="calc-lines space-y-1.5 overflow-x-auto rounded-lg bg-white p-3 leading-relaxed ring-1 ring-slate-200 dark:bg-slate-950 dark:ring-slate-800">
             {/* one step per line; a line that is only a formula reads left to right */}
             {k.html.calculation.map((line, i) => (
               <div key={i} dir="auto" dangerouslySetInnerHTML={{ __html: line }} />

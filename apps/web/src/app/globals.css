@@ -247,3 +247,8 @@
 body[data-exam-focus] [data-site-chrome] {
   display: none !important;
 }
+
+/* Worked calculations: one formula per line, a little smaller than body math so most steps fit a phone */
+.calc-lines .katex {
+  font-size: 1em;
+}
