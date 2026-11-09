@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { buttonClass } from "@electricademy/ui";
 import { EXAM_TOPICS, loadExamBank } from "@electricademy/content";
 import { BankQuestionCard } from "@/components/license-exam/BankQuestionCard";
-import { aiEnabled } from "@/lib/askAi";
+import { aiAvailableForCurrentUser } from "@/lib/askAi";
 import { ExamDiscussion } from "@/components/license-exam/ExamDiscussion";
 import { LimitNotice } from "@/components/license-exam/LimitNotice";
 import { guardExamContent } from "@/lib/contentGuard";
@@ -41,7 +41,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ n: st
       <h1 className="text-2xl font-extrabold tracking-tight">שאלה {q.n}</h1>
       {guard.ok ? (
         <>
-          <BankQuestionCard q={toClient(q)} link={false} aiEnabled={aiEnabled()} />
+          <BankQuestionCard q={toClient(q)} link={false} aiEnabled={await aiAvailableForCurrentUser()} />
           <ExamDiscussion n={q.n} userId={user.id} />
         </>
       ) : (

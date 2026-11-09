@@ -12,7 +12,7 @@ import {
   type ExamTopic,
 } from "@electricademy/content";
 import { BankQuestionCard } from "@/components/license-exam/BankQuestionCard";
-import { aiEnabled } from "@/lib/askAi";
+import { aiAvailableForCurrentUser } from "@/lib/askAi";
 import { LimitNotice } from "@/components/license-exam/LimitNotice";
 import { guardExamContent } from "@/lib/contentGuard";
 import { getCommentCounts } from "@/lib/examDiscussion";
@@ -58,7 +58,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   // each page of questions counts against the daily budget (lib/contentGuard.ts); answers are revealed on demand
   const guard = slice.length ? await guardExamContent(user.id, { view: slice.map((q) => q.n) }) : ({ ok: true } as const);
   const shown = guard.ok ? slice.map((q) => toClient(q)) : [];
-  const ai = aiEnabled();
+  const ai = await aiAvailableForCurrentUser();
   const comments = await getCommentCounts(shown.map((q) => q.n));
 
   const href = (p: Partial<Params>) => {

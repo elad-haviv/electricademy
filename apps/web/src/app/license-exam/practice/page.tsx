@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { EXAM_TOPICS, type ExamTopic } from "@electricademy/content";
 import { PracticeSession } from "@/components/license-exam/PracticeSession";
-import { aiEnabled } from "@/lib/askAi";
+import { aiAvailableForCurrentUser } from "@/lib/askAi";
 import { requireExamUser, topicCountsByLevel } from "@/lib/licenseExam";
 
 export const metadata: Metadata = {
@@ -25,7 +25,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
         topicCounts={topicCountsByLevel()}
         initialTopic={topic && topic in EXAM_TOPICS ? (topic as ExamTopic) : undefined}
         initialSource={source === "bookmarks" ? "bookmarks" : "topics"}
-        aiEnabled={aiEnabled()}
+        aiEnabled={await aiAvailableForCurrentUser()}
       />
     </div>
   );

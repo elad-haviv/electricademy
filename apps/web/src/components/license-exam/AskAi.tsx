@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Bot, Send, Square, X } from "lucide-react";
 import { cn } from "@electricademy/ui";
@@ -8,6 +9,21 @@ import { LimitNotice, type Notice } from "./LimitNotice";
 interface Message {
   role: "user" | "assistant";
   content: string;
+}
+
+/** From the reply's X-AI-* headers: the learner's tier and today's token use when the reply started. */
+interface Quota {
+  tier: "free" | "pro";
+  used: number;
+  limit: number;
+}
+
+function readQuota(res: Response): Quota | null {
+  const tier = res.headers.get("X-AI-Tier");
+  const used = Number(res.headers.get("X-AI-Used"));
+  const limit = Number(res.headers.get("X-AI-Limit"));
+  if ((tier !== "free" && tier !== "pro") || !Number.isFinite(used) || !(limit > 0)) return null;
+  return { tier, used, limit };
 }
 
 const SUGGESTIONS = ["למה זו התשובה הנכונה?", "הסבר לי את החישוב צעד אחר צעד", "מה לא נכון בשאר האפשרויות?", "באיזו תקנה זה כתוב?"];
@@ -23,6 +39,8 @@ export function AskAi({ n, onClose }: { n: number; onClose: () => void }) {
   const [streaming, setStreaming] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [status, setStatus] = useState("");
+  const [quota, setQuota] = useState<Quota | null>(null);
+  const [upgrade, setUpgrade] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -44,6 +62,7 @@ export function AskAi({ n, onClose }: { n: number; onClose: () => void }) {
     setMessages([...history, { role: "assistant", content: "" }]);
     setDraft("");
     setNotice(null);
+    setUpgrade(false);
     setStatus("");
     setStreaming(true);
     const controller = new AbortController();
@@ -56,12 +75,15 @@ export function AskAi({ n, onClose }: { n: number; onClose: () => void }) {
         signal: controller.signal,
       });
       if (!res.ok || !res.body) {
-        const err = (await res.json().catch(() => null)) as { error?: string; retry?: Notice["retry"] } | null;
+        const err = (await res.json().catch(() => null)) as { error?: string; retry?: Notice["retry"]; upgrade?: boolean; quota?: Quota } | null;
         setMessages(history.slice(0, -1)); // give the learner their text back in the box
         setDraft(content);
         setNotice({ message: err?.error ?? "משהו השתבש. נסו שוב.", retry: err?.retry });
+        setUpgrade(Boolean(err?.upgrade));
+        if (err?.quota) setQuota(err.quota);
         return;
       }
+      setQuota(readQuota(res));
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let reply = "";
@@ -156,6 +178,13 @@ export function AskAi({ n, onClose }: { n: number; onClose: () => void }) {
         {status}
       </p>
       <LimitNotice notice={notice} />
+      {upgrade && (
+        <p className="text-sm">
+          <Link href="/pricing" className="font-semibold text-brand-700 underline dark:text-brand-300">
+            למסלולי המנוי
+          </Link>
+        </p>
+      )}
 
       <form
         className="flex items-end gap-2"
@@ -202,6 +231,28 @@ export function AskAi({ n, onClose }: { n: number; onClose: () => void }) {
           </button>
         )}
       </form>
+      {quota && <QuotaLine quota={quota} upsell={!upgrade} />}
     </section>
+  );
+}
+
+/** "Basic/advanced model · N% of today's allowance used", with an upgrade link for the free tier. */
+function QuotaLine({ quota, upsell }: { quota: Quota; upsell: boolean }) {
+  const pct = Math.min(100, Math.round((quota.used / quota.limit) * 100));
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
+      <span>{quota.tier === "pro" ? "מודל מתקדם" : "מודל בסיסי"}</span>
+      <span className="flex items-center gap-1.5">
+        <span aria-hidden className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+          <span className="block h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
+        </span>
+        נוצלו {pct}% מהמכסה היומית
+      </span>
+      {upsell && quota.tier === "free" && (
+        <Link href="/pricing" className="font-semibold text-brand-700 hover:underline dark:text-brand-300">
+          מודל מתקדם ומכסה גדולה יותר במנוי
+        </Link>
+      )}
+    </div>
   );
 }
